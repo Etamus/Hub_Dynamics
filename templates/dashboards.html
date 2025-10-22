@@ -172,7 +172,12 @@
             color: #495057;
             background-color: #e9ecef;
             border-color: #dee2e6;
-        }        
+        }    
+        .tag-purple {
+            color: #5e35b1; /* Roxo escuro */
+            background-color: #ede7f6; /* Roxo claro */
+            border-color: #d1c4e9; /* Roxo mais claro ainda */
+        }    
 
 
     </style>
@@ -206,8 +211,8 @@
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/4b061ef2-9ddf-4120-b3e1-aaa692bd10c3/page/p_lvyh6guavd"
                     data-preview-gif="/static/gifs/daily_block_preview.gif"
-                    data-preview-text="Uma visão diária dos principais KPIs de bloqueio e performance da operação. Ideal para acompanhamento rápido."
-                    data-preview-tags="Daily,GCP,Revenue">
+                    data-preview-text="Consulte o resultado atual do impacto em bloqueio de carteira das ordens para faturamento. Ideal para acompanhamento rápido."
+                    data-preview-tags="Daily,GCP,Revenue,Bloqueio de carteira">
                     Daily Block
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -216,8 +221,8 @@
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/u/0/reporting/021f1eef-b3b6-4d5d-b67e-429e49e84398/page/p_elobwkgqtd"
                     data-preview-gif="/static/gifs/receipt_management_preview.gif"
-                    data-preview-text="Acompanhe a ocupação da grade de recebimento e previsões de chegada para otimizar o fluxo de entrada de materiais."
-                    data-preview-tags="Daily,Sheets,Efficiency">
+                    data-preview-text="Acompanhe a ocupação da grade de recebimento, resultados do nível de serviço de embalagem, bem como previsões de chegada para otimizar o fluxo de entrada de materiais."
+                    data-preview-tags="Daily,Sheets,Efficiency,Nível de serviço,Grade recebimento,Previsão de volume">
                     Receipt management
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -226,8 +231,8 @@
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/a1f6638b-027c-4e02-a67d-304a1260f1e8/page/0KYcF"
                     data-preview-gif="/static/gifs/analise_cdp_preview.gif"
-                    data-preview-text="Resultados das analises mais recentes do time de CDP voltado a avaliações do Portal de devolução."
-                    data-preview-tags="Daily,Sheets,Efficiency">
+                    data-preview-text="Resultados do impacto financeiro e de estoque (peças) referente as análises do time CDP voltado a constatações e solicitações no Portal de devolução."
+                    data-preview-tags="Daily,Sheets,Efficiency,Devolução logística">
                     Análise de CDP
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -237,14 +242,14 @@
                     data-url="https://lookerstudio.google.com/embed/reporting/2d1dde98-6bc5-476c-937a-0b09d78e04e6/page/8NWNF"
                     data-preview-gif="/static/gifs/stock_control_preview.gif"
                     data-preview-text="Monitore a acurácia do inventário, níveis de estoque (Gross & Net) e identifique discrepâncias para uma gestão precisa."
-                    data-preview-tags="Daily,Sheets,Accuracy">
+                    data-preview-tags="Daily,Sheets,Accuracy,Acurácia,Gross & NET,Pacotes movimentados">
                     Stock Control
                 </button>
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/76dfa2d9-291a-43ca-9857-edd408f13483/page/pDDrE"
                     data-preview-gif="/static/gifs/linhas_atendidas_preview.gif"
-                    data-preview-text="Acompanhe o resultado das linhas não atendidas e seus motivos de pendência online, diretamente do controle operacional.."
-                    data-preview-tags="Daily,Sheets,Accuracy">
+                    data-preview-text="Acompanhe o resultado das linhas não atendidas e seus motivos de pendência online, diretamente do controle operacional."
+                    data-preview-tags="Daily,Sheets,Accuracy,Linhas não atendidas">
                     Linhas não atendidas
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -254,7 +259,7 @@
                     data-url="https://lookerstudio.google.com/embed/reporting/83d4b36a-da22-4712-8199-abe2f436df52/page/cCPMF"
                     data-preview-gif="/static/gifs/returns_control_preview.gif"
                     data-preview-text="Análise do status financeiro das devoluções e o envelhecimento (aging) de ordens de retorno em aberto na logística reversa."
-                    data-preview-tags="Daily,Sheets,Management">
+                    data-preview-tags="Daily,Sheets,Management,Aging de OI,Pareto de status">
                     Returns Control
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -264,35 +269,35 @@
                     data-url="https://lookerstudio.google.com/embed/u/0/reporting/5b61e471-c338-4887-bd57-fe1f4a28fffb/page/p_8m74juigsd"
                     data-preview-gif="/static/gifs/boletim_d2c_preview.gif"
                     data-preview-text="Acompanhamento diário do faturamento direto ao consumidor (D2C), com detalhamento por canal e região."
-                    data-preview-tags="Daily,GCP,Revenue">
+                    data-preview-tags="Daily,GCP,Revenue,Boletim de faturamento (D2C)">
                     Boletim de faturamento (D2C)
                 </button>
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/u/0/reporting/29875f95-7c9c-447c-9d7a-6076f1f4d966/page/6CGCE"
                     data-preview-gif="/static/gifs/transporte_b2b_preview.gif"
-                    data-preview-text="Visão completa da gestão de transporte business-to-business (B2B), incluindo custos, performance de transportadoras e prazos."
+                    data-preview-text="Visão detalhada da gestão de transporte (B2B), incluindo custos, performance de transportadoras e prazos."
                     data-preview-tags="Daily,GCP,Performance">
                     Gestão de transporte (B2B)
                 </button>
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/cc6a31a8-aa2a-49af-982f-7c7d170103be/page/p_az16g8cxtd"
                     data-preview-gif="/static/gifs/new_calendar_preview.gif"
-                    data-preview-text="Calendário de eventos logísticos e de negócio, consolidando datas importantes, feriados e atividades planejadas."
-                    data-preview-tags="Daily,Sheets,Planning">
+                    data-preview-text="Tabela ontime com progresso do faturamento de transportes, desde packing até saída em doca."
+                    data-preview-tags="Daily,Sheets,Planning,Calendário expedição">
                     New Calendar
                 </button>
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/4589a8ca-81a5-4233-915e-0d1c00fdda20/page/p_0zwhymauid"
                     data-preview-gif="/static/gifs/visao_gerencial_preview.gif"
                     data-preview-text="Dashboard consolidado com os principais indicadores gerenciais da operação de Spare Parts, incluindo ocupação de carga na expedição."
-                    data-preview-tags="Daily,GCP,Management">
+                    data-preview-tags="Daily,GCP,Management,Ageing Remessa,Expansão Malhas,Ocupação da grade">
                     Visão Gerencial Peças
                 </button>
-                                <button class="view-button"
+                <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/c451deb6-a994-4f67-8ca4-5ee92b4c0cb9/page/dHrbF"
                     data-preview-gif="/static/gifs/monitoramento_preview.gif"
-                    data-preview-text="Dashboard com informações concetradas relacionadas as notas fiscais em aberto (pendente de entrega) e seus respectivos prazos e custos."
-                    data-preview-tags="Daily,GCP,Management">
+                    data-preview-text="Dashboard com informações concentradas relacionadas as notas fiscais em aberto (pendente de entrega) e seus respectivos prazos e custos."
+                    data-preview-tags="Daily,GCP,Management,Farol de monitoramento">
                     Farol - Monitoramento
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -301,7 +306,7 @@
                 <button class="view-button"
                     data-url="https://lookerstudio.google.com/embed/reporting/51b05d28-dee8-4577-aa5e-2d86eaba9f62/page/W3haF"
                     data-preview-gif="/static/gifs/sla_csi_preview.gif"
-                    data-preview-text="Relatório mensal de performance de Nível de Serviço (SLA) e Índice de Satisfação do Cliente (CSI)."
+                    data-preview-text="Relatório mensal de performance de Nível de Serviço (SLA) baseado nos indicadores operacionais (CSI)."
                     data-preview-tags="Daily,Sheets,SLA">
                     SLA Monthly CSI
                 </button>
@@ -335,8 +340,8 @@
                 <button class="view-button"
                     data-url="https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no"
                     data-preview-gif="/static/gifs/nave_frete_preview.gif"
-                    data-preview-text="Análise detalhada dos custos e eficiência do frete, permitindo a identificação de oportunidades de otimização."
-                    data-preview-tags="Daily,GCP,Costs">
+                    data-preview-text="Análise detalhada dos custos e eficiência do frete em todas as localidades expedidas, permitindo a identificação de oportunidades de otimização."
+                    data-preview-tags="Daily,GCP,Costs,Acompanhamento de frete">
                     Nave do Frete
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -346,14 +351,14 @@
                     data-url="https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1"
                     data-preview-gif="/static/gifs/on_time_preview.gif"
                     data-preview-text="Monitoramento da performance de entregas no prazo (On Time), essencial para a satisfação do cliente e eficiência logística."
-                    data-preview-tags="Daily,GCP,Performance">
+                    data-preview-tags="Daily,GCP,Performance,On time">
                     ON TIME
                 </button>
                 <button class="view-button"
                     data-url="https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1"
                     data-preview-gif="/static/gifs/LTP_preview.gif"
                     data-preview-text="Monitoramento da performance de entregas XXXXXXX."
-                    data-preview-tags="Daily,GCP,Tracking">
+                    data-preview-tags="Daily,GCP,Tracking,Conversão de faturamento">
                     Monitoramento
                 </button>
                 <button class="back-to-areas-button">← Voltar para Áreas</button>
@@ -392,7 +397,7 @@
             </button>
                         <button class="view-button"
                 data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vTAS_P-tSslHcog7VNPnicF8P5GP1fAQRyOg82GpC8eAHJMoNZCyDiDaRTswoRb-zCR3_Z2RoBy5KZO/pubhtml" data-width="600px"
-                data-preview-gif="/static/gifs/sheets_tree_preview.gif"
+                data-preview-gif="/static/gifs/manual_devolucao_preview.gif"
                 data-preview-text="Manual explicativo contemplando o passo a passo para execução de devolução das peças entregues durante e após a entrega, contendo conteúdos orientativos relacionado aos motivos de devolução."
                 data-preview-tags="Consultation,Drive,Data">
                 Manual de devolução
@@ -511,47 +516,60 @@
             });
 
 
-            // Lógica do mouseover (para mostrar o preview com etiquetas)
+// Lógica do mouseover (para mostrar o preview com etiquetas)
             button.addEventListener('mouseover', () => {
                 const gifPath = button.dataset.previewGif;
                 const text = button.dataset.previewText;
                 const tagsString = button.dataset.previewTags;
 
-
                 if (gifPath && text) {
                     previewImage.src = gifPath;
                     previewDescription.textContent = text;
-                   
+                    
                     previewTagsContainer.innerHTML = '';
                     if (tagsString) {
                         const tagsArray = tagsString.split(',');
+                        
+                        // Lista das tags que NÃO são KPIs (em minúsculas)
+                        // Inclui Frequência, Fonte, Tipo (Library) e Foco Principal
+                        const knownNonKpiTags = [
+                            'daily', 'weekly', 'monthly', 
+                            'gcp', 'sheets', 'drive', 
+                            'consultation', 'dashboard', 'database', 
+                            'revenue', 'efficiency', 'accuracy', 'management', 
+                            'performance', 'planning', 'sla', 'tracking', 
+                            'safety', 'costs', 'data'
+                        ];
+
                         tagsArray.forEach(tagText => {
                             const tagElement = document.createElement('span');
                             const cleanTagText = tagText.trim();
-                           
+                            
                             tagElement.className = 'preview-tag';
                             tagElement.textContent = cleanTagText;
 
-
-                            // CÓDIGO ALTERADO: Lógica de cores mais robusta para as etiquetas
                             const lowerCaseTag = cleanTagText.toLowerCase();
+
+                            // Lógica de cores atualizada para incluir KPIs
                             if (['consultation', 'dashboard', 'database'].includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-orange');
+                                tagElement.classList.add('tag-orange'); // Tipo (Library)
                             } else if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-green');
-                            } else if (['gcp', 'sheets'].includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-blue');
+                                tagElement.classList.add('tag-green'); // Frequência
+                            } else if (['gcp', 'sheets', 'drive'].includes(lowerCaseTag)) { 
+                                tagElement.classList.add('tag-blue'); // Fonte
+                            } else if (knownNonKpiTags.includes(lowerCaseTag)) {
+                                tagElement.classList.add('tag-gray'); // Foco Principal (ou outras conhecidas não-KPI)
                             } else {
-                                tagElement.classList.add('tag-gray'); // Cor padrão para "Foco Principal"
+                                // Se a tag não for nenhuma das anteriores, assume-se que é um KPI
+                                tagElement.classList.add('tag-purple'); // KPI
                             }
                             previewTagsContainer.appendChild(tagElement);
                         });
                     }
-                   
+                    
                     previewPanel.classList.add('visible');
                 }
-            });
-
+            }); // Fim da lógica do 'mouseover'
 
             // Lógica do mouseout (para esconder o preview)
             button.addEventListener('mouseout', () => {
