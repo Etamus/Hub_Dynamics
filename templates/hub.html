@@ -8,81 +8,193 @@
     <link rel="stylesheet" href="/static/css/hub.css">
     <link rel="stylesheet" href="/static/css/shared.css">
     <style>
-        body {
-            align-items: flex-start;
-            padding-top: 60px;
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
     </style>
 </head>
 <body>
+    <script>
+      // Script de carregamento instantâneo do tema (para evitar flicker)
+      // (Este script DEVE permanecer inline aqui)
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('hubTheme') || 'light';
+          if (savedTheme === 'dark') {
+            document.body.classList.add('theme-dark');
+          } else if (savedTheme === 'light') {
+            // Nenhuma classe necessária para o padrão 'light'
+          } else {
+            // Checa o tema do sistema
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.body.classList.add('theme-dark');
+            }
+          }
+        } catch (e) {
+          // Ignora erros (ex: localStorage desativado)
+        }
+      })();
+    </script>
+    
+    <div class="top-header">
+        <div class="logo-title">
+            <img src="/static/icones/hub_logo.png" alt="" class="logo-light">
+            <img src="/static/icones/hub_logo_branco.png" alt="" class="logo-dark">
+            <span>Hub Spare Parts</span>
+        </div>
+        <div class="header-tools">
+            <button id="about-btn" aria-label="Ajuda" title="Ajuda"><i class="fas fa-question-circle"></i></button>
+            <button id="settings-btn" aria-label="Configurações" title="Configurações"><i class="fas fa-cog"></i></button>
+            <button id="fullscreen-btn" aria-label="Tela Cheia" title="Tela Cheia"><i class="fas fa-expand"></i></button>
+        </div>
+    </div>
+    
     <div class="hub-container">
-        <div class="hub-header">
-            <h1>
-                <img src="/static/icones/hub_logo.png" alt="Logo" style="height: 40px; vertical-align: middle;">
-                Hub Spare Parts
-            </h1>
+        
+        <div class="search-container">
+            <label for="search-bar" class="visually-hidden">Pesquisar ferramenta</label>
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-bar" placeholder="Pesquisar ferramenta...">
+        </div>
+
+        <div class="hub-subtitle">
             <p><i class="fas fa-info-circle"></i> <span>Selecione a ferramenta que deseja utilizar</span></p>
         </div>
-        <div class="hub-cards">
-            <a href="/automacao" class="hub-card">
+        
+        <div class="hub-cards" id="hub-cards-container">
+            <a href="/automacao" class="hub-card" aria-label="Automatizações. Execute robôs para tarefas de SAP, BW e extração de relatórios.">
                 <div class="card-media-area">
-                    <div class="card-preview">
-                        <img src="/static/gifs/automacao.gif" alt="Preview Automações">
-                    </div>
+                    <div class="card-preview"> <img src="/static/gifs/automacao.gif" alt="Preview Automações"> </div>
                     <div class="card-content">
-                        <div class="card-icon"><i class="fas fa-robot"></i></div>
+                        <div class="card-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
                         <h2>Automatizações</h2>
                     </div>
                 </div>
                 <p>Execute robôs para tarefas de SAP, BW e extração de relatórios.</p>
             </a>
-
-            <a href="/dashboards" class="hub-card">
+            <a href="/dashboards" class="hub-card" aria-label="Dashboards. Acesse o portal com os dashboards do Looker Studio e Tableau.">
                 <div class="card-media-area">
-                    <div class="card-preview">
-                        <img src="/static/gifs/dashboards.gif" alt="Preview Dashboards">
-                    </div>
+                    <div class="card-preview"> <img src="/static/gifs/dashboards.gif" alt="Preview Dashboards"> </div>
                     <div class="card-content">
-                        <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                        <div class="card-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></div>
                         <h2>Dashboards</h2>
                     </div>
                 </div>
                 <p>Acesse o portal com os dashboards do Looker Studio e Tableau.</p>
             </a>
-
-            <a href="/drive" class="hub-card">
+            <a href="/drive" class="hub-card" aria-label="Drive (F:) Online. Navegue pelas pastas da rede sem necessidade de uso da VPN.">
                 <div class="card-media-area">
-                    <div class="card-preview">
-                        <img src="/static/gifs/drive.gif" alt="Preview Drive">
-                    </div>
+                    <div class="card-preview"> <img src="/static/gifs/drive.gif" alt="Preview Drive"> </div>
                     <div class="card-content">
-                        <div class="card-icon"> <i class="fas fa-hdd"></i> </div>
+                        <div class="card-icon"> <i class="fas fa-hdd" aria-hidden="true"></i> </div>
                         <h2>Drive (F:) Online</h2>
                     </div>
                 </div>
                 <p>Navegue pelas pastas da rede sem necessidade de uso da VPN.</p>
             </a>
         </div>
+        
+        <div class="quick-links-section" id="quick-links-section">
+            <h3>Acesso Rápido</h3>
+            <div class="quick-links-container" id="quick-links-container">
+                </div>
+        </div>
+
     </div>
     
-    <div class="fab" id="feedback-fab" title="Feedback e Demandas">
-        <i class="fas fa-comment-dots"></i>
+    <div class="settings-modal-overlay" id="settings-overlay">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h2>Configurações</h2>
+                <button class="settings-close-btn" id="settings-close-btn">&times;</button>
+            </div>
+            <div class="setting-group">
+                    <label>Aparência</label>
+                    <div class="theme-selector">
+                        <div class="theme-option" data-theme="light" title="Modo Claro">
+                            <i class="fas fa-sun"></i>
+                            <span>Claro</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark" title="Modo Escuro">
+                            <i class="fas fa-moon"></i>
+                            <span>Escuro</span>
+                        </div>
+                        <div class="theme-option" data-theme="system" title="Padrão do Sistema">
+                            <i class="fas fa-desktop"></i>
+                            <span>Sistema</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>Quantidade (Acesso Rápido)</label>
+                    <div class="count-selector">
+                        <div class="setting-option" data-count="4">
+                            <span>4 Itens</span>
+                        </div>
+                        <div class="setting-option" data-count="6">
+                            <span>6 Itens</span>
+                        </div>
+                        <div class="setting-option" data-count="8">
+                            <span>8 Itens</span>
+                        </div>
+                    </div>
+
+                    <button class="button-danger" id="clear-recents-btn">
+                        <i class="fas fa-trash-alt"></i>
+                        Limpar Acessos
+                    </button>
+                </div>
+                </div>
+        </div>
     </div>
-    <div class="chat-popup" id="feedback-popup">
-        <div class="chat-header">
-            <h2 id="modal-title">Assistente Virtual</h2>
-            <button class="close-button" id="modal-close-btn">&times;</button>
-        </div>
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="iframe-container" id="iframe-container">
-            <iframe src="about:blank" frameborder="0"></iframe>
-        </div>
-        <div class="chat-input-area" id="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Descreva o que precisa...">
-            <button class="send-button" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    <div class="settings-modal-overlay" id="about-overlay">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h2>Sobre</h2>
+                <button class="settings-close-btn" id="about-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" id="config-body">
+                <div class="about-section">
+                    <p><strong>Versão Atual:</strong> v1.5</p>
+                    <p><strong>Responsáveis pelo Projeto:</strong></p>
+                    <ul>
+                        <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
+                        <li>Jonathan Paixão (<a href="https://github.com/Jonathan-Paixao" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
+                    </ul>
+                </div>
+                
+                <div class="devlog-container">
+                    <label>Histórico de Versões</label>
+                    <ul>
+                        <li><strong>v1.5:</strong> Qualidade de vida, correções de instabilidade e melhorias nas páginas</li>
+                        <li><strong>v1.1.4:</strong> Adicionado Barra de Pesquisa na Página Inicial</li>
+                        <li><strong>v1.1.2:</strong> Adição de apresentações 'Processo de devolução' ao Library</li>
+                        <li><strong>v1.1.1:</strong> Adição de arquivos 'google apresentações' ao Library. Adição do label data 'Gardem'.</li>
+                        <li><strong>v1.1.0:</strong> Início da preparação para port mobile.</li>
+                        <li><strong>v1.1:</strong> Adição de label referenciando a qual indicador o dashboard atende.</li>
+                        <li><strong>v1.0.9:</strong> Adição de preview aos dashboards pendentes</li>
+                        <li><strong>v1.0.7:</strong> Correção: Oculta o chatbot ao visualizar dashboards do Looker para evitar sobreposição</li>
+                        <li><strong>v1.0.6:</strong> Correção: Adiciona sistema de paginação e preview latera com etiquetas</li>
+                        <li><strong>v1.0.5:</strong> Correção do servidor_unico.py</li>
+                        <li><strong>v1.0.2:</strong> Remoção de Arquivos Desnecessários</li>
+                        <li><strong>v1.0.1:</strong> Atualizações Gerais e Novos Aprimoramentos</li>
+                        <li><strong>v1.0:</strong> Atualização Inicial</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="/static/js/shared.js" defer></script>
+    <script src="/static/js/hub.js" defer></script>
+    
 </body>
 </html>

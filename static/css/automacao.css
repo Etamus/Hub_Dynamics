@@ -2,24 +2,60 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #F7F8FA;
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
     margin: 0;
     padding: 80px 20px 20px 20px;
-    color: #333;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .back-button {
-    position: absolute; top: 20px; left: 20px; z-index: 10;
-    padding: 10px 20px; background-color: #333; color: white;
-    text-decoration: none; border-radius: 8px; font-weight: 500;
-    transition: all 0.2s ease; font-size: 14px; border: 1px solid #444;
+    position: absolute; top: 25px; left: 25px; z-index: 10;
 }
-.back-button:hover { background-color: #444; transform: translateY(-2px); }
+
+/* Botão de Logout */
+.logout-button {
+    position: absolute;
+    top: 25px;
+    right: 130px; 
+    z-index: 10;
+    background: none;
+    border: none;
+    font-size: 1.6rem; 
+    color: var(--text-tertiary-color);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.logout-button:hover {
+    color: #dc3545;
+    transform: scale(1.1);
+}
+
+/* Botão Agendador */
+.scheduler-button {
+    position: absolute;
+    top: 25px;
+    right: 80px; 
+    z-index: 10;
+    background: none;
+    border: none;
+    font-size: 1.6rem; 
+    color: var(--text-tertiary-color);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.scheduler-button:hover {
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+
 
 .container {
     background-color: transparent;
@@ -32,12 +68,12 @@ body {
     font-size: 3rem;
     font-weight: 700;
     margin: 0 0 10px 0;
-    color: #1c1e21;
+    color: var(--text-primary-color);
 }
 .subtitle {
     font-size: 1.2rem;
-    color: #6c757d;
-    margin-bottom: 40px;
+    color: var(--text-secondary-color);
+    margin-bottom: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,70 +86,525 @@ body {
     align-items: center;
     gap: 40px;
     margin-bottom: 30px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 30px;
 }
-.system-selector label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.system-selector input[type="radio"] { -webkit-appearance: none; appearance: none; background-color: #fff; margin: 0; color: #6c757d; width: 1.25em; height: 1.25em; border: 0.15em solid #ced4da; border-radius: 50%; display: grid; place-content: center; }
-.system-selector input[type="radio"]::before { content: ""; width: 0.75em; height: 0.75em; border-radius: 50%; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em #007bff; }
-.system-selector input[type="radio"]:checked { border-color: #007bff; }
+.system-selector label { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; }
+.system-selector input[type="radio"] { 
+    -webkit-appearance: none; appearance: none; 
+    background-color: var(--card-bg-color); 
+    margin: 0; 
+    color: var(--text-secondary-color); 
+    width: 1.25em; height: 1.25em; 
+    border: 0.15em solid var(--border-color); 
+    border-radius: 50%; display: grid; place-content: center; 
+}
+.system-selector input[type="radio"]::before { 
+    content: ""; width: 0.75em; height: 0.75em; border-radius: 50%; 
+    transform: scale(0); transition: 120ms transform ease-in-out; 
+    box-shadow: inset 1em 1em var(--accent-color); 
+}
+.system-selector input[type="radio"]:checked { border-color: var(--accent-color); }
 .system-selector input[type="radio"]:checked::before { transform: scale(1); }
 .system-selector img { height: 30px; }
-.system-selector input:disabled + img { filter: grayscale(100%); opacity: 0.5; }
+.system-selector:has(input:checked) label {
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+.system-selector label:has(input:checked) {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
 
-.controls { max-width: 350px; margin: 0 auto; }
-.button { border: none; padding: 15px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s ease; width: 100%; display: block; }
-.button:hover { transform: translateY(-2px); }
-.button:disabled, .task-button.disabled { background-color: #cccccc !important; cursor: not-allowed; transform: none; opacity: 0.7; pointer-events: none; box-shadow: none !important; }
-.btn-login { background-color: #28a745; color: white; }
-.btn-login:hover { background-color: #218838; }
-.btn-logout { background-color: #dc3545; color: white; }
-.btn-logout:hover { background-color: #c82333; }
-
-.input-group { margin-bottom: 15px; text-align: left; }
-.input-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #495057; }
-.input-group input { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-
-.tasks-section { margin-top: 40px; }
-.collapsible-header { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; color: #007bff; font-weight: 600; font-size: 1.1rem; user-select: none; }
-.collapsible-header .arrow { transition: transform 0.3s ease; }
-.collapsible-header.open .arrow { transform: rotate(90deg); }
-.collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+/* MARGEM SUPERIOR DAS TAREFAS DIMINUÍDA */
+.tasks-section { margin-top: 20px; }
 .button-container { display: flex; flex-direction: column; gap: 15px; align-items: center; padding-top: 20px; }
 
+/* ESTILO DOS BOTÕES DE TAREFA ATUALIZADO (IGUAL AO area-button) */
 .task-button {
-    display: flex; position: relative; align-items: center; justify-content: center;
-    background-color: #007bff; color: white;
-    width: 80%;
-    height: 52px;
-    overflow: hidden; font-size: 15px; font-weight: 600; border-radius: 12px;
+    display: flex; 
+    position: relative; 
+    align-items: stretch; /* Estica os filhos verticalmente */
+    justify-content: center;
+    background-color: var(--accent-color); 
+    color: white;
+    
+    font-size: 1.1rem; /* Igual ao area-button */
+    font-weight: 600;  /* Igual ao area-button */
+    width: 90%;        /* Igual ao area-button */
+    max-width: 300px;  /* Igual ao area-button */
+    border-radius: 8px;/* Igual ao area-button */
+
+    overflow: hidden; 
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.task-button:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    background-color: var(--accent-color-hover);
+}
+
+.button-text { 
+    flex-grow: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 15px 20px; 
+    transition: background-color 0.2s ease; 
+}
+
+/* --- NOVOS ESTILOS PARA O GRUPO "Base Mãe" --- */
+.task-button-group {
+    width: 90%; 
+    max-width: 300px; 
+    position: relative; 
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+}
+.task-button-group .task-button {
+    width: 100%; 
+    margin: 0;
+    flex-grow: 1; 
+}
+.task-button-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: -65px; 
+    top: 0;
+    bottom: 0; 
+    width: 55px; 
+    background-color: transparent; 
+    color: #00b341; 
+    font-size: 1.5rem; 
+    border-radius: 8px;
+    text-decoration: none;
     transition: all 0.2s ease;
 }
-.task-button:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
-
-.button-text { flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 100%; padding: 0 20px; transition: background-color 0.2s ease; }
-.task-button:not(.disabled) .button-text:hover { background-color: #0056b3; }
-.separator { position: absolute; right: 55px; top: 15%; height: 70%; width: 1px; background-color: rgba(255, 255, 255, 0.4); }
-.download-icon { position: absolute; right: 0; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 18px; color: white; text-decoration: none; transition: background-color 0.2s ease; }
-.task-button:not(.disabled) .download-icon:hover { background-color: #0056b3; }
-.download-icon.inactive { color: rgba(255, 255, 255, 0.5); cursor: not-allowed; }
-.download-icon.inactive:hover { background-color: transparent; }
+.task-button-download:hover {
+    transform: translateY(-2px);
+    background-color: var(--bg-color); 
+    color: #008a32; 
+    box-shadow: none; 
+}
+.task-button-download.inactive {
+    background-color: transparent; 
+    color: var(--text-secondary-color); 
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+/* --- FIM DOS ESTILOS DE GRUPO --- */
 
 .hidden { display: none !important; }
+
+/* Status Box - Posição Atualizada */
 .status-box {
-    position: fixed; top: 20px; right: 20px; z-index: 1000;
+    position: fixed; 
+    top: 80px; 
+    right: 20px; 
+    z-index: 1000;
     padding: 15px 20px; border-radius: 8px; font-weight: 500;
-    min-width: 250px; max-width: 400px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 250px; max-width: 400px; box-shadow: 0 4px 12px var(--shadow-color);
     visibility: hidden; opacity: 0; transform: translateX(20px);
     transition: all 0.4s ease-in-out;
 }
 .status-box.visible { visibility: visible; opacity: 1; transform: translateX(0); }
-.status-box.processing { background-color: #e9ecef; color: #495057; }
+.status-box.processing { background-color: var(--bg-color); color: var(--text-tertiary-color); }
 .status-box.success { background-color: #d4edda; color: #155724; }
 .status-box.error { background-color: #f8d7da; color: #721c24; }
 
-#loggedin-area .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-#loggedin-area .button { width: 75%; }
-#bw-extract-btn {
-    width: 70%;
+/* --- CORREÇÃO DE FADE (REMOVIDO backdrop-filter) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo mais escuro */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0; 
+    visibility: hidden; 
+    transition: opacity 0.25s ease, visibility 0s 0.25s; /* Fade out suave */
+    /* backdrop-filter removido */
+}
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease; /* Fade in suave */
+}
+
+.modal-content {
+    background-color: var(--card-bg-color);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 320px; 
+    text-align: center;
+    position: relative; 
+}
+
+/* Botão 'X' de Fechar */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-secondary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+.modal-close:hover {
+    color: var(--text-primary-color);
+}
+.modal-close:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.modal-logo {
+    height: 35px;
+    margin-bottom: 10px;
+}
+.modal-content p {
+    color: var(--text-secondary-color);
+    margin-bottom: 25px;
+    margin-top: 0;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.modal-input-group {
+    text-align: left;
+}
+.modal-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-tertiary-color);
+}
+.modal-input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* Botões genéricos */
+.button {
+    border: none; padding: 12px 20px; border-radius: 8px; 
+    cursor: pointer; font-size: 15px; font-weight: 600; 
+    transition: all 0.2s ease;
+}
+
+/* Botão "Logar" (do modal de login) com margem superior */
+.modal-form .btn-execute {
+    width: 60%;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px; 
+}
+
+/* Container para botões Sim/Não (Modal de Confirmação) */
+.modal-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 5px; 
+    margin-top: -20px; 
+}
+.modal-button-container .button {
+    width: 120px; 
+    margin: 0;
+}
+
+/* Estilos dos botões do modal */
+.button.btn-execute {
+    background-color: #28a745; 
+    color: white;
+}
+.button.btn-execute:hover {
+    background-color: #218838;
+}
+.button.btn-cancel {
+    background-color: var(--bg-color);
+    color: var(--text-secondary-color);
+    border: 1px solid var(--border-color);
+}
+.button.btn-cancel:hover {
+    background-color: var(--border-color);
+}
+.button.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.button.btn-danger:hover {
+    background-color: #c82333;
+}
+
+
+.button:disabled {
+    background-color: #cccccc !important; 
+    cursor: not-allowed; 
+    opacity: 0.7; 
+}
+
+.task-button.disabled { 
+    background-color: #cccccc !important; 
+    cursor: not-allowed; 
+    transform: none; 
+    opacity: 0.7; 
+    pointer-events: none; 
+    box-shadow: none !important; 
+}
+
+/* Ajustes Finais no Modal de Confirmação */
+#confirm-modal-overlay .modal-content {
+    max-width: 300px; 
+    padding: 20px 20px 15px 20px; 
+}
+#confirm-modal-overlay h2 {
+    font-size: 1.4rem;
+    color: var(--text-primary-color);
+    margin-top: 0;
+    margin-bottom: 20px; 
+}
+#confirm-modal-overlay .modal-button-container {
+    margin-top: -20px; 
+}
+
+/* --- NOVO: Estilos do Modal Agendador (Redesign) --- */
+.modal-content.scheduler-modal {
+    max-width: 750px; /* <-- AJUSTE AQUI: Aumentado de 650px para 750px */
+    padding: 0; /* Padding será interno */
+    text-align: left;
+}
+
+.scheduler-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+.scheduler-header h2 {
+    margin: 0;
+    color: var(--text-primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center; /* TÍTULO CENTRALIZADO */
+}
+.scheduler-header h2 i {
+    color: var(--accent-color);
+}
+
+.scheduler-body {
+    display: grid; /* Usando Grid para colunas robustas */
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+.scheduler-form {
+    padding: 25px;
+    border-right: 1px solid var(--border-color);
+}
+.scheduler-form h3 {
+    margin: 0 0 20px 0;
+    color: var(--text-primary-color);
+}
+
+.scheduler-form .modal-input-group {
+    margin-bottom: 20px;
+}
+
+/* NOVO: Wrapper para centralizar o botão "Adicionar" */
+.scheduler-button-container {
+    text-align: center;
+    margin-top: 10px; 
+}
+/* BOTÃO "ADICIONAR" MENOR E CENTRALIZADO */
+.scheduler-form .button.btn-execute {
+    width: 100%; 
+    max-width: 200px; 
+    background-color: var(--accent-color); 
+}
+
+.scheduler-form .button.btn-execute:hover {
+    background-color: var(--accent-color-hover);
+}
+
+/* NOVO: Estilos para Data/Hora Lado a Lado */
+.scheduler-datetime-group {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start; /* Alinha labels */
+}
+.scheduler-datetime-group .modal-input-group {
+    flex: 1; /* Divide o espaço */
+    margin-bottom: 20px;
+}
+
+
+.scheduler-queue {
+    padding: 25px;
+    background-color: var(--bg-color); /* Fundo sutil */
+    display: flex;
+    flex-direction: column;
+}
+
+/* NOVO: Estilos das Abas (Fila / Histórico) */
+.scheduler-queue-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+.scheduler-tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px; /* Alinha com a borda */
+}
+.scheduler-tab:hover {
+    color: var(--text-primary-color);
+}
+.scheduler-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+
+
+/* Inputs e selects */
+.modal-input-group select,
+.modal-input-group input[type="date"],
+.modal-input-group input[type="time"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg-color); /* Fundo branco no modo escuro */
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Wrapper da lista para scroll */
+.queue-list-container {
+    flex-grow: 1; /* Ocupa o espaço restante */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 350px;
+    max-height: 450px; 
+    overflow-y: auto;
+}
+
+#scheduler-queue-list,
+#scheduler-history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Espaço entre os cards */
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px; /* Cantos arredondados */
+    background-color: var(--card-bg-color);
+    box-shadow: 0 2px 5px var(--shadow-color-light);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+.queue-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.queue-item.empty {
+    justify-content: center;
+    color: var(--text-secondary-color);
+    font-style: italic;
+    padding: 20px;
+    background-color: transparent;
+    box-shadow: none;
+    border: 1px dashed var(--border-color);
+}
+
+.queue-item-icon {
+    font-size: 1.2rem;
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Cores dos ícones */
+.queue-item.pending .queue-item-icon { color: var(--text-secondary-color); }
+.queue-item.running .queue-item-icon { color: var(--accent-color); }
+.queue-item.done .queue-item-icon { color: #28a745; }
+.queue-item.failed .queue-item-icon { color: #dc3545; }
+
+.queue-item-details {
+    flex-grow: 1;
+    text-align: left;
+    line-height: 1.4;
+}
+.queue-item-details strong {
+    display: block;
+    color: var(--text-primary-color);
+    font-weight: 600;
+}
+.queue-item-details em {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    font-style: normal;
+}
+
+.queue-item-task-icon {
+    height: 16px; /* Tamanho do ícone */
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle; /* Alinha com o texto */
+    position: relative;
+    top: -1px; /* Ajuste fino de alinhamento */
+}
+
+.queue-item-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 5px;
+    line-height: 1;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+.queue-item:hover .queue-item-remove {
+    opacity: 1;
+}
+.queue-item-remove:hover {
+    color: #dc3545;
 }

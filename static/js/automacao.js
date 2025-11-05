@@ -1,217 +1,706 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Variáveis de Estado ---
     let isSapLoggedIn = false;
     let isBwLoggedIn = false;
-    let lastUsedCredentials = {};
+    let currentTaskInfo = null;
     let statusTimeout;
+    
+    // --- NOVO: Variáveis do Agendador ---
+    let jobQueue = []; 
+    let jobHistory = []; // <-- NOVO: Histórico de jobs (máx. 4)
+    let schedulerInterval = null; 
+    let isSchedulerRunning = false; 
 
-    // --- Seletores dos elementos da página ---
-    const loginArea = document.getElementById('login-area');
-    const loggedinArea = document.getElementById('loggedin-area');
-    const subtitleText = document.getElementById('subtitle-text');
-    const mainUser = document.getElementById('main-user');
-    const mainPass = document.getElementById('main-pass');
+    // --- Seletores dos Elementos ---
     const statusBox = document.getElementById('status');
     const systemRadios = document.querySelectorAll('input[name="login_system"]');
-    
-    const mainLoginBtn = document.getElementById('main-toggle-btn');
-    const mainLogoutBtn = document.getElementById('main-logout-btn');
-    
-    const bwExtractButton = document.getElementById('bw-extract-btn');
     const sapTasksSection = document.getElementById('sap-tasks-section');
     const bwTasksSection = document.getElementById('bw-tasks-section');
-    const sapTaskButtons = document.querySelectorAll('.task-button[data-task-name]');
+    const allTaskButtons = document.querySelectorAll('.task-button');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    const collapsibleHeaderSap = document.getElementById('collapsible-header-sap');
-    const collapsibleContentSap = document.getElementById('collapsible-content-sap');
-    const collapsibleHeaderBw = document.getElementById('collapsible-header-bw');
-    const collapsibleContentBw = document.getElementById('collapsible-content-bw');
+    // --- Seletores do Modal de Login ---
+    const modalOverlay = document.getElementById('login-modal-overlay');
+    const modalUser = document.getElementById('modal-user');
+    const modalPass = document.getElementById('modal-pass');
+    const modalExecuteBtn = document.getElementById('modal-execute-btn');
+    const modalLoginCloseBtn = document.getElementById('login-modal-close-btn'); // 'X'
+    const modalLogoSap = document.getElementById('modal-logo-sap');
+    const modalLogoBw = document.getElementById('modal-logo-bw');
 
-    // --- Funções de Controle da UI ---
+    // --- Seletores do Modal de Confirmação ---
+    const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+    const confirmModalCloseBtn = document.getElementById('confirm-modal-close-btn');
+    const confirmModalYesBtn = document.getElementById('confirm-modal-yes-btn');
+    const confirmModalNoBtn = document.getElementById('confirm-modal-no-btn');
 
-    function showStatus(message, type = 'processing') {
+    // --- NOVO: Seletor do Agendador ---
+    const schedulerBtn = document.getElementById('scheduler-btn');
+    
+    // --- Funções de Feedback (Status Box) ---
+
+    function showStatus(message, type = 'processing', sticky = false) {
         clearTimeout(statusTimeout);
         statusBox.className = `status-box ${type} visible`;
         statusBox.textContent = message;
+
         if (type === 'success' || type === 'error') {
-            const delay = type === 'success' ? 5000 : 8000;
+            const delay = sticky ? 15000 : (type === 'success' ? 3000 : 5000);
             statusTimeout = setTimeout(() => {
                 statusBox.classList.remove('visible');
             }, delay);
         }
     }
 
-    function setProcessing(message) {
-        // Seleciona todos os botões, EXCETO o botão de logout
-        document.querySelectorAll('.button:not(#main-logout-btn), .task-button').forEach(btn => {
-            btn.disabled = true;
-            btn.classList.add('disabled');
-        });
+    function setProcessing(message, isSchedulerJob = false) {
+        if (!isSchedulerJob) {
+            allTaskButtons.forEach(btn => btn.classList.add('disabled'));
+            if(modalExecuteBtn) modalExecuteBtn.disabled = true;
+            if(modalLoginCloseBtn) modalLoginCloseBtn.disabled = true; 
+            if(logoutBtn) logoutBtn.disabled = true;
+            if(schedulerBtn) schedulerBtn.disabled = true;
+        }
+        
         showStatus(message, 'processing');
     }
+    
+    function enableUI() {
+        allTaskButtons.forEach(btn => btn.classList.remove('disabled'));
+        if (modalExecuteBtn) modalExecuteBtn.disabled = false;
+        if (modalLoginCloseBtn) modalLoginCloseBtn.disabled = false; 
+        if (logoutBtn) logoutBtn.disabled = false;
+        if(schedulerBtn) schedulerBtn.disabled = false;
+    }
 
-    function handleFetchError(error) {
-        showStatus('Erro de comunicação com o servidor.', 'error');
+    function handleFetchError(error, isSchedulerJob = false) {
+        if (!isSchedulerJob) {
+            enableUI();
+        }
+        showStatus('Erro de comunicação com o servidor.', 'error', true);
         console.error('Erro de Fetch:', error);
-        updateUiState();
+        
+        // --- MODIFICADO: Atualiza a fila do agendador ---
+        if (isSchedulerJob) {
+            const job = jobQueue.find(j => j.status === 'running');
+            if (job) {
+                job.status = 'failed';
+                // Move para o histórico
+                jobHistory.unshift(job);
+                jobHistory = jobHistory.slice(0, 4); // Mantém apenas 4
+                jobQueue = jobQueue.filter(j => j.id !== job.id); // Remove da fila
+                renderJobQueue();
+                renderJobHistory();
+            }
+            isSchedulerRunning = false; // Libera o motor
+        }
     }
     
-    function setResult(data, actionContext) {
+    // Processa o resultado de uma TAREFA
+    function handleTaskResult(data, isSchedulerJob = false) {
+        if (!isSchedulerJob) {
+            enableUI();
+        }
+        
         if (data.status === 'sucesso') {
             showStatus(data.mensagem, 'success');
-            if (actionContext.type === 'login-sap') isSapLoggedIn = true;
-            if (actionContext.type === 'logout-sap') isSapLoggedIn = false;
-            if (actionContext.type === 'login-bw') isBwLoggedIn = true;
-            if (actionContext.type === 'logout-bw') isBwLoggedIn = false;
             
-            if (actionContext.type === 'macro' && data.download_file) {
-                const downloadLink = document.querySelector('.task-button[data-task-name="Executar ZV62N"] .download-icon');
+            if (data.download_file && currentTaskInfo && currentTaskInfo.name === "Base Mãe") {
+                const downloadLink = document.querySelector('.task-button-download');
                 if (downloadLink) {
                     downloadLink.href = '/download/' + data.download_file;
                     downloadLink.classList.remove('inactive');
                     downloadLink.title = `Baixar ${data.download_file}`;
+                    showStatus("Sucesso! O download do relatório iniciará em 3 segundos...", 'success', true);
+                    setTimeout(() => {
+                        window.location.href = downloadLink.href;
+                    }, 3000);
                 }
             }
         } else {
-            showStatus('ERRO: ' + data.mensagem, 'error');
+            showStatus('ERRO: ' + data.mensagem, 'error', true);
         }
-        updateUiState();
+        
+        // --- MODIFICADO: Atualiza a fila do agendador ---
+        if (isSchedulerJob) {
+            const job = jobQueue.find(j => j.status === 'running');
+            if (job) {
+                job.status = (data.status === 'sucesso') ? 'done' : 'failed';
+                // Move para o histórico
+                jobHistory.unshift(job);
+                jobHistory = jobHistory.slice(0, 4); // Mantém apenas 4
+                jobQueue = jobQueue.filter(j => j.id !== job.id); // Remove da fila
+                renderJobQueue();
+                renderJobHistory();
+            }
+            isSchedulerRunning = false; // Libera o motor
+        }
+    }
+
+    // --- Funções do Modal de Login ---
+
+    function openLoginModal(taskInfo) {
+        currentTaskInfo = taskInfo; 
+        
+        if (taskInfo.type === 'sap') {
+            modalLogoSap.classList.remove('hidden');
+            modalLogoBw.classList.add('hidden');
+        } else if (taskInfo.type === 'bw') {
+            modalLogoSap.classList.add('hidden');
+            modalLogoBw.classList.remove('hidden');
+        }
+        
+        modalUser.value = '';
+        modalPass.value = '';
+        modalOverlay.classList.add('visible');
+        modalUser.focus();
+    }
+
+    function closeLoginModal() {
+        modalOverlay.classList.remove('visible');
+    }
+
+    function handleLogin() {
+        const user = modalUser.value;
+        const pass = modalPass.value;
+
+        if (!user || !pass) {
+            alert('Por favor, preencha o usuário e a senha.');
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('usuario', user);
+        formData.append('senha', pass);
+
+        let endpoint = '';
+        let systemType = currentTaskInfo.type;
+
+        if (systemType === 'sap') {
+            endpoint = '/login-sap';
+            setProcessing("Realizando login no SAP...");
+        } else if (systemType === 'bw') {
+            endpoint = '/login-bw-hana';
+            setProcessing("Realizando login no BW HANA...");
+        }
+
+        fetch(endpoint, { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                enableUI();
+                if (data.status === 'sucesso') {
+                    showStatus(data.mensagem, 'success');
+                    closeLoginModal();
+                    
+                    if (systemType === 'sap') {
+                        isSapLoggedIn = true;
+                        isBwLoggedIn = false;
+                    } else {
+                        isSapLoggedIn = false;
+                        isBwLoggedIn = true;
+                    }
+                    updateUiState();
+                    
+                } else {
+                    showStatus('ERRO: ' + data.mensagem, 'error', true);
+                }
+            })
+            .catch(handleFetchError);
+    }
+
+    // --- Funções do Modal de Confirmação ---
+            
+    function openConfirmModal(onConfirm, onCancel) {
+        confirmModalOverlay.classList.add('visible');
+        
+        confirmModalYesBtn.replaceWith(confirmModalYesBtn.cloneNode(true));
+        confirmModalNoBtn.replaceWith(confirmModalNoBtn.cloneNode(true));
+        
+        const newYesBtn = document.getElementById('confirm-modal-yes-btn');
+        const newNoBtn = document.getElementById('confirm-modal-no-btn');
+        
+        newYesBtn.addEventListener('click', () => {
+            onConfirm();
+            closeConfirmModal();
+        });
+        newNoBtn.addEventListener('click', () => {
+            onCancel();
+            closeConfirmModal();
+        });
+        
+        if (confirmModalCloseBtn) {
+            confirmModalCloseBtn.replaceWith(confirmModalCloseBtn.cloneNode(true));
+            const newCloseBtn = document.getElementById('confirm-modal-close-btn');
+            newCloseBtn.addEventListener('click', () => {
+                onCancel();
+                closeConfirmModal();
+            });
+        }
+    }
+
+    function closeConfirmModal() {
+        confirmModalOverlay.classList.remove('visible');
+    }
+
+    // --- Funções de Execução de Tarefa ---
+    
+    function executeTask(taskInfo, isSchedulerJob = false) {
+        currentTaskInfo = taskInfo; 
+        
+        if (taskInfo.type === 'sap') {
+            setProcessing(`Executando '${taskInfo.name}'...`, isSchedulerJob);
+            const formData = new URLSearchParams();
+            formData.append('macro', taskInfo.name);
+            fetch('/executar-macro', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => handleTaskResult(data, isSchedulerJob))
+                .catch(error => handleFetchError(error, isSchedulerJob));
+
+        } else if (taskInfo.type === 'bw') {
+            setProcessing('Executando extração BW HANA...', isSchedulerJob);
+            fetch('/executar-bw-hana', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => handleTaskResult(data, isSchedulerJob))
+                .catch(error => handleFetchError(error, isSchedulerJob));
+        }
+    }
+    
+    // --- Funções de UI (Seleção de Sistema e Logout) ---
+
+    function handleLogout() {
+        let endpoint = '';
+        if (isSapLoggedIn) {
+            endpoint = '/logout-sap';
+            setProcessing("Realizando logout do SAP...");
+        } else if (isBwLoggedIn) {
+            endpoint = '/logout-bw-hana';
+            setProcessing("Realizando logout do BW...");
+        }
+
+        fetch(endpoint, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                enableUI();
+                showStatus(data.mensagem, 'success');
+                isSapLoggedIn = false;
+                isBwLoggedIn = false;
+                updateUiState();
+            })
+            .catch(handleFetchError);
     }
 
     function updateUiState() {
-        document.querySelectorAll('.button, .task-button').forEach(btn => {
-            btn.disabled = false;
-            btn.classList.remove('disabled');
-        });
-        
-        const anySystemLoggedIn = isSapLoggedIn || isBwLoggedIn;
-        
-        loginArea.classList.toggle('hidden', anySystemLoggedIn);
-        loggedinArea.classList.toggle('hidden', !anySystemLoggedIn);
+        if (isSapLoggedIn || isBwLoggedIn) {
+            logoutBtn.classList.remove('hidden');
+        } else {
+            logoutBtn.classList.add('hidden');
+        }
         
         if (isSapLoggedIn) {
-            subtitleText.textContent = "Selecione a tarefa de automatização disponível";
-            sapTasksSection.classList.remove('hidden');
-            bwTasksSection.classList.add('hidden');
-            
-            collapsibleHeaderSap.classList.add('open');
-            collapsibleContentSap.style.maxHeight = collapsibleContentSap.scrollHeight + "px";
-            
-            collapsibleHeaderBw.classList.remove('open');
-            collapsibleContentBw.style.maxHeight = null;
+            document.querySelector('input[name="login_system"][value="sap"]').checked = true;
         } else if (isBwLoggedIn) {
-            subtitleText.textContent = "Selecione a tarefa de extração disponível";
-            sapTasksSection.classList.add('hidden');
-            bwTasksSection.classList.remove('hidden');
+            document.querySelector('input[name="login_system"][value="bw"]').checked = true;
+        }
+        
+        handleSystemChange(true);
+    }
 
-            collapsibleHeaderSap.classList.remove('open');
-            collapsibleContentSap.style.maxHeight = null;
+    function handleSystemChange(isUpdate = false) {
+        const selectedSystem = document.querySelector('input[name="login_system"]:checked').value;
+
+        const showCorrectTasks = () => {
+            const currentSystem = document.querySelector('input[name="login_system"]:checked').value;
+            if (currentSystem === 'sap') {
+                sapTasksSection.classList.remove('hidden');
+                bwTasksSection.classList.add('hidden');
+            } else {
+                sapTasksSection.classList.add('hidden');
+                bwTasksSection.classList.remove('hidden');
+            }
+        };
+
+        if (!isUpdate) {
+            const needsLogout = (selectedSystem === 'sap' && isBwLoggedIn) || (selectedSystem === 'bw' && isSapLoggedIn);
             
-            collapsibleHeaderBw.classList.add('open');
-            collapsibleContentBw.style.maxHeight = collapsibleContentBw.scrollHeight + "px";
+            if (needsLogout) {
+                openConfirmModal(
+                    () => {
+                        handleLogout();
+                    },
+                    () => {
+                        const loggedInSystem = isSapLoggedIn ? 'sap' : 'bw';
+                        document.querySelector(`input[name="login_system"][value="${loggedInSystem}"]`).checked = true;
+                    }
+                );
+            } else {
+                showCorrectTasks();
+            }
         } else {
-            subtitleText.textContent = "Selecione a plataforma para acessar";
-            sapTasksSection.classList.add('hidden');
-            bwTasksSection.classList.add('hidden');
-            
-            collapsibleHeaderSap.classList.remove('open');
-            collapsibleContentSap.style.maxHeight = null;
-            
-            collapsibleHeaderBw.classList.remove('open');
-            collapsibleContentBw.style.maxHeight = null;
+            showCorrectTasks();
         }
     }
     
-    // --- Listeners de Eventos ---
+    // --- NOVO: Funções do Agendador (Redesign) ---
+
+    // 1. Injeta o HTML do modal do agendador
+    function injectSchedulerHTML() {
+        const schedulerModal = document.createElement('div');
+        schedulerModal.id = 'scheduler-modal-overlay';
+        schedulerModal.className = 'modal-overlay'; 
+        schedulerModal.innerHTML = `
+            <div class="modal-content scheduler-modal">
+                <button id="scheduler-close-btn" class="modal-close" title="Fechar">&times;</button>
+                <div class="scheduler-header">
+                    <h2><i class="fas fa-clock"></i> Agendador de Tarefas</h2>
+                </div>
+                <div class="scheduler-body">
+                    <div class="scheduler-form">
+                        <div class="modal-input-group">
+                            <label for="scheduler-task-select">Tarefa:</label>
+                            <select id="scheduler-task-select" aria-label="Selecionar tarefa para agendar">
+                                <option value="" disabled selected hidden>Selecione uma tarefa...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="scheduler-datetime-group">
+                            <div class="modal-input-group">
+                                <label for="scheduler-date">Data:</label>
+                                <input type="date" id="scheduler-date" aria-label="Data para iniciar a tarefa">
+                            </div>
+                            <div class="modal-input-group">
+                                <label for="scheduler-time">Hora:</label>
+                                <input type="time" id="scheduler-time" aria-label="Hora para iniciar a tarefa">
+                            </div>
+                        </div>
+                        
+                        <div class="scheduler-button-container">
+                            <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                        </div>
+                    </div>
+                    <div class="scheduler-queue">
+                        <div class="scheduler-queue-tabs">
+                            <span id="tab-queue" class="scheduler-tab active" data-tab="queue">Fila</span>
+                            <span id="tab-history" class="scheduler-tab" data-tab="history">Histórico</span>
+                        </div>
+                        
+                        <div id="queue-container" class="queue-list-container">
+                            <ul id="scheduler-queue-list" aria-live="polite"></ul>
+                        </div>
+                        <div id="history-container" class="queue-list-container hidden">
+                            <ul id="scheduler-history-list" aria-live="polite"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(schedulerModal);
+    }
     
-    mainLoginBtn.addEventListener('click', () => {
-        const selectedSystem = document.querySelector('input[name="login_system"]:checked').value;
-        if (!mainUser.value || !mainPass.value) { alert('Preencha Usuário e Senha.'); return; }
-        lastUsedCredentials = { user: mainUser.value, pass: mainPass.value };
-
-        let actionContext, endpoint, body = null;
-
-        if (selectedSystem === 'sap') {
-            actionContext = { type: 'login-sap' };
-            endpoint = '/login-sap';
-            setProcessing('Realizando login no SAP...');
-            const formData = new URLSearchParams();
-            formData.append('usuario', lastUsedCredentials.user);
-            formData.append('senha', lastUsedCredentials.pass);
-            body = formData;
-        } else { // 'bw'
-            actionContext = { type: 'login-bw', credentials: lastUsedCredentials };
-            endpoint = '/login-bw-hana';
-            setProcessing('Validando acesso ao BW HANA...');
-        }
-        fetch(endpoint, { method: 'POST', body: body }).then(r => r.json()).then(d => setResult(d, actionContext)).catch(handleFetchError);
-    });
-
-    mainLogoutBtn.addEventListener('click', () => {
-         let actionContext, endpoint;
-         if(isSapLoggedIn) {
-            actionContext = { type: 'logout-sap' };
-            endpoint = '/logout-sap';
-            setProcessing('Realizando logout do SAP...');
-         } else { // isBwLoggedIn
-            actionContext = { type: 'logout-bw' };
-            endpoint = '/logout-bw-hana';
-            setProcessing('Realizando logout do BW HANA...');
-         }
-         fetch(endpoint, { method: 'POST' }).then(r => r.json()).then(d => setResult(d, actionContext)).catch(handleFetchError);
-    });
-    
-    // Listener do "Extrair BW" precisa mirar no div de texto interno
-    bwExtractButton.querySelector('.button-text').addEventListener('click', () => {
-        if (bwExtractButton.classList.contains('disabled')) return;
-        setProcessing('Executando extração BW HANA...');
-        const formData = new URLSearchParams();
-        formData.append('usuario', lastUsedCredentials.user);
-        formData.append('senha', lastUsedCredentials.pass);
-        fetch('/executar-bw-hana', { method: 'POST', body: formData }).then(r => r.json()).then(d => setResult(d, {type: 'bwhana_extract'})).catch(handleFetchError);
-    });
-
-    sapTaskButtons.forEach(taskButton => {
-        const textPart = taskButton.querySelector('.button-text');
-        const downloadPart = taskButton.querySelector('.download-icon');
-        const taskName = taskButton.getAttribute('data-task-name');
+    // 2. Preenche o <select> com as tarefas (ÍCONES ATUALIZADOS)
+    function populateSchedulerTasks() {
+        const select = document.getElementById('scheduler-task-select');
+        if (!select) return;
         
-        textPart.addEventListener('click', () => {
-            if (taskButton.classList.contains('disabled')) return;
-            setProcessing(`Executando '${taskName}'...`);
-            const actionContext = { type: 'macro', button_name: taskName };
-            const formData = new URLSearchParams();
-            formData.append('macro', taskName);
-            fetch('/executar-macro', { method: 'POST', body: formData }).then(r => r.json()).then(d => setResult(d, actionContext)).catch(handleFetchError);
+        select.innerHTML = '<option value="" disabled selected hidden>Selecione uma tarefa...</option>';
+        
+        const sapTasks = document.querySelectorAll('#sap-tasks-section .task-button');
+        sapTasks.forEach(task => {
+            const taskName = task.dataset.taskName;
+            if (taskName) {
+                const option = document.createElement('option');
+                option.value = `sap|${taskName}`;
+                option.textContent = taskName; // Como explicado, imagens não funcionam aqui
+                select.appendChild(option);
+            }
         });
+        
+        const bwTask = document.getElementById('bw-extract-btn');
+        if (bwTask) {
+            const option = document.createElement('option');
+            option.value = 'bw|Relatório Peças';
+            option.textContent = 'Relatório Peças'; // Como explicado, imagens não funcionam aqui
+            select.appendChild(option);
+        }
+    }
 
-        if (downloadPart) {
-            downloadPart.addEventListener('click', (event) => {
-                if (taskButton.classList.contains('disabled')) { event.preventDefault(); return; }
-                if (downloadPart.classList.contains('inactive')) {
-                    event.preventDefault();
-                    alert('Arquivo para download não encontrado.');
-                }
+    // --- FUNÇÃO DE RENDERIZAÇÃO GENÉRICA (para Fila e Histórico) ---
+    function renderJobList(listElement, jobs, showRemoveButton) {
+        listElement.innerHTML = '';
+        
+        if (jobs.length === 0) {
+            const message = listElement.id.includes('history') ? 'Histórico não encontrado.' : 'A fila está vazia.';
+            listElement.innerHTML = `<li class="queue-item empty">${message}</li>`;
+            return;
+        }
+        
+        const statusMap = {
+            'pending': { icon: 'fa-hourglass-start', text: 'Pendente' },
+            'running': { icon: 'fa-circle-notch fa-spin', text: 'Rodando' },
+            'done': { icon: 'fa-check-circle', text: 'Concluído' },
+            'failed': { icon: 'fa-times-circle', text: 'Falhou' }
+        };
+        
+        jobs.forEach((job) => {
+            const li = document.createElement('li');
+            li.className = `queue-item ${job.status}`;
+            
+            const time = new Date(job.startTime).toLocaleString('pt-BR', { 
+                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' 
+            });
+            const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
+            
+            const removeButtonHtml = showRemoveButton
+                ? `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`
+                : '';
+            
+            // --- AJUSTE AQUI: Troca 'bwhana_logo.png' por 'bwhanashort_logo.png' ---
+            const iconPath = job.taskInfo.type === 'sap' 
+                ? '/static/icones/sap_logo.png' 
+                : '/static/icones/bwhanashort_logo.png'; // Caminho do novo ícone
+            const taskIconHtml = `<img src="${iconPath}" class="queue-item-task-icon" alt="${job.taskInfo.type} logo">`;
+
+            li.innerHTML = `
+                <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
+                <div class="queue-item-details">
+                    <strong>${taskIconHtml}${job.taskInfo.name}</strong>
+                    <em>${time}</em>
+                </div>
+                ${removeButtonHtml}
+            `;
+            listElement.appendChild(li);
+        });
+        
+        if (showRemoveButton) {
+            listElement.querySelectorAll('.queue-item-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const jobId = btn.dataset.jobId;
+                    jobQueue = jobQueue.filter(job => job.id !== jobId);
+                    renderJobQueue();
+                });
             });
         }
+    }
+
+    // 3. Renderiza a fila na UI (Design Moderno com Ícones)
+    function renderJobQueue() {
+        const list = document.getElementById('scheduler-queue-list');
+        if (!list) return;
+        renderJobList(list, jobQueue, true); // true = mostrar botão 'X'
+    }
+    
+    // --- NOVA FUNÇÃO: Renderiza o Histórico ---
+    function renderJobHistory() {
+        const list = document.getElementById('scheduler-history-list');
+        if (!list) return;
+        renderJobList(list, jobHistory, false); // false = não mostrar botão 'X'
+    }
+
+    // 4. Adiciona uma tarefa à fila (LENDO DATA/HORA SEPARADOS)
+    function addJobToQueue() {
+        const select = document.getElementById('scheduler-task-select');
+        const dateInput = document.getElementById('scheduler-date');
+        const timeInput = document.getElementById('scheduler-time');
+        
+        const [type, name] = select.value.split('|');
+        const dateValue = dateInput.value;
+        const timeValue = timeInput.value;
+        
+        if (!type || !name) {
+            alert('Por favor, selecione uma tarefa.');
+            return;
+        }
+
+        if (!dateValue || !timeValue) {
+            alert('Por favor, selecione data e hora.');
+            return;
+        }
+        
+        // Combina data e hora
+        const startTime = new Date(`${dateValue}T${timeValue}`).getTime();
+        
+        const oneMinuteFromNow = Date.now() + 60000;
+        
+        if (isNaN(startTime) || startTime < oneMinuteFromNow) {
+            alert('Por favor, selecione uma data e hora com pelo menos 1 minuto de antecedência.');
+            return;
+        }
+        
+        const newJob = {
+            id: `job_${Date.now()}`,
+            taskInfo: { name: name, type: type },
+            startTime: startTime,
+            status: 'pending' 
+        };
+        
+        jobQueue.push(newJob);
+        jobQueue.sort((a, b) => a.startTime - b.startTime);
+        renderJobQueue();
+        
+        select.value = '';
+        dateInput.value = '';
+        timeInput.value = '';
+        
+        if (!schedulerInterval) {
+            startSchedulerMotor();
+        }
+    }
+
+    // 5. O "motor" que verifica a fila
+    function startSchedulerMotor() {
+        if (schedulerInterval) {
+            clearInterval(schedulerInterval);
+        }
+        
+        schedulerInterval = setInterval(() => {
+            checkJobQueue();
+        }, 5000); 
+    }
+
+    // 6. Lógica de verificação da fila
+    function checkJobQueue() {
+        if (isSchedulerRunning || jobQueue.length === 0) {
+            return; 
+        }
+        
+        const now = Date.now();
+        const jobToRun = jobQueue.find(job => job.status === 'pending' && job.startTime <= now);
+        
+        if (jobToRun) {
+            const needsSap = jobToRun.taskInfo.type === 'sap';
+            const needsBw = jobToRun.taskInfo.type === 'bw';
+            
+            if ((needsSap && !isSapLoggedIn) || (needsBw && !isBwLoggedIn)) {
+                jobToRun.status = 'failed';
+                showStatus(`Agendador: '${jobToRun.taskInfo.name}' falhou. Motivo: Login necessário não estava ativo.`, 'error', true);
+                
+                // Move para o histórico
+                jobHistory.unshift(jobToRun);
+                jobHistory = jobHistory.slice(0, 4);
+                jobQueue = jobQueue.filter(j => j.id !== jobToRun.id);
+                
+                renderJobQueue();
+                renderJobHistory();
+                return;
+            }
+            
+            isSchedulerRunning = true;
+            jobToRun.status = 'running';
+            showStatus(`Agendador: Iniciando tarefa '${jobToRun.taskInfo.name}'...`, 'processing', true);
+            renderJobQueue();
+
+            executeTask(jobToRun.taskInfo, true); // 'true' = é um trabalho do agendador
+        }
+    }
+    
+    // 7. Abre o modal do agendador
+    function openSchedulerModal() {
+        const modal = document.getElementById('scheduler-modal-overlay');
+        
+        // --- NOVO: Lógica das Abas ---
+        if (!modal) {
+            injectSchedulerHTML();
+            
+            // Adiciona listeners aos novos elementos DEPOIS de injetar
+            document.getElementById('scheduler-close-btn').addEventListener('click', closeSchedulerModal);
+            document.getElementById('scheduler-add-btn').addEventListener('click', addJobToQueue);
+            
+            // Listeners das Abas
+            const tabQueue = document.getElementById('tab-queue');
+            const tabHistory = document.getElementById('tab-history');
+            const queueContainer = document.getElementById('queue-container');
+            const historyContainer = document.getElementById('history-container');
+
+            tabQueue.addEventListener('click', () => {
+                tabQueue.classList.add('active');
+                tabHistory.classList.remove('active');
+                queueContainer.classList.remove('hidden');
+                historyContainer.classList.add('hidden');
+            });
+            
+            tabHistory.addEventListener('click', () => {
+                tabHistory.classList.add('active');
+                tabQueue.classList.remove('active');
+                historyContainer.classList.remove('hidden');
+                queueContainer.classList.add('hidden');
+            });
+            
+            // Define o estado inicial das abas
+            tabQueue.click(); 
+        }
+        
+        populateSchedulerTasks();
+        renderJobQueue();
+        renderJobHistory(); // Renderiza o histórico também
+        document.getElementById('scheduler-modal-overlay').classList.add('visible');
+        document.getElementById('scheduler-task-select').focus();
+    }
+
+    // 8. Fecha o modal do agendador
+    function closeSchedulerModal() {
+        document.getElementById('scheduler-modal-overlay').classList.remove('visible');
+    }
+    
+
+    // --- Adiciona Listeners de Eventos ---
+
+    // 1. Seleção de Sistema (Rádios)
+    systemRadios.forEach(radio => {
+        radio.addEventListener('change', () => handleSystemChange(false));
     });
 
-    collapsibleHeaderSap.addEventListener('click', () => {
-        collapsibleHeaderSap.classList.toggle('open');
-        if (collapsibleContentSap.style.maxHeight) {
-            collapsibleContentSap.style.maxHeight = null;
-        } else {
-            collapsibleContentSap.style.maxHeight = collapsibleContentSap.scrollHeight + "px";
-        }
+    // 2. Botões de Tarefa (SAP e BW)
+    allTaskButtons.forEach(button => {
+        const taskName = button.getAttribute('data-task-name');
+        const taskType = button.getAttribute('data-task-type');
+
+        button.addEventListener('click', (e) => {
+            if (button.classList.contains('disabled')) return;
+
+            const info = {
+                name: taskName || 'Relatório Peças',
+                type: taskType
+            };
+
+            if ((info.type === 'sap' && isSapLoggedIn) || (info.type === 'bw' && isBwLoggedIn)) {
+                executeTask(info, false); 
+            } else {
+                openLoginModal(info);
+            }
+        });
+    });
+
+    // 3. Botões do Modal de Login
+    modalExecuteBtn.addEventListener('click', handleLogin);
+    modalLoginCloseBtn.addEventListener('click', closeLoginModal);
+    modalPass.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleLogin();
     });
     
-    collapsibleHeaderBw.addEventListener('click', () => {
-        collapsibleHeaderBw.classList.toggle('open');
-        if (collapsibleContentBw.style.maxHeight) {
-            collapsibleContentBw.style.maxHeight = null;
-        } else {
-            collapsibleContentBw.style.maxHeight = collapsibleContentBw.scrollHeight + "px";
-        }
+    // 4. Botão de Logout
+    logoutBtn.addEventListener('click', () => {
+        openConfirmModal(
+            () => handleLogout(), 
+            () => {} 
+        );
     });
-    
-    updateUiState();
+
+    // 5. Download Icon Base Mãe
+    const baseMaeDownload = document.querySelector('.task-button-download');
+    if (baseMaeDownload) {
+        baseMaeDownload.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            if (baseMaeDownload.classList.contains('inactive')) {
+                e.preventDefault();
+                alert('Arquivo para download não encontrado. Execute a automação primeiro.');
+            }
+        });
+    }
+
+    // 6. Listener do botão Agendador
+    if (schedulerBtn) {
+        schedulerBtn.addEventListener('click', openSchedulerModal);
+    }
+
+    // --- Estado Inicial ---
+    handleSystemChange(true); 
+    startSchedulerMotor(); 
 });

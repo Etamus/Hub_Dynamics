@@ -1,0 +1,178 @@
+/* Seus estilos CSS originais permanecem aqui, sem alterações */
+body { 
+    display: flex; justify-content: center; align-items: flex-start; 
+    padding-top: 80px; box-sizing: border-box; overflow-x: hidden; 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--bg-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.main-title { 
+    font-size: 3rem; font-weight: 700; margin: 0 0 10px 0; 
+    /* ALTERADO: Usando variáveis */
+    color: var(--text-primary-color); 
+}
+.subtitle { 
+    font-size: 1.2rem; 
+    /* ALTERADO: Usando variáveis */
+    color: var(--text-secondary-color); 
+    margin-bottom: 60px; display: flex; align-items: center; 
+    justify-content: center; gap: 10px; 
+}
+.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center;}
+.dashboard-iframe { 
+    width: 100%; height: 100%; border: none; border-radius: 16px; 
+    /* ALTERADO: Usando variáveis */
+    box-shadow: 0 8px 32px var(--shadow-color); 
+}
+#selection-screen { display: flex; flex-direction: column; align-items: center; width: 100%; text-align: center; max-width: 550px; max-height: calc(100vh - 100px); }
+.system-selector { 
+    display: flex; justify-content: center; align-items: center; 
+    gap: 40px; margin-bottom: 30px; 
+    /* ALTERADO: Usando variáveis */
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 30px; width: 100%; max-width: 500px;
+    
+    /* --- ADICIONADO: Desloca o ponto central para a direita --- */
+    padding-left: 30px; 
+    box-sizing: border-box; /* Garante que o padding não estoure o max-width */
+}
+.system-selector label { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; }
+.system-selector input[type="radio"] { 
+    -webkit-appearance: none; appearance: none; 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--card-bg-color); 
+    margin: 0; color: currentColor; width: 1.15em; height: 1.15em; 
+    border: 0.15em solid var(--border-color); 
+    border-radius: 50%; display: grid; place-content: center; 
+}
+.system-selector input[type="radio"]::before { 
+    content: ""; width: 0.65em; height: 0.65em; border-radius: 50%; 
+    transform: scale(0); transition: 120ms transform ease-in-out; 
+    /* ALTERADO: Usando variáveis */
+    box-shadow: inset 1em 1em var(--accent-color); 
+}
+.system-selector input[type="radio"]:checked {
+    /* ALTERADO: Usando variáveis */
+    border-color: var(--accent-color);
+}
+.system-selector input[type="radio"]:checked::before { transform: scale(1); }
+.system-selector img { height: 30px; }
+/* --- ADICIONAR: Efeito de Foco na Seleção --- */
+.system-selector:has(input:checked) label {
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+.system-selector label:has(input:checked) {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
+/* --- FIM da Adição --- */
+.dashboard-options { display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center; padding-top: 5px; padding-bottom: 5px; }
+
+/* Botões de ação (View/Area) usam cores de destaque, estão OK */
+.view-button { 
+    padding: 15px 20px; font-size: 1rem; font-weight: 600; 
+    border: none; border-radius: 8px; color: white; 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--accent-color); 
+    cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; 
+    width: 50%; max-width: 300px;
+}
+.view-button:hover { 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--accent-color-hover); 
+    transform: translateY(-2px); 
+}
+.hidden { display: none !important; }
+.area-button { padding: 15px 20px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 8px; color: white; background-color: #1c4587; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; width: 90%; max-width: 300px; }
+.area-button:hover { background-color: #072961; transform: translateY(-2px); }
+.area-selection-container { padding-left: 15px; padding-right: 15px; width: 55%; }
+
+/* ALTERADO: Usando variáveis */
+.area-selection-container::-webkit-scrollbar { width: 8px; }
+.area-selection-container::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 10px; }
+.area-selection-container::-webkit-scrollbar-thumb { background: var(--text-secondary-color); border-radius: 10px; }
+.area-selection-container::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary-color); }
+
+#preview-panel { 
+    position: fixed; right: 250px; top: 50%; transform: translateY(-50%); 
+    width: 350px; 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--card-bg-color); 
+    border-radius: 16px; 
+    border: 1px solid var(--border-color); 
+    box-shadow: 0 8px 32px var(--shadow-color); 
+    padding: 20px; z-index: 100; opacity: 0; visibility: hidden; 
+    transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; 
+}
+#preview-panel.visible { opacity: 1; visibility: visible; }
+#preview-image { 
+    width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px; 
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--bg-color); 
+}
+#preview-description { 
+    font-size: 0.9rem; 
+    /* ALTERADO: Usando variáveis */
+    color: var(--text-secondary-color); 
+    line-height: 1.5; margin: 0; text-align: left; 
+}
+#preview-tags-container { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+.preview-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid; }
+
+/* As cores das tags são específicas e estão OK, exceto a 'gray' */
+.tag-orange { color: #c75c04; background-color: #fff3e0; border-color: #ffe0b2; }
+.tag-green { color: #2e7d32; background-color: #e8f5e9; border-color: #c8e6c9; }
+.tag-blue { color: #1565c0; background-color: #e3f2fd; border-color: #bbdefb; }
+.tag-gray { 
+    /* ALTERADO: Usando variáveis */
+    color: var(--text-tertiary-color); 
+    background-color: var(--bg-color); 
+    border-color: var(--border-color); 
+}
+.tag-purple { color: #5e35b1; background-color: #ede7f6; border-color: #d1c4e9; }
+
+/* --- ADICIONAR: Estilos da Paginação --- */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+.page-button {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-tertiary-color);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.page-button:hover:not(:disabled) {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+.page-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--bg-color);
+}
+.page-info {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+}
+/* --- FIM da Adição --- */
+
+/* --- ADICIONAR: Correção de Flicker da Paginação Looker --- */
+/* Esconde os botões da página 2 (filhos 5, 6, 7, 8) por padrão */
+#area-selection .area-button:nth-child(n+5) {
+    display: none;
+}
+/* --- FIM da Adição --- */

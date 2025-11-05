@@ -7,184 +7,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="/static/css/hub.css">
     <link rel="stylesheet" href="/static/css/shared.css">
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 80px;
-            box-sizing: border-box;
-            /* --- CORREÇÃO DA BARRA DE ROLAGEM --- */
-            overflow-x: hidden;
-        }
-        .main-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin: 0 0 10px 0;
-            color: #1c1e21;
-        }
-        .subtitle {
-            font-size: 1.2rem;
-            color: #6c757d;
-            margin-bottom: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center;}
-        .dashboard-iframe { width: 100%; height: 100%; border: none; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
-        .back-button { position: absolute; top: 20px; left: 20px; z-index: 10; padding: 10px 20px; background-color: #333; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; border: 1px solid #444; transition: all 0.2s ease; }
-        .back-button:hover { background-color: #444; transform: translateY(-2px); }
-        /* Modifique esta classe */
-        #selection-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* justify-content: center;  COMENTE OU REMOVA ESTA LINHA */
-            width: 100%;
-            text-align: center;
-            max-width: 550px;
-            /* ADICIONE A LINHA ABAIXO */
-            max-height: calc(100vh - 100px); /* Limita a altura total à tela visível, com uma margem de 100px */
-        }
-        .system-selector { display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 30px; width: 100%; max-width: 500px; }
-        .system-selector label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .system-selector input[type="radio"] { -webkit-appearance: none; appearance: none; background-color: #fff; margin: 0; color: currentColor; width: 1.15em; height: 1.15em; border: 0.15em solid currentColor; border-radius: 50%; display: grid; place-content: center; }
-        .system-selector input[type="radio"]::before { content: ""; width: 0.65em; height: 0.65em; border-radius: 50%; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em #007bff; }
-        .system-selector input[type="radio"]:checked::before { transform: scale(1); }
-        .system-selector img { height: 30px; }
-        .dashboard-options { display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center; padding-top: 5px; padding-bottom: 5px; }
-        .view-button { padding: 15px 20px; font-size: 1rem; font-weight: 600; border: none; border-radius: 8px; color: white; background-color: #007bff; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; width: 50%; max-width: 300px; }
-        .view-button:hover { background-color: #0056b3; transform: translateY(-2px); }
-        .hidden { display: none !important; }
-        .area-button { padding: 15px 20px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 8px; color: white; background-color: #1c4587; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; width: 90%; max-width: 300px; }
-        .area-button:hover { background-color: #072961; transform: translateY(-2px); }
-        .back-to-areas-button { padding: 10px 15px; font-size: 0.9rem; font-weight: 600; border: none; border-radius: 8px; color: #212529; background-color: #f8f9fa; cursor: pointer; transition: background-color 0.2s ease; width: 50%; max-width: 300px; margin-top: 15px; border: 1px solid #dee2e6; }
-        .back-to-areas-button:hover { background-color: #e2e6ea; }
-        /* --- CÓDIGO ADICIONADO PARA A BARRA DE ROLAGEM INTERNA --- */
-        /* Modifique esta classe */
-        .area-selection-container {
-            /* Por padrão, não há limite de altura nem barra de rolagem */
-            padding-left: 15px;  /* Mantém a simetria */
-            padding-right: 15px; /* Mantém a simetria */
-            width: 55%;
-        }
-
-
-        /* 2. Estilo CONDICIONAL (APENAS para telas pequenas) */
-        @media (max-height: 750px) {
-            .area-selection-container {
-                /* As regras abaixo só serão aplicadas se a altura da tela for 750px ou menos */
-                max-height: 45vh; /* Ativa o max-height que você queria */
-                overflow-y: auto; /* Ativa a barra de rolagem */
-                padding-right: 10px; /* Adiciona espaço para a barra de rolagem */
-            }
-        }
-
-
-        /* --- ESTILO OPCIONAL PARA A BARRA DE ROLAGEM --- */
-        .area-selection-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .area-selection-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .area-selection-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        .area-selection-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-
-        /* --- ESTILOS PARA O PAINEL DE PREVIEW LATERAL --- */
-        #preview-panel {
-            position: fixed; /* Fica fixo na tela */
-            right: 40px;
-            top: 50%;
-            transform: translateY(-50%); /* Centraliza verticalmente */
-            width: 350px;
-            background-color: #ffffff;
-            border-radius: 16px;
-            border: 2px solid #000; /* Borda preta como no seu design */
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            z-index: 100; /* Garante que fique acima de outros elementos */
-           
-            /* Estado inicial: invisível */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        #preview-panel.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        #preview-image {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background-color: #f0f2f5; /* Cor de fundo enquanto a imagem carrega */
-        }
-        #preview-description {
-            font-size: 0.9rem;
-            color: #6c757d;
-            line-height: 1.5;
-            margin: 0;
-            text-align: left; /* Garante que o texto fique alinhado à esquerda */
-        }
-
-
-        /* --- CÓDIGO ADICIONADO: ESTILOS PARA AS ETIQUETAS DO PREVIEW --- */
-        #preview-tags-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-        .preview-tag {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 1px solid;
-        }
-        .tag-orange {
-            color: #c75c04;
-            background-color: #fff3e0;
-            border-color: #ffe0b2;
-        }
-        .tag-green {
-            color: #2e7d32;
-            background-color: #e8f5e9;
-            border-color: #c8e6c9;
-        }
-        .tag-blue {
-            color: #1565c0;
-            background-color: #e3f2fd;
-            border-color: #bbdefb;
-        }
-        .tag-gray {
-            color: #495057;
-            background-color: #e9ecef;
-            border-color: #dee2e6;
-        }    
-        .tag-purple {
-            color: #5e35b1; /* Roxo escuro */
-            background-color: #ede7f6; /* Roxo claro */
-            border-color: #d1c4e9; /* Roxo mais claro ainda */
-        }    
-
-
-    </style>
+    <link rel="stylesheet" href="/static/css/dashboards.css">
 </head>
 <body>
-    <a href="/" id="back-btn" class="back-button">&larr; Voltar ao Hub</a>
-   
+    <script>
+      // Script de carregamento instantâneo do tema (para evitar flicker)
+      // (Este script DEVE permanecer inline aqui)
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('hubTheme') || 'light';
+          if (savedTheme === 'dark') {
+            document.body.classList.add('theme-dark');
+          } else if (savedTheme === 'light') {
+            // Nenhuma classe necessária para o padrão 'light'
+          } else {
+            // Checa o tema do sistema
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.body.classList.add('theme-dark');
+            }
+          }
+        } catch (e) {
+          // Ignora erros (ex: localStorage desativado)
+        }
+      })();
+    </script>
+
+    <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
+
+    <a href="/" id="back-btn" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
+    
     <div id="selection-screen">
         <div style="text-align: center;">
             <h1 class="main-title">Dashboards</h1>
@@ -193,9 +44,9 @@
         <div class="system-selector">
             <label> <input type="radio" name="dashboard_system" value="looker" checked> <img src="/static/icones/looker_logo.png" alt="Logo Looker Studio"> </label>
             <label> <input type="radio" name="dashboard_system" value="tableau"> <img src="/static/icones/tableau_logo.png" alt="Logo Tableau"> </label>
-            <label> <input type="radio" name="dashboard_system" value="library"> <img src="/static/icones/library_logo.png" alt="Logo Library"> </label>    
+            <label> <input type="radio" name="dashboard_system" value="library"> <img src="/static/icones/library_logo.png" alt="Logo Library"> </label>     
         </div>
-       
+        
         <div id="looker-options" class="dashboard-options">
             <div id="area-selection" class="dashboard-options area-selection-container">
                 <button class="area-button" data-area="order">Order</button>
@@ -207,144 +58,155 @@
                 <button class="area-button" data-area="custos">Custos</button>
                 <button class="area-button" data-area="safety">Safety</button>
             </div>
+            <div id="looker-pagination" class="pagination-controls">
+                <button id="looker-prev-page" class="page-button" title="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="looker-page-info" class="page-info">
+                    Página 1 de 2
+                </span>
+                <button id="looker-next-page" class="page-button" title="Próxima">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
             <div id="dashboards-order" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/4b061ef2-9ddf-4120-b3e1-aaa692bd10c3/page/p_lvyh6guavd"
+                    data-id="daily_block" data-url="https://lookerstudio.google.com/embed/reporting/4b061ef2-9ddf-4120-b3e1-aaa692bd10c3/page/p_lvyh6guavd"
                     data-preview-gif="/static/gifs/daily_block_preview.gif"
                     data-preview-text="Consulte o resultado atual do impacto em bloqueio de carteira das ordens para faturamento. Ideal para acompanhamento rápido."
                     data-preview-tags="Daily,GCP,Revenue,Bloqueio de carteira">
                     Daily Block
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-recebimento" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/u/0/reporting/021f1eef-b3b6-4d5d-b67e-429e49e84398/page/p_elobwkgqtd"
+                    data-id="receipt_management" data-url="https://lookerstudio.google.com/embed/u/0/reporting/021f1eef-b3b6-4d5d-b67e-429e49e84398/page/p_elobwkgqtd"
                     data-preview-gif="/static/gifs/receipt_management_preview.gif"
                     data-preview-text="Acompanhe a ocupação da grade de recebimento, resultados do nível de serviço de embalagem, bem como previsões de chegada para otimizar o fluxo de entrada de materiais."
                     data-preview-tags="Daily,Sheets,Efficiency,Nível de serviço,Grade recebimento,Previsão de volume">
-                    Receipt management
+                    Receipt Management
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-qualidade" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/a1f6638b-027c-4e02-a67d-304a1260f1e8/page/0KYcF"
+                    data-id="analise_cdp" data-url="https://lookerstudio.google.com/embed/reporting/a1f6638b-027c-4e02-a67d-304a1260f1e8/page/0KYcF"
                     data-preview-gif="/static/gifs/analise_cdp_preview.gif"
                     data-preview-text="Resultados do impacto financeiro e de estoque (peças) referente as análises do time CDP voltado a constatações e solicitações no Portal de devolução."
                     data-preview-tags="Daily,Sheets,Efficiency,Devolução logística">
                     Análise de CDP
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/656ee1d4-8c20-495c-bc87-462b52ef6312/page/p_b0khf57fxd"
+                    data-id="sugestao_embalagem" data-url="https://lookerstudio.google.com/embed/reporting/656ee1d4-8c20-495c-bc87-462b52ef6312/page/p_b0khf57fxd"
                     data-preview-gif="/static/gifs/sugestao_embalagem_preview.gif"
                     data-preview-text="Monitore a ocupação volumétrica das cargas expedidas. Visualize materiais com maior variação de ocupação, embalagens com menos aproveitamento e entenda o desvio padrão de cada item."
                     data-preview-tags="Daily,Gardem,Management,Ocupação de embalagem">
-                    Sugestão de embalagens CSI
-                </button>                 
+                    Sugestão de Embalagens CSI
+                </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/70df29c8-389c-485a-aee4-fcad9fef2377/page/j6xcF"
+                    data-id="auditoria_packing" data-url="https://lookerstudio.google.com/embed/reporting/70df29c8-389c-485a-aee4-fcad9fef2377/page/j6xcF"
                     data-preview-gif="/static/gifs/audotira_packing_preview.gif"
                     data-preview-text="Acompanhe o resultado diário das auditorias pós-packing, visualize o cust avoid por tipo de mercado (B2B,D2C), maiores impactos por material e desvios, e retire insights baseado em sazonalidades."
                     data-preview-tags="Daily,Gardem,Management,Auditoria pós packing">
-                    Auditoria pós packing CSI
-                </button>                                 
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                    Auditoria Pós Packing CSI
+                </button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-inventario" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/2d1dde98-6bc5-476c-937a-0b09d78e04e6/page/8NWNF"
+                    data-id="stock_control" data-url="https://lookerstudio.google.com/embed/reporting/2d1dde98-6bc5-476c-937a-0b09d78e04e6/page/8NWNF"
                     data-preview-gif="/static/gifs/stock_control_preview.gif"
                     data-preview-text="Monitore a acurácia do inventário, níveis de estoque (Gross & Net) e identifique discrepâncias para uma gestão precisa."
                     data-preview-tags="Daily,Sheets,Accuracy,Acurácia,Gross & NET,Pacotes movimentados">
                     Stock Control
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/76dfa2d9-291a-43ca-9857-edd408f13483/page/pDDrE"
+                    data-id="linhas_nao_atendidas" data-url="https://lookerstudio.google.com/embed/reporting/76dfa2d9-291a-43ca-9857-edd408f13483/page/pDDrE"
                     data-preview-gif="/static/gifs/linhas_atendidas_preview.gif"
                     data-preview-text="Acompanhe o resultado das linhas não atendidas e seus motivos de pendência online, diretamente do controle operacional."
                     data-preview-tags="Daily,Sheets,Accuracy,Linhas não atendidas">
-                    Linhas não atendidas
-                </button>               
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                    Linhas Não Atendidas
+                </button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-reversa" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/83d4b36a-da22-4712-8199-abe2f436df52/page/cCPMF"
+                    data-id="returns_control" data-url="https://lookerstudio.google.com/embed/reporting/83d4b36a-da22-4712-8199-abe2f436df52/page/cCPMF"
                     data-preview-gif="/static/gifs/returns_control_preview.gif"
                     data-preview-text="Análise do status financeiro das devoluções e o envelhecimento (aging) de ordens de retorno em aberto na logística reversa."
                     data-preview-tags="Daily,Sheets,Management,Aging de OI,Pareto de status">
                     Returns Control
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-faturamento" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/u/0/reporting/5b61e471-c338-4887-bd57-fe1f4a28fffb/page/p_8m74juigsd"
+                    data-id="boletim_d2c" data-url="https://lookerstudio.google.com/embed/u/0/reporting/5b61e471-c338-4887-bd57-fe1f4a28fffb/page/p_8m74juigsd"
                     data-preview-gif="/static/gifs/boletim_d2c_preview.gif"
                     data-preview-text="Acompanhamento diário do faturamento direto ao consumidor (D2C), com detalhamento por canal e região."
                     data-preview-tags="Daily,GCP,Revenue,Boletim de faturamento (D2C)">
-                    Boletim de faturamento (D2C)
+                    Boletim de Faturamento (D2C)
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/u/0/reporting/29875f95-7c9c-447c-9d7a-6076f1f4d966/page/6CGCE"
+                    data-id="transporte_b2b" data-url="https://lookerstudio.google.com/embed/u/0/reporting/29875f95-7c9c-447c-9d7a-6076f1f4d966/page/6CGCE"
                     data-preview-gif="/static/gifs/transporte_b2b_preview.gif"
                     data-preview-text="Visão detalhada da gestão de transporte (B2B), incluindo custos, performance de transportadoras e prazos."
                     data-preview-tags="Daily,GCP,Performance">
-                    Gestão de transporte (B2B)
+                    Gestão de Transporte (B2B)
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/cc6a31a8-aa2a-49af-982f-7c7d170103be/page/p_az16g8cxtd"
+                    data-id="new_calendar" data-url="https://lookerstudio.google.com/embed/reporting/cc6a31a8-aa2a-49af-982f-7c7d170103be/page/p_az16g8cxtd"
                     data-preview-gif="/static/gifs/new_calendar_preview.gif"
                     data-preview-text="Tabela ontime com progresso do faturamento de transportes, desde packing até saída em doca."
                     data-preview-tags="Daily,Sheets,Planning,Calendário expedição">
                     New Calendar
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/4589a8ca-81a5-4233-915e-0d1c00fdda20/page/p_0zwhymauid"
+                    data-id="visao_gerencial" data-url="https://lookerstudio.google.com/embed/reporting/4589a8ca-81a5-4233-915e-0d1c00fdda20/page/p_0zwhymauid"
                     data-preview-gif="/static/gifs/visao_gerencial_preview.gif"
                     data-preview-text="Dashboard consolidado com os principais indicadores gerenciais da operação de Spare Parts, incluindo ocupação de carga na expedição."
                     data-preview-tags="Daily,GCP,Management,Ageing Remessa,Expansão Malhas,Ocupação da grade">
                     Visão Gerencial Peças
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/c451deb6-a994-4f67-8ca4-5ee92b4c0cb9/page/dHrbF"
+                    data-id="farol_monitoramento" data-url="https://lookerstudio.google.com/embed/reporting/c451deb6-a994-4f67-8ca4-5ee92b4c0cb9/page/dHrbF"
                     data-preview-gif="/static/gifs/monitoramento_preview.gif"
                     data-preview-text="Dashboard com informações concentradas relacionadas as notas fiscais em aberto (pendente de entrega) e seus respectivos prazos e custos."
                     data-preview-tags="Daily,GCP,Management,Farol de monitoramento">
                     Farol - Monitoramento
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-custos" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/51b05d28-dee8-4577-aa5e-2d86eaba9f62/page/W3haF"
+                    data-id="sla_csi" data-url="https://lookerstudio.google.com/embed/reporting/51b05d28-dee8-4577-aa5e-2d86eaba9f62/page/W3haF"
                     data-preview-gif="/static/gifs/sla_csi_preview.gif"
                     data-preview-text="Relatório mensal de performance de Nível de Serviço (SLA) baseado nos indicadores operacionais (CSI)."
                     data-preview-tags="Daily,Sheets,SLA">
                     SLA Monthly CSI
                 </button>
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/818af536-436e-48a3-a441-049036815083/page/GTEPF"
+                    data-id="projects" data-url="https://lookerstudio.google.com/embed/reporting/818af536-436e-48a3-a441-049036815083/page/GTEPF"
                     data-preview-gif="/static/gifs/projects_preview.gif"
                     data-preview-text="Acompanhamento do status e progresso dos projetos estratégicos da área de Spare Parts."
                     data-preview-tags="Weekly,Sheets,Tracking">
                     Projects
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-safety" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lookerstudio.google.com/embed/reporting/ec62c048-7747-4f1d-917e-1a99a76fc58d/page/y4haF"
+                    data-id="heinrich_triangle" data-url="https://lookerstudio.google.com/embed/reporting/ec62c048-7747-4f1d-917e-1a99a76fc58d/page/y4haF"
                     data-preview-gif="/static/gifs/heinrich_triangle_preview.gif"
                     data-preview-text="Análise de incidentes de segurança baseada na pirâmide de Heinrich, correlacionando eventos para ações preventivas."
                     data-preview-tags="Monthly,Sheets,Safety">
-                    Heinrich triangle
+                    Heinrich Triangle
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
         </div>
-       
+        
         <div id="tableau-options" class="dashboard-options hidden">
             <div id="tableau-area-selection" class="dashboard-options area-selection-container">
                 <button class="area-button" data-area="tableau-custos">Custos</button>
@@ -352,422 +214,113 @@
             </div>
             <div id="dashboards-tableau-custos" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no"
+                    data-id="nave_frete" data-url="https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no"
                     data-preview-gif="/static/gifs/nave_frete_preview.gif"
                     data-preview-text="Análise detalhada dos custos e eficiência do frete em todas as localidades expedidas, permitindo a identificação de oportunidades de otimização."
                     data-preview-tags="Daily,GCP,Costs,Acompanhamento de frete">
                     Nave do Frete
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
             <div id="dashboards-tableau-monitoramento" class="dashboard-options hidden">
                 <button class="view-button"
-                    data-url="https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1"
+                    data-id="on_time" data-url="https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1"
                     data-preview-gif="/static/gifs/on_time_preview.gif"
                     data-preview-text="Monitoramento da performance de entregas no prazo (On Time), essencial para a satisfação do cliente e eficiência logística."
                     data-preview-tags="Daily,GCP,Performance,On time">
                     ON TIME
                 </button>
                 <button class="view-button"
-                    data-url="https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1"
+                    data-id="ltp_monitoramento" data-url="https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1"
                     data-preview-gif="/static/gifs/LTP_preview.gif"
                     data-preview-text="Monitoramento da performance de entregas XXXXXXX."
                     data-preview-tags="Daily,GCP,Tracking,Conversão de faturamento">
                     Monitoramento
                 </button>
-                <button class="back-to-areas-button">← Voltar para Áreas</button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
             </div>
         </div>
 
-
         <div id="library-options" class="dashboard-options hidden">
-            <button class="view-button"
-                data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS68Md5HpqIY3WNbEEQkiE3TyvMwclcui0qdt86tWzO1SsE0M0mD2Mn1-KSUYaJxI00vHGVeS6h4BDk/pubhtml?gid=0&single=true"
-                data-preview-gif="/static/gifs/caminhos_bq_preview.gif"
-                data-preview-text="Repositório central com os caminhos e consultas principais para os datasets armazenados no Google BigQuery."
-                data-preview-tags="Consultation,Sheets,Data">
-                Caminhos - Bigquery
-            </button>
-            <button class="view-button"
-                data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS6UWpl3jYRqh8j-utys3E8J0i2e7AApq-uZltkix1IB8_u3yp84mJIHiOnYLPjD0QmAV1v7hY46d_8/pubhtml?gid=1759939591&amp;single=true&amp;widget=true&amp;headers=false" data-width="900px"
-                data-preview-gif="/static/gifs/sgi_spareparts_preview.gif"
-                data-preview-text="Painel de Gestão Integrada (SGI) focado nos indicadores e processos de Spare Parts."
-                data-preview-tags="Consultation,Sheets,Management">
-                SGI - SpareParts
-            </button>
-            <button class="view-button"
-                data-url="https://lookerstudio.google.com/embed/reporting/c6349993-65f6-4ef9-9a1d-b80e229df0ad/page/page_12345"
-                data-preview-gif="/static/gifs/jira_ongoing_preview.gif"
-                data-preview-text="Dashboard visual com o status e andamento dos projetos de melhoria contínua e automação gerenciados no Jira."
-                data-preview-tags="Dashboard,Sheets,Tracking">
-                Jira - Ongoing projects
-            </button>
-            <button class="view-button"
-                data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vQJdUDPNO0meQZs_zPWAIpCnCczOYojfk3zInZcR04mhdNAeDgYbwGGbok19fkAgtskt2sqdFO7yG_3/pubhtml" data-width="600px"
-                data-preview-gif="/static/gifs/sheets_tree_preview.gif"
-                data-preview-text="Árvore de planilhas: um centralizador para encontrar e acessar os principais arquivos do Google Sheets utilizados pela equipe."
-                data-preview-tags="Database,Sheets,Data">
-                Sheets tree
-            </button>
-            <button class="view-button"
-                data-url="https://www.canva.com/design/DAG18zB3J78/q9UbvDCmVSWraIRE0rAdpg/view?embed" data-width="600px"
-                data-preview-gif="/static/gifs/manual_devolucao_preview.gif"
-                data-preview-text="Manual explicativo contemplando o passo a passo para execução de devolução das peças entregues durante e após a entrega, contendo conteúdos orientativos relacionado aos motivos de devolução."
-                data-preview-tags="Consultation,Presentation,Data">
-                Folheto de devolução
-            </button>
-            <button class="view-button"
-                data-url="https://www.canva.com/design/DAG2nXTQFbg/FbYgIULnsNyHk7MFmbJRmg/view?embed"
-                data-preview-gif="/static/gifs/processo_solicitacao_preview.gif"
-                data-preview-text="Detalhamento passo a passo do processo correto instrutivo voltado ao consumidor referente a abertura de solicitação para devoluções de materiais."
-                data-preview-tags="Consultation,Presentation,Data">
-                Processo de devolução
-            </button>            
+             <div id="library-area-selection" class="dashboard-options area-selection-container">
+                <button class="area-button" data-area="consultas">Consultas</button>
+                <button class="area-button" data-area="database">Database</button>
+                <button class="area-button" data-area="projetos">Projetos</button>
+            </div>
+
+            <div id="dashboards-consultas" class="dashboard-options hidden">
                 <button class="view-button"
-                data-url="https://docs.google.com/presentation/d/e/2PACX-1vRU-jSs6GrVHXXcsF9i2ddNRc0Vcp1oF4ANmqN1F180rQkmff84vgpA_8Ss5vjNrITGLAaFinZ0mBuR/pubembed?start=false&loop=true&delayms=5000"
-                data-preview-gif="/static/gifs/glossario_logistica_preview.gif"
-                data-preview-text="Glossário contendo palavras chaves utilizadas no dia a dia no time de logística, bem como suas explicações e definições."
-                data-preview-tags="Consultation,Presentation,Data">
-                Glossário Logística
-            </button>            
+                    data-id="caminhos_bq" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS68Md5HpqIY3WNbEEQkiE3TyvMwclcui0qdt86tWzO1SsE0M0mD2Mn1-KSUYaJxI00vHGVeS6h4BDk/pubhtml?gid=0&single=true"
+                    data-preview-gif="/static/gifs/caminhos_bq_preview.gif"
+                    data-preview-text="Repositório central com os caminhos e consultas principais para os datasets armazenados no Google BigQuery."
+                    data-preview-tags="Consultation,Sheets,Data,Database">
+                    Caminhos - Bigquery
+                </button>
+                <button class="view-button"
+                    data-id="sgi_spareparts" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS6UWpl3jYRqh8j-utys3E8J0i2e7AApq-uZltkix1IB8_u3yp84mJIHiOnYLPjD0QmAV1v7hY46d_8/pubhtml?gid=1759939591&amp;single=true&amp;widget=true&amp;headers=false" data-width="900px"
+                    data-preview-gif="/static/gifs/sgi_spareparts_preview.gif"
+                    data-preview-text="Painel de Gestão Integrada (SGI) focado nos indicadores e processos de Spare Parts."
+                    data-preview-tags="Consultation,Sheets,Management">
+                    SGI - SpareParts
+                </button>
+                <button class="view-button"
+                    data-id="folheto_devolucao" data-url="https://www.canva.com/design/DAG18zB3J78/q9UbvDCmVSWraIRE0rAdpg/view?embed" data-width="600px"
+                    data-preview-gif="/static/gifs/manual_devolucao_preview.gif"
+                    data-preview-text="Manual explicativo contemplando o passo a passo para execução de devolução das peças entregues durante e após a entrega, contendo conteúdos orientativos relacionado aos motivos de devolução."
+                    data-preview-tags="Consultation,Presentation,Data">
+                    Folheto de Devolução
+                </button>
+                <button class="view-button"
+                    data-id="processo_devolucao" data-url="https://www.canva.com/design/DAG2nXTQFbg/FbYgIULnsNyHk7MFmbJRmg/view?embed"
+                    data-preview-gif="/static/gifs/processo_solicitacao_preview.gif"
+                    data-preview-text="Detalhamento passo a passo do processo correto instrutivo voltado ao consumidor referente a abertura de solicitação para devoluções de materiais."
+                    data-preview-tags="Consultation,Presentation,Data">
+                    Processo de Devolução
+                </button>
+                <button class="view-button"
+                    data-id="glossario_logistica" data-url="https://docs.google.com/presentation/d/e/2PACX-1vRU-jSs6GrVHXXcsF9i2ddNRc0Vcp1oF4ANmqN1F180rQkmff84vgpA_8Ss5vjNrITGLAaFinZ0mBuR/pubembed?start=false&loop=true&delayms=5000"
+                    data-preview-gif="/static/gifs/glossario_logistica_preview.gif"
+                    data-preview-text="Glossário contendo palavras chaves utilizadas no dia a dia no time de logística, bem como suas explicações e definições."
+                    data-preview-tags="Consultation,Presentation,Data">
+                    Glossário Logística
+                </button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
+            </div>
+
+            <div id="dashboards-database" class="dashboard-options hidden">
+                <button class="view-button"
+                    data-id="sheets_tree" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vQJdUDPNO0meQZs_zPWAIpCnCczOYojfk3zInZcR04mhdNAeDgYbwGGbok19fkAgtskt2sqdFO7yG_3/pubhtml" data-width="600px"
+                    data-preview-gif="/static/gifs/sheets_tree_preview.gif"
+                    
+                    data-preview-text="Árvore de planilhas: um centralizador para encontrar e acessar os principais arquivos do Google Sheets utilizados pela equipe."
+                    data-preview-tags="Database,Sheets,Data">
+                    Sheets Tree
+                </button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
+            </div>
+            
+            <div id="dashboards-projetos" class="dashboard-options hidden">
+                <button class="view-button"
+                    data-id="jira_ongoing" data-url="https://lookerstudio.google.com/embed/reporting/c6349993-65f6-4ef9-9a1d-b80e229df0ad/page/page_12345"
+                    data-preview-gif="/static/gifs/jira_ongoing_preview.gif"
+                    data-preview-text="Dashboard visual com o status e andamento dos projetos de melhoria contínua e automação gerenciados no Jira."
+                    data-preview-tags="Dashboard,Sheets,Tracking">
+                    Jira - Ongoing projects
+                </button>
+                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
+            </div>
         </div>
     </div>
-
 
     <div id="dashboard-view" class="dashboard-container"></div>
-   
-    <div class="fab" id="feedback-fab" title="Feedback e Demandas">
-        <i class="fas fa-comment-dots"></i>
-    </div>
-    <div class="chat-popup" id="feedback-popup">
-        <div class="chat-header">
-            <h2 id="modal-title">Assistente Virtual</h2>
-            <button class="close-button" id="modal-close-btn">&times;</button>
-        </div>
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="iframe-container" id="iframe-container">
-            <iframe src="about:blank" frameborder="0"></iframe>
-        </div>
-        <div class="chat-input-area" id="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Descreva o que precisa...">
-            <button class="send-button" id="send-btn"><i class="fas fa-paper-plane"></i></button>
-        </div>
-    </div>
-   
+    
     <div id="preview-panel">
         <img id="preview-image" src="" alt="Preview do Dashboard">
         <p id="preview-description"></p>
         <div id="preview-tags-container"></div>
     </div>
 
-
-<script>
-    // --- SCRIPT UNIFICADO E COMPLETO ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- LÓGICA PRINCIPAL DA PÁGINA DE DASHBOARDS ---
-        const selectionScreen = document.getElementById('selection-screen');
-        const dashboardView = document.getElementById('dashboard-view');
-        const radios = document.querySelectorAll('input[name="dashboard_system"]');
-        const backButton = document.getElementById('back-btn');
-        let isViewingDashboard = false;
-        const allViewButtons = document.querySelectorAll('.view-button');
-        const lookerOptions = document.getElementById('looker-options');
-        const tableauOptions = document.getElementById('tableau-options');
-        const libraryOptions = document.getElementById('library-options');
-        const allAreaContainers = document.querySelectorAll('.area-selection-container');
-        const allAreaButtons = document.querySelectorAll('.area-button');
-        const allDashboardGroups = document.querySelectorAll('.dashboard-options[id^="dashboards-"]');
-        const allBackToAreasButtons = document.querySelectorAll('.back-to-areas-button');
-
-
-        function resetViews() {
-            allDashboardGroups.forEach(group => group.classList.add('hidden'));
-            allAreaContainers.forEach(container => container.classList.remove('hidden'));
-        }
-
-
-        function handleRadioChange() {
-            resetViews();
-            const selectedSystem = document.querySelector('input[name="dashboard_system"]:checked').value;
-            lookerOptions.classList.add('hidden');
-            tableauOptions.classList.add('hidden');
-            if (libraryOptions) { libraryOptions.classList.add('hidden'); }
-
-
-            if (selectedSystem === 'looker') {
-                lookerOptions.classList.remove('hidden');
-            } else if (selectedSystem === 'tableau') {
-                tableauOptions.classList.remove('hidden');
-            } else if (selectedSystem === 'library') {
-                if (libraryOptions) { libraryOptions.classList.remove('hidden'); }
-            }
-        }
-        radios.forEach(radio => radio.addEventListener('change', handleRadioChange));
-
-
-        // --- CÓDIGO ALTERADO: LÓGICA DO PAINEL DE PREVIEW E CLICK COMBINADAS ---
-        const previewPanel = document.getElementById('preview-panel');
-        const previewImage = document.getElementById('preview-image');
-        const previewDescription = document.getElementById('preview-description');
-        const previewTagsContainer = document.getElementById('preview-tags-container');
-
-
-        allViewButtons.forEach(button => {
-            // Lógica do clique (para abrir o dashboard)
-            button.addEventListener('click', () => {
-                const dashboardUrl = button.getAttribute('data-url');
-                const customMaxWidth = button.dataset.width;
-
-
-                dashboardView.innerHTML = '';
-                const iframe = document.createElement('iframe');
-                iframe.src = dashboardUrl;
-                iframe.className = 'dashboard-iframe';
-                iframe.setAttribute('allowfullscreen', '');
-               
-                if (customMaxWidth) {
-                    iframe.style.maxWidth = customMaxWidth;
-                }
-
-                // Esconde o chatbot se estivermos abrindo um dashboard do Looker
-                const fab = document.getElementById('feedback-fab');
-                const selectedSystem = document.querySelector('input[name="dashboard_system"]:checked').value;
-                if (selectedSystem === 'looker') {
-                    fab.classList.add('hidden');
-                }
-                
-                dashboardView.appendChild(iframe);
-                selectionScreen.style.display = 'none';
-                dashboardView.style.display = 'flex';
-                isViewingDashboard = true;
-                updateBackButton();
-            });
-
-
-// Lógica do mouseover (para mostrar o preview com etiquetas)
-            button.addEventListener('mouseover', () => {
-                const gifPath = button.dataset.previewGif;
-                const text = button.dataset.previewText;
-                const tagsString = button.dataset.previewTags;
-
-                if (gifPath && text) {
-                    previewImage.src = gifPath;
-                    previewDescription.textContent = text;
-                    
-                    previewTagsContainer.innerHTML = '';
-                    if (tagsString) {
-                        const tagsArray = tagsString.split(',');
-                        
-                        // Lista das tags que NÃO são KPIs (em minúsculas)
-                        // Inclui Frequência, Fonte, Tipo (Library) e Foco Principal
-                        const knownNonKpiTags = [
-                            'daily', 'weekly', 'monthly', 
-                            'gcp', 'sheets', 'drive', 
-                            'consultation', 'dashboard', 'database', 
-                            'revenue', 'efficiency', 'accuracy', 'management', 
-                            'performance', 'planning', 'sla', 'tracking', 
-                            'safety', 'costs', 'data'
-                        ];
-
-                        tagsArray.forEach(tagText => {
-                            const tagElement = document.createElement('span');
-                            const cleanTagText = tagText.trim();
-                            
-                            tagElement.className = 'preview-tag';
-                            tagElement.textContent = cleanTagText;
-
-                            const lowerCaseTag = cleanTagText.toLowerCase();
-
-                            // Lógica de cores atualizada para incluir KPIs
-                            if (['consultation', 'dashboard', 'database'].includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-orange'); // Tipo (Library)
-                            } else if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-green'); // Frequência
-                            } else if (['gcp', 'gardem' , 'sheets', 'drive', 'presentation'].includes(lowerCaseTag)) { 
-                                tagElement.classList.add('tag-blue'); // Fonte
-                            } else if (knownNonKpiTags.includes(lowerCaseTag)) {
-                                tagElement.classList.add('tag-gray'); // Foco Principal (ou outras conhecidas não-KPI)
-                            } else {
-                                // Se a tag não for nenhuma das anteriores, assume-se que é um KPI
-                                tagElement.classList.add('tag-purple'); // KPI
-                            }
-                            previewTagsContainer.appendChild(tagElement);
-                        });
-                    }
-                    
-                    previewPanel.classList.add('visible');
-                }
-            }); // Fim da lógica do 'mouseover'
-
-            // Lógica do mouseout (para esconder o preview)
-            button.addEventListener('mouseout', () => {
-                previewPanel.classList.remove('visible');
-            });
-        });
-       
-        function updateBackButton() {
-            if (isViewingDashboard) {
-                backButton.textContent = '← Voltar';
-                backButton.href = '#';
-            } else {
-                backButton.textContent = '← Voltar ao Hub';
-                backButton.href = '/';
-            }
-        }
-
-
-        backButton.addEventListener('click', (event) => {
-            if (isViewingDashboard) {
-                event.preventDefault();
-                dashboardView.innerHTML = '';
-                dashboardView.style.display = 'none';
-                selectionScreen.style.display = 'flex';
-                isViewingDashboard = false;
-                updateBackButton();
-
-                // Mostra o chatbot novamente
-                document.getElementById('feedback-fab').classList.remove('hidden'); 
-            }
-        });
-
-
-        allAreaButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const area = button.dataset.area;
-                const targetDashboardGroup = document.getElementById(`dashboards-${area}`);
-                const parentAreaContainer = button.closest('.area-selection-container');
-                if (parentAreaContainer) { parentAreaContainer.classList.add('hidden'); }
-                if (targetDashboardGroup) { targetDashboardGroup.classList.remove('hidden'); }
-            });
-        });
-
-
-        allBackToAreasButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const parentDashboardGroup = button.parentElement;
-                const mainContainer = button.closest('#looker-options, #tableau-options');
-                parentDashboardGroup.classList.add('hidden');
-                if (mainContainer) {
-                    mainContainer.querySelector('.area-selection-container').classList.remove('hidden');
-                }
-            });
-        });
-
-
-        // --- SCRIPT DO CHATBOT ---
-        const fab = document.getElementById('feedback-fab');
-        const popup = document.getElementById('feedback-popup');
-        const closeBtn = document.getElementById('modal-close-btn');
-        const chatMessages = document.getElementById('chat-messages');
-        const iframeContainer = document.getElementById('iframe-container');
-        const iframe = iframeContainer.querySelector('iframe');
-        const modalTitle = document.getElementById('modal-title');
-        const chatInputArea = document.getElementById('chat-input-area');
-        const chatInput = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
-
-
-        const forms = {
-            demanda: { title: "Solicitação de Demanda", url: "https://docs.google.com/forms/d/e/1FAIpQLSdBvCg6jU3XjXn-dFLfwRZU-fj80fMbAT1vv6J6hg9yUIH1Jg/viewform?embedded=true" },
-            sugestao: { title: "Sugestões de Melhoria", url: "https://docs.google.com/forms/d/e/1FAIpQLScIp_mkk0kMZuJgjchiq5O2fHGTkPSjXYpsi4G5Xw2e297C6w/viewform?embedded=true" }
-        };
-        const keywords = {
-            demanda: ['solicitar', 'demanda', 'automação', 'automatizar', 'robô', 'processo', 'tarefa', 'criar', 'quero', 'preciso', 'gostaria'],
-            sugestao: ['sugestão', 'feedback', 'ideia', 'melhoria', 'mudar', 'ajustar', 'sugiro', 'poderia', 'poderiam']
-        };
-        const addMessage = (text, type, containsHtml = false, extraClass = '') => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${type} ${extraClass}`;
-            if (containsHtml) { messageDiv.innerHTML = text; }
-            else { messageDiv.textContent = text; }
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-        const showForm = (formType) => {
-            const formData = forms[formType];
-            modalTitle.textContent = formData.title;
-            iframe.src = formData.url;
-            chatMessages.style.display = 'none';
-            chatInputArea.style.display = 'none';
-            iframeContainer.style.display = 'block';
-        };
-        const resetChat = () => {
-            popup.classList.remove('visible');
-            setTimeout(() => {
-                chatMessages.innerHTML = '';
-                chatMessages.style.display = 'flex';
-                chatInputArea.style.display = 'flex';
-                chatInput.disabled = false;
-                sendBtn.disabled = false;
-                iframeContainer.style.display = 'none';
-                iframe.src = 'about:blank';
-                modalTitle.textContent = 'Assistente Virtual';
-            }, 300);
-        };
-        const startConversation = () => {
-            addMessage("Olá! Sou o assistente virtual.", 'bot-message');
-            setTimeout(() => {
-                addMessage("Por gentileza, descreva em poucas palavras o que deseja.", 'bot-message');
-            }, 1200);
-        };
-        const toggleChat = () => {
-            const isVisible = popup.classList.contains('visible');
-            if (isVisible) { resetChat(); }
-            else {
-                popup.classList.add('visible');
-                if (chatMessages.children.length === 0) { startConversation(); }
-            }
-        };
-        const processUserInput = (userInput) => {
-            const text = userInput.toLowerCase();
-            const isDemanda = keywords.demanda.some(keyword => text.includes(keyword));
-            const isSugestao = keywords.sugestao.some(keyword => text.includes(keyword));
-            if (isDemanda && isSugestao) {
-                addMessage("Não entendi muito bem. Sua mensagem parece ser tanto uma demanda quanto uma sugestão. Poderia esclarecer?", 'bot-message');
-                chatInput.disabled = false; sendBtn.disabled = false;
-            } else if (isDemanda) {
-                presentFormOption('demanda', 'Para demandas, siga esse formulário:');
-                chatInput.disabled = false; sendBtn.disabled = false;
-            } else if (isSugestao) {
-                presentFormOption('sugestao', 'Para sugestões, siga esse formulário:');
-                chatInput.disabled = false; sendBtn.disabled = false;
-            } else {
-                addMessage("Desculpe, não consegui identificar sua necessidade. Por favor, escreva novamente o que deseja em poucas palavras.", 'bot-message');
-                chatInput.disabled = false; sendBtn.disabled = false;
-            }
-        };
-        const presentFormOption = (formType, introText) => {
-            const formData = forms[formType];
-            addMessage(introText, 'bot-message');
-            setTimeout(() => {
-                const buttonHtml = `<button class="chat-action-button" data-form="${formType}">${formData.title}</button>`;
-                addMessage(buttonHtml, 'bot-message', true, 'button-bubble');
-                const newButton = chatMessages.querySelector(`button[data-form="${formType}"]`);
-                if (newButton) {
-                    newButton.addEventListener('click', () => {
-                        chatInput.disabled = true;
-                        sendBtn.disabled = true;
-                        showForm(formType);
-                    });
-                }
-            }, 800);
-        };
-        const handleUserInput = () => {
-            const userInput = chatInput.value.trim();
-            if (!userInput) return;
-            addMessage(userInput, 'user-reply');
-            chatInput.value = '';
-            chatInput.disabled = true;
-            sendBtn.disabled = true;
-            setTimeout(() => { processUserInput(userInput); }, 1000);
-        };
-        fab.addEventListener('click', toggleChat);
-        closeBtn.addEventListener('click', resetChat);
-        sendBtn.addEventListener('click', handleUserInput);
-        chatInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') { handleUserInput(); }
-        });
-    });
-</script>
+    <script src="/static/js/dashboards.js" defer></script>
+    <script src="/static/js/shared.js" defer></script>
 </body>
 </html>

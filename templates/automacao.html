@@ -9,90 +9,112 @@
     <link rel="stylesheet" href="/static/css/shared.css">
 </head>
 <body>
-    <a href="/" class="back-button">&larr; Voltar ao Hub</a>
-    <div id="status" class="status-box"></div>
+    <script>
+      // Script de carregamento instantâneo do tema (para evitar flicker)
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('hubTheme') || 'light';
+          if (savedTheme === 'dark') {
+            document.body.classList.add('theme-dark');
+          } else if (savedTheme === 'light') {
+            // Nenhuma classe necessária para o padrão 'light'
+          } else {
+            // Checa o tema do sistema
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.body.classList.add('theme-dark');
+            }
+          }
+        } catch (e) {
+          // Ignora erros
+        }
+      })();
+    </script>
+
+    <button id="logout-btn" class="logout-button hidden" title="Deslogar"><i class="fas fa-sign-out-alt"></i></button>
+
+    <button id="scheduler-btn" class="scheduler-button" title="Agendador"><i class="fas fa-clock"></i></button>
+
+    <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
+
+    <a href="/" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
+    
+    <div id="status" class="status-box" aria-live="polite"></div>
+    
     <div class="container">
-        <h1 class="main-title">Painel de Acessos</h1>
-        <p class="subtitle" id="main-subtitle"><i class="fas fa-info-circle"></i> <span id="subtitle-text">Selecione a plataforma para acessar</span></p>
+        <h1 class="main-title">Automatizações</h1>
+        <p class="subtitle" id="main-subtitle"><i class="fas fa-info-circle"></i> <span id="subtitle-text">Selecione uma tarefa para executar</span></p>
         
-        <div id="login-area">
-            <div class="system-selector">
-                <label> <input type="radio" name="login_system" value="sap" checked> <img src="/static/icones/sap_logo.png" alt="Logo SAP"> </label>
-                <label> <input type="radio" name="login_system" value="bw"> <img src="/static/icones/bwhana_logo.png" alt="Logo BW HANA"> </label>
-            </div>
-            <div class="controls">
-                <div id="credentials-form">
-                    <div class="input-group"> <label for="main-user">Usuário:</label> <input type="text" id="main-user"> </div>
-                    <div class="input-group"> <label for="main-pass">Senha:</label> <input type="password" id="main-pass"> </div>
-                </div>
-                <button id="main-toggle-btn" class="button btn-login">Logar</button>
-            </div>
+        <div class="system-selector">
+            <label> <input type="radio" name="login_system" value="sap" checked> <img src="/static/icones/sap_logo.png" alt="Logo SAP"> </label>
+            <label> <input type="radio" name="login_system" value="bw"> <img src="/static/icones/bwhana_logo.png" alt="Logo BW HANA"> </label>
         </div>
 
-        <div id="loggedin-area" class="hidden">
-            <div class="controls">
-                   <button id="main-logout-btn" class="button btn-logout">Deslogar</button>
-            </div>
-
-            <div id="sap-tasks-section" class="tasks-section hidden">
-                <div id="collapsible-header-sap" class="collapsible-header">
-                    <i class="fas fa-chevron-right arrow"></i>
-                    <span>Tarefas de Automação SAP</span>
-                </div>
-                <div id="collapsible-content-sap" class="collapsible-content">
-                    <div class="button-container">
-                        {% for nome in macros %}
-                            <div class="task-button" data-task-name="{{ nome }}">
+        <div id="sap-tasks-section" class="tasks-section">
+            <div class="button-container">
+                {% for nome in macros %}
+                    {% if nome == "Base Mãe" %}
+                        <div class="task-button-group">
+                            <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
                                 <div class="button-text">{{ nome }}</div>
-                                {% if nome == "Executar ZV62N" %}
-                                    <div class="separator"></div>
-                                    {% if initial_zv62n_file %}
-                                        <a href="/download/{{ initial_zv62n_file }}" class="download-icon" title="Baixar {{ initial_zv62n_file }}"><i class="fas fa-download"></i></a>
-                                    {% else %}
-                                        <a href="#" class="download-icon inactive" title="Arquivo não encontrado."><i class="fas fa-download"></i></a>
-                                    {% endif %}
-                                {% endif %}
                             </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            
-            <div id="bw-tasks-section" class="tasks-section hidden">
-                 <div id="collapsible-header-bw" class="collapsible-header">
-                    <i class="fas fa-chevron-right arrow"></i>
-                    <span>Tarefas de Automação BW</span>
-                </div>
-                <div id="collapsible-content-bw" class="collapsible-content">
-                     <div class="button-container">
-                        <div id="bw-extract-btn" class="task-button">
-                            <div class="button-text">Extrair Relatório BW</div>
+                            {% if initial_zv62n_file %}
+                                <a href="/download/{{ initial_zv62n_file }}" class="task-button-download" title="Baixar {{ initial_zv62n_file }}">
+                                    <i class="fas fa-file-arrow-down"></i>
+                                </a>
+                            {% else %}
+                                <a href="#" class="task-button-download inactive" title="Arquivo não encontrado.">
+                                    <i class="fas fa-file-arrow-down"></i>
+                                </a>
+                            {% endif %}
                         </div>
-                     </div>
+                    {% else %}
+                        <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
+                            <div class="button-text">{{ nome }}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div id="bw-tasks-section" class="tasks-section hidden">
+            <div class="button-container">
+                <div id="bw-extract-btn" class="task-button" data-task-type="bw">
+                    <div class="button-text">Relatório Peças</div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="fab" id="feedback-fab" title="Feedback e Demandas">
-        <i class="fas fa-comment-dots"></i>
-    </div>
-    <div class="chat-popup" id="feedback-popup">
-        <div class="chat-header">
-            <h2 id="modal-title">Assistente Virtual</h2>
-            <button class="close-button" id="modal-close-btn">&times;</button>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-        </div>
-        <div class="iframe-container" id="iframe-container">
-            <iframe src="about:blank" frameborder="0"></iframe>
-        </div>
-        <div class="chat-input-area" id="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Descreva o que precisa...">
-            <button class="send-button" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    <div id="login-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button id="login-modal-close-btn" class="modal-close" title="Fechar">&times;</button>
+            <img id="modal-logo-sap" src="/static/icones/sap_logo.png" alt="Logo SAP" class="modal-logo hidden">
+            <img id="modal-logo-bw" src="/static/icones/bwhana_logo.png" alt="Logo BW HANA" class="modal-logo hidden">
+            <p id="modal-subtitle">Insira suas credenciais para logar.</p>
+            <div class="modal-form">
+                <div class="modal-input-group">
+                    <label for="modal-user">Usuário:</label>
+                    <input type="text" id="modal-user">
+                </div>
+                <div class="modal-input-group">
+                    <label for="modal-pass">Senha:</label>
+                    <input type="password" id="modal-pass">
+                </div>
+                <button id="modal-execute-btn" class="button btn-execute">Logar</button>
+            </div>
         </div>
     </div>
 
+    <div id="confirm-modal-overlay" class="modal-overlay"> 
+        <div class="modal-content">
+                        <h2 id="confirm-modal-title">Deseja deslogar?</h2>
+            <div class="modal-button-container">
+                <button id="confirm-modal-no-btn" class="button btn-cancel">Não</button>
+                <button id="confirm-modal-yes-btn" class="button btn-danger">Sim</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="/static/js/automacao.js" defer></script>
     <script src="/static/js/shared.js" defer></script>
 </body>

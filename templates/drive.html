@@ -7,57 +7,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="/static/css/shared.css">
     <link rel="stylesheet" href="/static/css/drive.css">
-    <style>
-        /* --- ESTILO DO BOTÃO "VOLTAR" ADICIONADO DIRETAMENTE AQUI PARA GARANTIR O FUNCIONAMENTO --- */
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            border: 1px solid #444;
-            transition: all 0.2s ease;
-        }
-        .back-button:hover {
-            background-color: #444;
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 <body>
-    <a href="/" class="back-button">&larr; Voltar ao Hub</a>
+    <script>
+      // Script de carregamento instantâneo do tema (para evitar flicker)
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('hubTheme') || 'light';
+          if (savedTheme === 'dark') {
+            document.body.classList.add('theme-dark');
+          } else if (savedTheme === 'light') {
+            // Nenhuma classe necessária para o padrão 'light'
+          } else {
+            // Checa o tema do sistema
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.body.classList.add('theme-dark');
+            }
+          }
+        } catch (e) {
+          // Ignora erros (ex: localStorage desativado)
+        }
+      })();
+    </script>
 
+    <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
+
+    <a href="/" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
+
+    <div style="text-align: center; width: 100%; max-width: 900px;">
+        <h1 class="main-title">Drive (F:) Online</h1>
+        <p class="subtitle"><i class="fas fa-info-circle"></i> <span>Caminhe pelas pastas da rede</span></p>
+    </div>
     <div class="drive-container">
         <div class="drive-header">
             Caminho: <span id="breadcrumbs"></span>
         </div>
         <ul class="file-list" id="file-list">
             </ul>
-    </div>
-
-    <div class="fab" id="feedback-fab" title="Feedback e Demandas">
-        <i class="fas fa-comment-dots"></i>
-    </div>
-    <div class="chat-popup" id="feedback-popup">
-        <div class="chat-header">
-            <h2 id="modal-title">Assistente Virtual</h2>
-            <button class="close-button" id="modal-close-btn">&times;</button>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            </div>
-        <div class="iframe-container" id="iframe-container">
-            <iframe src="about:blank" frameborder="0"></iframe>
-        </div>
-        <div class="chat-input-area" id="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Descreva o que precisa...">
-            <button class="send-button" id="send-btn"><i class="fas fa-paper-plane"></i></button>
-        </div>
     </div>
     
     <script src="/static/js/drive.js" defer></script>

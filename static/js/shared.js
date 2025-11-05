@@ -1,5 +1,102 @@
-// Este script controla o componente de chatbot de feedback com análise de palavras-chave e botões de ação
+// --- 1. LÓGICA DE TEMA GLOBAL (DEFINIÇÃO) ---
+// Esta função agora está no escopo global, acessível por outros scripts.
+function applyGlobalTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('theme-dark');
+    } else if (theme === 'light') {
+        document.body.classList.remove('theme-dark');
+    } else { // 'system'
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('theme-dark');
+        } else {
+            document.body.classList.remove('theme-dark');
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Listener para mudança automática de tema do sistema (se o usuário selecionou 'system')
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        const currentTheme = localStorage.getItem('hubTheme') || 'system';
+        if (currentTheme === 'system') {
+            applyGlobalTheme('system');
+        }
+    });
+    // --- FIM DA LÓGICA DE TEMA ---
+
+    // --- ADICIONAR ESTE BLOCO: LÓGICA DE TELA CHEIA GLOBAL ---
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    
+    if (fullscreenBtn) {
+        const fullscreenIcon = fullscreenBtn.querySelector('i');
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erro ao tentar entrar em tela cheia: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Listener para o clique no botão
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // Listener para atualizar o ícone (quando o usuário usa ESC, por exemplo)
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                // Estamos em tela cheia
+                fullscreenIcon.classList.remove('fa-expand');
+                fullscreenIcon.classList.add('fa-compress');
+                fullscreenBtn.title = "Sair da Tela Cheia";
+                fullscreenBtn.setAttribute('aria-label', "Sair da Tela Cheia");
+            } else {
+                // Não estamos em tela cheia
+                fullscreenIcon.classList.remove('fa-compress');
+                fullscreenIcon.classList.add('fa-expand');
+                fullscreenBtn.title = "Tela Cheia";
+                fullscreenBtn.setAttribute('aria-label', "Tela Cheia");
+            }
+        });
+    }
+    // --- FIM DA LÓGICA DE TELA CHEIA ---
+
+    // --- 2. INJEÇÃO DINÂMICA DO HTML DO CHATBOT ---
+    function injectChatbotHTML() {
+        const chatbotContainer = document.createElement('div');
+        chatbotContainer.id = 'chatbot-wrapper';
+        
+        chatbotContainer.innerHTML = `
+            <div class="fab" id="feedback-fab" title="Feedback e Demandas">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="chat-popup" id="feedback-popup">
+                <div class="chat-header">
+                    <h2 id="modal-title">Assistente Virtual</h2>
+                    <button class="close-button" id="modal-close-btn">&times;</button>
+                </div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="iframe-container" id="iframe-container">
+                    <iframe src="about:blank" frameborder="0"></iframe>
+                </div>
+                <div class="chat-input-area" id="chat-input-area">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Descreva o que precisa...">
+                    <button class="send-button" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(chatbotContainer);
+    }
+    
+    injectChatbotHTML();
+    // --- FIM DA INJEÇÃO DO HTML ---
+
+
+    // --- 3. LÓGICA ORIGINAL DO CHATBOT ---
     const fab = document.getElementById('feedback-fab');
     const popup = document.getElementById('feedback-popup');
     if (!fab || !popup) return;
@@ -47,15 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const presentFormOption = (formType, introText) => {
         const formData = forms[formType];
         
-        // 1. Envia a mensagem de texto
         addMessage(introText, 'bot-message');
 
-        // 2. Com um pequeno delay, envia o balão com o botão
         setTimeout(() => {
             const buttonHtml = `<button class="chat-action-button" data-form="${formType}">${formData.title}</button>`;
             addMessage(buttonHtml, 'bot-message', true, 'button-bubble');
 
-            // Adiciona o listener para o botão que acabamos de criar
             const newButton = chatMessages.querySelector(`button[data-form="${formType}"]`);
             if (newButton) {
                 newButton.addEventListener('click', () => {
@@ -64,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showForm(formType);
                 });
             }
-        }, 800); // 800ms de delay
+        }, 800);
     };
     
     const resetChat = () => {

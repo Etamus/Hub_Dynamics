@@ -1,44 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 body {
-    font-family: 'Inter', sans-serif;
-    /* --- TEMA ALTERADO: Fundo da página em cinza claro --- */
-    background-color: #f0f2f5;
-    color: #333; /* Cor do texto padrão para fundo claro */
+    font-family: 'Poppins', sans-serif;
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
     margin: 0;
     padding: 20px;
     padding-top: 80px;
     box-sizing: border-box;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start; /* ALTERADO de 'center' */
+    align-items: center; /* ALTERADO de 'center' */
+    /* ADICIONADO */
+    flex-direction: column;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
-
 .drive-container {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
-    /* --- TEMA ALTERADO: Painel de navegação em branco com sombra --- */
-    background-color: #ffffff;
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--card-bg-color);
     border-radius: 12px;
     overflow: hidden;
-    height: 80vh;
+    height: 65vh; /* ALTERADO de 80vh para 65vh */
     display: flex;
     flex-direction: column;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px var(--shadow-color-light);
 }
 
 .drive-header {
     padding: 15px 20px;
-    /* --- TEMA ALTERADO: Cabeçalho em cinza bem claro --- */
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
     font-weight: 500;
-    color: #6c757d; /* Texto do cabeçalho em cinza escuro */
+    color: var(--text-secondary-color);
 }
 #breadcrumbs a {
-    color: #007bff; /* Links em azul */
+    /* ALTERADO: Usando variáveis */
+    color: var(--accent-color);
     text-decoration: none;
 }
 #breadcrumbs a:hover {
@@ -59,13 +63,13 @@ body {
     gap: 15px;
     padding: 12px 20px;
     cursor: pointer;
-    /* --- TEMA ALTERADO: Separador de itens mais suave --- */
-    border-bottom: 1px solid #f0f2f5;
+    /* ALTERADO: Usando variáveis */
+    border-bottom: 1px solid var(--bg-color);
     transition: background-color 0.2s ease;
 }
 .file-item:hover {
-    /* --- TEMA ALTERADO: Efeito hover mais suave --- */
-    background-color: #e9ecef;
+    /* ALTERADO: Usando variáveis */
+    background-color: var(--bg-color);
 }
 .file-item:last-child {
     border-bottom: none;
@@ -76,6 +80,26 @@ body {
     width: 20px;
     text-align: center;
 }
-/* Cores dos ícones mantidas, funcionam bem em fundo claro */
-.folder-icon { color: #007bff; }
-.file-icon { color: #6c757d; }
+/* ALTERADO: Usando variáveis */
+.folder-icon { color: var(--accent-color); }
+.file-icon { color: var(--text-secondary-color); }
+
+/* --- ADICIONAR: Estilos de Título/Subtítulo --- */
+.main-title { 
+    font-family: 'Poppins', sans-serif; /* ADICIONADO */
+    font-size: 3rem; 
+    font-weight: 700; 
+    margin: 0 0 10px 0; 
+    color: var(--text-primary-color); 
+    text-align: center;
+}
+.subtitle { 
+    font-family: 'Poppins', sans-serif; /* ADICIONADO */
+    font-size: 1.2rem; 
+    color: var(--text-secondary-color); 
+    margin-bottom: 40px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+}

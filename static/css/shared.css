@@ -1,3 +1,35 @@
+/* ============================================= */
+/* ===== VARIÁVEIS GLOBAIS DE TEMA (CLARO/ESCURO) ===== */
+/* ============================================= */
+:root {
+    --bg-color: #f0f2f5;
+    --card-bg-color: #ffffff;
+    --text-primary-color: #1c1e21;
+    --text-secondary-color: #6c757d;
+    --text-tertiary-color: #495057;
+    --border-color: #dee2e6;
+    --accent-color: #007bff;
+    --accent-color-hover: #0056b3;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-color-hover: rgba(0, 0, 0, 0.12);
+    --shadow-color-light: rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark {
+    --bg-color: #121212;
+    --card-bg-color: #1E1E1E;
+    --text-primary-color: #E0E0E0;
+    --text-secondary-color: #A0A0A0;
+    --text-tertiary-color: #BDBDBD;
+    --border-color: #444444;
+    --accent-color: #0088ff;
+    --accent-color-hover: #33aaff;
+    --shadow-color: rgba(255, 255, 255, 0.08);
+    --shadow-color-hover: rgba(255, 255, 255, 0.1);
+    --shadow-color-light: rgba(255, 255, 255, 0.03);
+}
+/* ============================================= */
+
 /* --- Estilos para o Botão Flutuante (FAB) e o Chatbot Pop-up --- */
 .fab {
     position: fixed;
@@ -163,3 +195,92 @@
 
 .iframe-container { flex-grow: 1; display: none; }
 .iframe-container iframe { width: 100%; height: 100%; border: none; }
+
+/* ============================================= */
+/* ===== NOVOS ESTILOS DE BOTÕES DE NAVEGAÇÃO ===== */
+/* ============================================= */
+
+/* Botão principal (Voltar ao Hub) */
+.back-button {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    z-index: 10;
+    
+    /* Aparência */
+    background-color: var(--card-bg-color);
+    color: var(--text-tertiary-color);
+    border: 1px solid var(--border-color);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%; /* Circular */
+    
+    /* Alinhamento do Ícone */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Efeitos */
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 4px 12px var(--shadow-color-light);
+    transition: all 0.2s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 16px var(--shadow-color);
+}
+
+/* Botão secundário (Voltar para Áreas em Dashboards) */
+.back-to-areas-button {
+    /* Aparência */
+    background-color: var(--bg-color);
+    color: var(--text-tertiary-color);
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Circular */
+    
+    /* Alinhamento do Ícone */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Efeitos */
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 15px;
+}
+
+.back-to-areas-button:hover {
+    transform: translateY(-2px);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background-color: var(--card-bg-color);
+}
+
+/* --- CORRIGIDO: Estilo do Botão de Tela Cheia (Páginas Internas) --- */
+.fullscreen-button {
+    position: absolute;
+    top: 25px;
+    right: 30px; /* Ajuste de posição */
+    z-index: 10;
+    
+    /* Aparência (estilo do hub.html) */
+    background: none;
+    border: none;
+    font-size: 1.8rem; /* Mesmo tamanho do hub */
+    color: var(--text-tertiary-color);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.fullscreen-button:hover {
+    color: var(--accent-color);
+    transform: scale(1.1); /* Mesmo efeito do hub */
+}

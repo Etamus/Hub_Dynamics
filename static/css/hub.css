@@ -1,16 +1,84 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f0f2f5;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color); /* MODIFICADO */
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 60px;
+    padding-top: 120px; 
     min-height: 100vh;
     margin: 0;
-    color: #333;
+    color: var(--text-primary-color); /* MODIFICADO */
     box-sizing: border-box;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave */
+}
+
+.top-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 40px;
+    z-index: 10;
+}
+
+.logo-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    color: var(--text-primary-color); /* MODIFICADO */
+    font-size: 2.3rem; /* Seu ajuste */
+}
+
+.logo-title img {
+    height: 36px; /* Seu ajuste */
+    vertical-align: middle;
+}
+
+/* --- ADICIONE ESTAS 3 REGRAS ABAIXO --- */
+
+/* 1. Esconde o logo escuro por padrão */
+.logo-dark {
+    display: none;
+}
+
+/* 2. No modo escuro, esconde o logo claro */
+body.theme-dark .logo-light {
+    display: none;
+}
+
+/* 3. No modo escuro, mostra o logo escuro */
+body.theme-dark .logo-dark {
+    display: block;
+}
+
+.header-tools {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.header-tools a, .header-tools button { /* MODIFICADO: Agora pode ser um botão */
+    font-size: 1.8rem; /* Seu ajuste */
+    color: var(--text-tertiary-color); /* MODIFICADO */
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    /* NOVO: Estilo de botão transparente */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.header-tools a:hover, .header-tools button:hover {
+    color: var(--accent-color); /* MODIFICADO */
+    transform: scale(1.1);
 }
 
 .hub-container {
@@ -19,27 +87,51 @@ body {
     max-width: 1200px;
 }
 
-.hub-header {
-    /* Aumentado para criar mais espaço acima dos cards */
-    margin-bottom: 70px; 
+.hub-subtitle {
+    margin-bottom: 50px;
 }
-
-.hub-header h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #1c1e21;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-.hub-header p {
+.hub-subtitle p {
     font-size: 1.2rem;
-    color: #6c757d;
+    color: var(--text-secondary-color); /* MODIFICADO */
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
+    margin: 0;
+}
+
+.search-container {
+    margin-bottom: 25px; 
+    position: relative;
+    width: 60%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+#search-bar {
+    width: 100%;
+    padding: 15px 20px 15px 50px;
+    font-size: 1rem;
+    border-radius: 25px;
+    border: 1px solid var(--border-color); /* MODIFICADO */
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    /* NOVO: Cores do modo escuro */
+    background-color: var(--card-bg-color);
+    color: var(--text-primary-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+#search-bar:focus {
+    outline: none;
+    border-color: var(--accent-color); /* MODIFICADO */
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
 }
 
 .hub-cards {
@@ -48,38 +140,37 @@ body {
     gap: 40px;
     flex-wrap: wrap;
 }
-
 .hub-card {
-    background-color: #ffffff;
-    padding: 30px;
+    background-color: var(--card-bg-color); /* MODIFICADO */
+    padding: 25px;
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px var(--shadow-color); /* MODIFICADO */
     width: 360px;
-    height: 280px; /* Altura aumentada */
+    height: 280px;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; /* MODIFICADO */
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
 }
 .hub-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 16px 40px var(--shadow-color-hover); /* MODIFICADO */
 }
-
-/* Área superior do card que contém a animação */
+.hub-card:focus-visible {
+    outline: none;
+    transform: translateY(-10px);
+    box-shadow: 0 0 0 4px rgba(0,123,255,0.5);
+}
 .card-media-area {
     position: relative;
-    height: 150px; /* Altura fixa para a área da imagem/ícone */
+    height: 150px;
     width: 100%;
     margin-bottom: 15px;
 }
-
-/* O conteúdo inicial (ícone e título) e a pré-visualização (GIF) */
 .card-content, .card-preview {
     position: absolute;
     top: 0;
@@ -92,8 +183,6 @@ body {
     align-items: center;
     transition: opacity 0.3s ease;
 }
-
-/* A pré-visualização do GIF começa escondida */
 .card-preview {
     opacity: 0;
     visibility: hidden;
@@ -102,10 +191,8 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 8px; /* Cantos arredondados para o GIF */
+    border-radius: 8px;
 }
-
-/* Lógica do hover: esconde o conteúdo inicial e mostra a pré-visualização */
 .hub-card:hover .card-content {
     opacity: 0;
     visibility: hidden;
@@ -114,23 +201,397 @@ body {
     opacity: 1;
     visibility: visible;
 }
-
 .card-icon {
     font-size: 3.5rem;
-    color: #007bff;
+    color: var(--accent-color); /* MODIFICADO */
     margin-bottom: 15px;
 }
 .hub-card h2 {
     font-size: 1.6rem;
     margin: 0;
-    color: #1c1e21;
+    color: var(--text-primary-color); /* MODIFICADO */
 }
-
-/* O texto de descrição, que agora fica fora da área de animação */
 .hub-card p {
     font-size: 0.9rem;
     line-height: 1.6;
-    color: #6c757d;
+    color: var(--text-secondary-color); /* MODIFICADO */
     margin: 0;
-    margin-top: auto; /* Empurra a descrição para o fundo do card */
+    margin-top: auto;
+}
+
+.quick-links-section {
+    margin-top: 60px;
+    text-align: left;
+    max-width: 1160px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+.quick-links-section h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-tertiary-color); /* MODIFICADO */
+    border-bottom: 1px solid var(--border-color); /* MODIFICADO */
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+.quick-links-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--card-bg-color); /* MODIFICADO */
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color); /* MODIFICADO */
+    text-decoration: none;
+    color: var(--text-primary-color); /* MODIFICADO */
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px var(--shadow-color-light); /* MODIFICADO */
+    position: relative; /* NOVO: Para posicionar o ícone de pin */
+    padding-right: 50px; /* NOVO: Espaço para o ícone de pin */
+}
+.quick-link:hover {
+    background-color: var(--bg-color); /* MODIFICADO */
+    border-color: var(--accent-color); /* MODIFICADO */
+    color: var(--accent-color); /* MODIFICADO */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px var(--shadow-color); /* MODIFICADO */
+}
+.quick-link i {
+    color: var(--accent-color); /* MODIFICADO */
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+.no-recents {
+    color: var(--text-secondary-color); /* MODIFICADO */
+    font-style: italic;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+}
+
+/* ============================================= */
+/* ===== NOVOS ESTILOS (PIN E CONFIGURAÇÕES) ===== */
+/* ============================================= */
+
+/* --- Estilo do Ícone de Pin --- */
+.quick-link .pin-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: var(--text-secondary-color); /* Cor de pin "inativo" */
+    cursor: pointer;
+    padding: 5px; /* Área de clique maior */
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.quick-link .pin-icon:hover {
+    color: var(--accent-color);
+    transform: translateY(-50%) scale(1.2);
+}
+.quick-link .pin-icon.pinned {
+    color: var(--accent-color); /* Cor de pin "ativo" */
+}
+
+/* --- Estilo do Modal de Configurações --- */
+.settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.settings-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-modal {
+    background-color: var(--card-bg-color);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+.settings-modal-overlay.visible .settings-modal {
+    transform: scale(1);
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+.settings-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text-primary-color);
+}
+.settings-close-btn {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-secondary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+.settings-close-btn:hover {
+    color: var(--text-primary-color);
+}
+
+.settings-body {
+    padding-top: 40px;
+    padding-bottom: 30px;
+    text-align: left;
+}
+#about-overlay .settings-body {
+    padding-left: 35px;
+    padding-right: 35px;
+}
+.setting-group {
+    padding-top: 20px;
+    margin-bottom: 35px;
+}
+/* =================================
+   ESTILOS APENAS DO MODAL "CONFIGURAÇÕES"
+   ================================= */
+
+.setting-group label {
+    font-weight: 600;
+    color: var(--text-primary-color);
+    display: block;
+    margin-bottom: 20px;
+    text-align: left; 
+
+    /* ADICIONADO: Afasta os títulos da borda APENAS no modal Configurações */
+    padding-left: 35px;
+    padding-right: 35px;
+}
+
+/* --- Estilo do Seletor de Tema --- */
+.theme-selector {
+    display: flex;
+    gap: 15px;
+}
+.theme-option {
+    /* flex: 1; <-- REMOVIDO */
+    min-width: 80px; /* Garante um tamanho mínimo */
+    text-align: center;
+    padding: 10px 15px; /* Padding horizontal maior para o texto */
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    color: var(--text-secondary-color);
+    margin: 0 8px; /* ANTES: gap: 20px. (Adiciona margem em vez de gap) */
+}
+.theme-option i {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 5px;
+}
+.theme-option.active {
+    border-color: var(--accent-color);
+    background-color: var(--bg-color);
+    color: var(--accent-color);
+}
+.theme-option:hover:not(.active) {
+    border-color: var(--text-tertiary-color);
+}
+
+/* ============================================= */
+/* ===== NOVOS ESTILOS (SOBRE E DEVLOG) ===== */
+/* ============================================= */
+.about-section {
+    margin-top: -20px;
+    margin-bottom: 30px;
+    text-align: left;
+    line-height: 1.6;
+}
+.about-section p {
+    margin: 5px 0;
+    color: var(--text-primary-color);
+}
+.about-section ul {
+    list-style-type: none;
+    padding-left: 10px;
+    margin: 5px 0;
+}
+.about-section a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+.about-section a:hover {
+    text-decoration: underline;
+}
+
+.devlog-container {
+    text-align: left;
+}
+/* Reutiliza o estilo do label das Configurações */
+.devlog-container label {
+    font-weight: 600;
+    color: var(--text-primary-color);
+    display: block;
+    margin-bottom: 10px;
+}
+.devlog-container ul {
+    list-style-type: none;
+    padding-left: 0;
+    /* Adiciona rolagem se a lista for muito longa */
+    max-height: 200px; 
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: var(--bg-color); /* Fundo sutil para a lista */
+}
+.devlog-container li {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.devlog-container li:last-child {
+    border-bottom: none;
+}
+.devlog-container li strong {
+    color: var(--text-primary-color);
+    margin-right: 5px;
+}
+
+/* ============================================= */
+/* ===== NOVOS ESTILOS (CONFIG. ACESSO RÁPIDO) ===== */
+/* ============================================= */
+
+/* Isso centraliza os botões "Claro", "4 Itens", etc. */
+.theme-selector,
+.count-selector {
+    display: flex;
+    justify-content: center; /* <-- CORRETO */
+    flex-wrap: wrap;
+    /* REMOVA qualquer margem negativa daqui */
+}
+
+/* Estilo genérico para opções de configuração (copiado do .theme-option) */
+.setting-option {
+    /* flex: 1; <-- REMOVIDO */
+    min-width: 80px; /* Garante um tamanho mínimo */
+    text-align: center;
+    padding: 10px 15px; /* Padding horizontal maior para o texto */
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    color: var(--text-secondary-color);
+    font-weight: 500;
+    margin: 0 8px; /* ANTES: gap: 20px. (Adiciona margem em vez de gap) */
+}
+.setting-option.active {
+    border-color: var(--accent-color);
+    background-color: var(--bg-color);
+    color: var(--accent-color);
+}
+.setting-option:hover:not(.active) {
+    border-color: var(--text-tertiary-color);
+}
+
+/* Estilo para o botão de "Limpar" */
+.button-danger {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    /* --- CORREÇÃO APLICADA AQUI --- */
+    margin-top: 30px;
+    width: fit-content;
+
+    /* ADICIONE ESTAS DUAS LINHAS DE VOLTA */
+    margin-left: auto;   /* Centraliza o botão */
+    margin-right: auto; /* Centraliza o botão */
+}
+.button-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* ============================================= */
+
+
+@media (max-width: 768px) {
+    .top-header {
+        padding: 20px;
+        flex-direction: column; 
+        gap: 20px;
+    }
+    .logo-title {
+        font-size: 1.5rem;
+        order: 1;
+    }
+    .header-tools {
+        gap: 30px;
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+    body {
+        padding-top: 160px; 
+    }
+    
+    .search-container {
+        width: 90%;
+    }
+    .quick-links-container {
+        gap: 15px;
+    }
+    .quick-link {
+        width: 100%;
+        justify-content: flex-start; /* Alinha o texto à esquerda */
+    }
+    .quick-links-section {
+        margin-top: 40px;
+    }
+
+    /* NOVO: Ajuste do modal em telas pequenas */
+    .settings-modal {
+        width: 95%;
+    }
+    .theme-option span {
+        font-size: 0.9rem;
+    }
 }
