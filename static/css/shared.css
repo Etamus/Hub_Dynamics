@@ -266,14 +266,14 @@ body.theme-dark {
 /* --- CORRIGIDO: Estilo do Botão de Tela Cheia (Páginas Internas) --- */
 .fullscreen-button {
     position: absolute;
-    top: 25px;
-    right: 30px; /* Ajuste de posição */
+    top: 45px; /* Padrão (igual ao padding do Hub) */
+    right: 40px; /* Padrão (igual ao padding do Hub) */
     z-index: 10;
     
     /* Aparência (estilo do hub.html) */
     background: none;
     border: none;
-    font-size: 1.8rem; /* Mesmo tamanho do hub */
+    font-size: 1.8rem; /* Padrão (igual ao Hub) */
     color: var(--text-tertiary-color);
     cursor: pointer;
     padding: 0;

@@ -1,0 +1,16 @@
+{
+  "admin": {
+    "queue": [],
+    "history": [
+      {
+        "id": "job_1762447244846",
+        "startTime": 1762447320000,
+        "status": "failed",
+        "taskInfo": {
+          "name": "Base M\u00e3e",
+          "type": "sap"
+        }
+      }
+    ]
+  }
+}

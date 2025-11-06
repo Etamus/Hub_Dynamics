@@ -23,6 +23,7 @@ last_bw_creds = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DRIVE_ROOT = os.path.join(BASE_DIR, "drive") 
 USUARIOS_DB = os.path.join(BASE_DIR, "usuarios.json")
+SCHEDULER_DB = os.path.join(BASE_DIR, "scheduler_db.json") # <-- ADICIONE ESTA LINHA
 
 # NOVO: Diretório para cache de imagens
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
@@ -64,6 +65,24 @@ def save_users(users_data):
             json.dump(users_data, f, indent=2)
     except Exception as e:
         print(f"Erro ao salvar usuários: {e}")
+
+def load_schedules():
+    """Carrega todos os agendamentos do arquivo JSON."""
+    if not os.path.exists(SCHEDULER_DB):
+        return {}
+    try:
+        with open(SCHEDULER_DB, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_schedules(schedules_data):
+    """Salva todos os agendamentos no arquivo JSON."""
+    try:
+        with open(SCHEDULER_DB, 'w', encoding='utf-8') as f:
+            json.dump(schedules_data, f, indent=2)
+    except Exception as e:
+        print(f"Erro ao salvar agendamentos: {e}")
 
 def get_user_profile_data():
     """Retorna dados de perfil necessários para renderização do Hub."""
@@ -292,6 +311,38 @@ def check_session():
     
     # --- CORREÇÃO APLICADA AQUI ---
     return jsonify({"status": "deslogado", "profile_image": "/static/icones/default_profile.png"})
+
+@app.route('/api/scheduler/load')
+def scheduler_load():
+    """Carrega a fila e o histórico do usuário logado."""
+    username = session.get('username')
+    if not username:
+        # Se o usuário não estiver logado no Hub, retorna uma fila vazia
+        return jsonify({"queue": [], "history": []})
+        
+    all_schedules = load_schedules()
+    user_schedule = all_schedules.get(username, {"queue": [], "history": []})
+    return jsonify(user_schedule)
+
+@app.route('/api/scheduler/save', methods=['POST'])
+def scheduler_save():
+    """Salva a fila e o histórico do usuário logado."""
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    
+    data = request.json
+    job_queue = data.get('queue', [])
+    job_history = data.get('history', [])
+    
+    all_schedules = load_schedules()
+    all_schedules[username] = {
+        "queue": job_queue,
+        "history": job_history
+    }
+    save_schedules(all_schedules)
+    
+    return jsonify({"status": "sucesso", "mensagem": "Agendamento salvo."})
 
 @app.route('/api/hub/get-connections')
 def get_connections():

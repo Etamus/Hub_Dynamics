@@ -18,15 +18,16 @@ body {
     position: absolute; top: 25px; left: 25px; z-index: 10;
 }
 
-/* Botão de Logout */
+/* Botão de Logout (Ícone mais à esquerda) */
 .logout-button {
     position: absolute;
-    top: 25px;
-    right: 130px; 
+    top: 45px; /* Padrão */
+    /* Posição: 40px (padding) + 30px (ícone fullscreen) + 30px (gap) + 30px (ícone scheduler) + 30px (gap) = 160px */
+    right: 160px; 
     z-index: 10;
     background: none;
     border: none;
-    font-size: 1.6rem; 
+    font-size: 1.8rem; /* Padrão (igual ao Hub) */
     color: var(--text-tertiary-color);
     cursor: pointer;
     padding: 0;
@@ -37,15 +38,16 @@ body {
     transform: scale(1.1);
 }
 
-/* Botão Agendador */
+/* Botão Agendador (Ícone do meio) */
 .scheduler-button {
     position: absolute;
-    top: 25px;
-    right: 80px; 
+    top: 45px; /* Padrão */
+    /* Posição: 40px (padding) + 30px (ícone fullscreen) + 30px (gap) = 100px */
+    right: 100px; 
     z-index: 10;
     background: none;
     border: none;
-    font-size: 1.6rem; 
+    font-size: 1.8rem; /* Padrão (igual ao Hub) */
     color: var(--text-tertiary-color);
     cursor: pointer;
     padding: 0;
@@ -492,7 +494,8 @@ body {
 /* Inputs e selects */
 .modal-input-group select,
 .modal-input-group input[type="date"],
-.modal-input-group input[type="time"] {
+.modal-input-group input[type="time"],
+.scheduler-modal .modal-input-group input[type="text"] { /* <-- LINHA ADICIONADA */
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
@@ -747,4 +750,31 @@ body {
     font-size: 0.85rem;
     color: var(--text-muted-color, #666);
     font-weight: 500;
+}
+/* --- ESTILOS PARA ÍCONES NOS INPUTS DE DATA/HORA DO AGENDADOR --- */
+
+/* 1. O contêiner (wrapper) */
+.input-with-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* 2. O ícone */
+.input-with-icon-wrapper .input-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: var(--text-secondary-color);
+    pointer-events: none; /* Permite clicar no input "através" do ícone */
+    font-size: 0.9rem; /* Tamanho do ícone */
+}
+
+/* 3. Ajuste do input (que está dentro do wrapper) para dar espaço ao ícone */
+.scheduler-modal .input-with-icon-wrapper input[type="text"] {
+    /* Adiciona espaço à direita para o ícone não sobrepor o texto */
+    padding-right: 35px; 
+    
+    /* Faz o texto começar alinhado à esquerda (caso tenha centralização em outro lugar) */
+    text-align: left;
 }

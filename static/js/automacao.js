@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 jobQueue = jobQueue.filter(j => j.id !== job.id);
                 renderJobQueue();
                 renderJobHistory();
+                saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
             }
             isSchedulerRunning = false;
         }
@@ -133,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 jobQueue = jobQueue.filter(j => j.id !== job.id);
                 renderJobQueue();
                 renderJobHistory();
+                saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
             }
             isSchedulerRunning = false;
         }
@@ -439,58 +441,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funções do Agendador (Redesign) ---
 
     // 1. Injeta o HTML do modal do agendador (MODIFICADO)
-    function injectSchedulerHTML() {
-        const schedulerModal = document.createElement('div');
-        schedulerModal.id = 'scheduler-modal-overlay';
-        schedulerModal.className = 'modal-overlay'; 
-        schedulerModal.innerHTML = `
-            <div class="modal-content scheduler-modal">
-                <button id="scheduler-close-btn" class="modal-close" title="Fechar">&times;</button>
-                <div class="scheduler-header">
-                    <h2><i class="fas fa-clock"></i> Agendador de Tarefas</h2>
-                </div>
-                <div class="scheduler-body">
-                    <div class="scheduler-form">
-                        
-                        <div class="modal-input-group">
-                            <label>Tarefa:</label>
-                            <div id="scheduler-tasks-container" class="scheduler-tasks-container">
-                                </div>
-                        </div>
+function injectSchedulerHTML() {
+    const schedulerModal = document.createElement('div');
+    schedulerModal.id = 'scheduler-modal-overlay';
+    schedulerModal.className = 'modal-overlay'; 
+    schedulerModal.innerHTML = `
+        <div class="modal-content scheduler-modal">
+            <button id="scheduler-close-btn" class="modal-close" title="Fechar">&times;</button>
+            <div class="scheduler-header">
+                <h2><i class="fas fa-clock"></i> Agendador de Tarefas</h2>
+            </div>
+            <div class="scheduler-body">
+                <div class="scheduler-form">
+                    
+                    <div class="modal-input-group">
+                        <label>Tarefa:</label>
+                        <div id="scheduler-tasks-container" class="scheduler-tasks-container">
+                            </div>
+                    </div>
 
-                        <div class="scheduler-datetime-group">
-                            <div class="modal-input-group">
-                                <label for="scheduler-date">Data:</label>
-                                <input type="date" id="scheduler-date" aria-label="Data para iniciar a tarefa">
-                            </div>
-                            <div class="modal-input-group">
-                                <label for="scheduler-time">Hora:</label>
-                                <input type="time" id="scheduler-time" aria-label="Hora para iniciar a tarefa">
-                            </div>
+                    <div class="scheduler-datetime-group">
+                        <div class="modal-input-group">
+                            <label for="scheduler-date">Data:</label>
+                            <div class="input-with-icon-wrapper">
+                                <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10"> <i class="fas fa-calendar-alt input-icon"></i> </div>
                         </div>
-                        
-                        <div class="scheduler-button-container">
-                            <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                        <div class="modal-input-group">
+                            <label for="scheduler-time">Hora:</label>
+                            <div class="input-with-icon-wrapper">
+                                <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5"> <i class="fas fa-clock input-icon"></i> </div>
                         </div>
                     </div>
-                    <div class="scheduler-queue">
-                        <div class="scheduler-queue-tabs">
-                            <span id="tab-queue" class="scheduler-tab active" data-tab="queue">Fila</span>
-                            <span id="tab-history" class="scheduler-tab" data-tab="history">Histórico</span>
-                        </div>
-                        
-                        <div id="queue-container" class="queue-list-container">
-                            <ul id="scheduler-queue-list" aria-live="polite"></ul>
-                        </div>
-                        <div id="history-container" class="queue-list-container hidden">
-                            <ul id="scheduler-history-list" aria-live="polite"></ul>
-                        </div>
+                    
+                    <div class="scheduler-button-container">
+                        <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                    </div>
+                </div>
+                <div class="scheduler-queue">
+                    <div class="scheduler-queue-tabs">
+                        <span id="tab-queue" class="scheduler-tab active" data-tab="queue">Fila</span>
+                        <span id="tab-history" class="scheduler-tab" data-tab="history">Histórico</span>
+                    </div>
+                    
+                    <div id="queue-container" class="queue-list-container">
+                        <ul id="scheduler-queue-list" aria-live="polite"></ul>
+                    </div>
+                    <div id="history-container" class="queue-list-container hidden">
+                        <ul id="scheduler-history-list" aria-live="polite"></ul>
                     </div>
                 </div>
             </div>
-        `;
-        document.body.appendChild(schedulerModal);
-    }
+        </div>
+    `;
+    document.body.appendChild(schedulerModal);
+}
     
     // Em: automacao.js
 
@@ -682,6 +686,7 @@ function renderJobList(listElement, jobs, showRemoveButton) {
                 const jobId = btn.dataset.jobId;
                 jobQueue = jobQueue.filter(job => job.id !== jobId);
                 renderJobQueue();
+                saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
             });
         });
     }
@@ -702,53 +707,61 @@ function renderJobList(listElement, jobs, showRemoveButton) {
     }
 
     // 6. Adiciona uma tarefa à fila (MODIFICADO)
-    function addJobToQueue() {
-        const selectedRadio = document.querySelector('input[name="scheduler_task"]:checked'); // <-- NOVO: Pega o rádio selecionado
-        const dateInput = document.getElementById('scheduler-date');
-        const timeInput = document.getElementById('scheduler-time');
-        
-        if (!selectedRadio) { // <-- NOVO: Verifica se há rádio selecionado
-            alert('Por favor, selecione uma tarefa.');
-            return;
-        }
-        
-        const [type, name] = selectedRadio.value.split('|'); // <-- NOVO: Pega o valor do rádio
-        const dateValue = dateInput.value;
-        const timeValue = timeInput.value;
-        
-        // (Verificação de data/hora permanece a mesma)
-        if (!dateValue || !timeValue) {
-            alert('Por favor, selecione data e hora.');
-            return;
-        }
-        
-        const startTime = new Date(`${dateValue}T${timeValue}`).getTime();
-        const oneMinuteFromNow = Date.now() + 60000;
-        
-        if (isNaN(startTime) || startTime < oneMinuteFromNow) {
-            alert('Por favor, selecione uma data e hora com pelo menos 1 minuto de antecedência.');
-            return;
-        }
-        
-        const newJob = {
-            id: `job_${Date.now()}`,
-            taskInfo: { name: name, type: type },
-            startTime: startTime,
-            status: 'pending' 
-        };
-        
-        jobQueue.push(newJob);
-        jobQueue.sort((a, b) => a.startTime - b.startTime);
-        renderJobQueue();
-        
-        // Limpa os campos após adicionar (mantém o rádio selecionado para a próxima)
-        dateInput.value = '';
-        timeInput.value = '';
-        
-        if (!schedulerInterval) {
-            startSchedulerMotor();
-        }
+function addJobToQueue() {
+    const selectedRadio = document.querySelector('input[name="scheduler_task"]:checked');
+    const dateInput = document.getElementById('scheduler-date');
+    const timeInput = document.getElementById('scheduler-time');
+    
+    if (!selectedRadio) {
+        alert('Por favor, selecione uma tarefa.');
+        return;
     }
+    
+    const [type, name] = selectedRadio.value.split('|');
+    const dateValue = dateInput.value; // "DD/MM/AAAA"
+    const timeValue = timeInput.value; // "HH:MM"
+    
+    // --- NOVO: Validação e Conversão de Data/Hora ---
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateValue) || !/^\d{2}:\d{2}$/.test(timeValue)) {
+        alert('Formato inválido. Use DD/MM/AAAA e HH:MM.');
+        return;
+    }
+
+    const [day, month, year] = dateValue.split('/');
+    const [hour, minute] = timeValue.split(':');
+    
+    // Converte para YYYY-MM-DDTHH:MM (formato ISO 8601) para o new Date()
+    const isoDateString = `${year}-${month}-${day}T${hour}:${minute}`;
+    const startTime = new Date(isoDateString).getTime();
+    // --------------------------------------------------
+
+    const oneMinuteFromNow = Date.now() + 60000;
+    
+    if (isNaN(startTime) || startTime < oneMinuteFromNow) {
+        alert('Data/hora inválida ou no passado. Selecione pelo menos 1 minuto de antecedência.');
+        return;
+    }
+    
+    const newJob = {
+        id: `job_${Date.now()}`,
+        taskInfo: { name: name, type: type },
+        startTime: startTime,
+        status: 'pending' 
+    };
+    
+    jobQueue.push(newJob);
+    jobQueue.sort((a, b) => a.startTime - b.startTime);
+    renderJobQueue();
+    
+    dateInput.value = '';
+    timeInput.value = '';
+    
+    saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
+    
+    if (!schedulerInterval) {
+        startSchedulerMotor();
+    }
+}
 
     // 7. O "motor" que verifica a fila
     function startSchedulerMotor() {
@@ -790,6 +803,7 @@ function renderJobList(listElement, jobs, showRemoveButton) {
                 
                 renderJobQueue();
                 renderJobHistory();
+                saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
                 return;
             }
 
@@ -808,52 +822,128 @@ function renderJobList(listElement, jobs, showRemoveButton) {
     }
 
     // 9. Abre o modal do agendador (MODIFICADO)
-    function openSchedulerModal() {
-        const modal = document.getElementById('scheduler-modal-overlay');
+function openSchedulerModal() {
+    const modal = document.getElementById('scheduler-modal-overlay');
+    
+    if (!modal) {
+        injectSchedulerHTML();
         
-        if (!modal) {
-            injectSchedulerHTML();
-            
-            // Adiciona listeners aos novos elementos DEPOIS de injetar
-            document.getElementById('scheduler-close-btn').addEventListener('click', closeSchedulerModal);
-            document.getElementById('scheduler-add-btn').addEventListener('click', addJobToQueue);
-            
-            // Listeners das Abas
-            const tabQueue = document.getElementById('tab-queue');
-            const tabHistory = document.getElementById('tab-history');
-            const queueContainer = document.getElementById('queue-container');
-            const historyContainer = document.getElementById('history-container');
+        // Adiciona listeners aos novos elementos DEPOIS de injetar
+        document.getElementById('scheduler-close-btn').addEventListener('click', closeSchedulerModal);
+        document.getElementById('scheduler-add-btn').addEventListener('click', addJobToQueue);
+        
+        // --- NOVO: Configura as máscaras na primeira abertura ---
+        setupInputMasks(); 
+        
+        // Listeners das Abas
+        const tabQueue = document.getElementById('tab-queue');
+        const tabHistory = document.getElementById('tab-history');
+        const queueContainer = document.getElementById('queue-container');
+        const historyContainer = document.getElementById('history-container');
 
-            tabQueue.addEventListener('click', () => {
-                tabQueue.classList.add('active');
-                tabHistory.classList.remove('active');
-                queueContainer.classList.remove('hidden');
-                historyContainer.classList.add('hidden');
-            });
-            
-            tabHistory.addEventListener('click', () => {
-                tabHistory.classList.add('active');
-                tabQueue.classList.remove('active');
-                historyContainer.classList.remove('hidden');
-                queueContainer.classList.add('hidden');
-            });
-            
-            tabQueue.click(); 
-        }
+        tabQueue.addEventListener('click', () => {
+            tabQueue.classList.add('active');
+            tabHistory.classList.remove('active');
+            queueContainer.classList.remove('hidden');
+            historyContainer.classList.add('hidden');
+        });
         
-        // Sempre popula e renderiza ao abrir
-        renderPaginatedTasks(); 
-        renderJobQueue();
-        renderJobHistory();
-        document.getElementById('scheduler-modal-overlay').classList.add('visible');
-        document.querySelector('input[name="scheduler_task"]').focus(); // Foca no primeiro rádio
+        tabHistory.addEventListener('click', () => {
+            tabHistory.classList.add('active');
+            tabQueue.classList.remove('active');
+            historyContainer.classList.remove('hidden');
+            queueContainer.classList.add('hidden');
+        });
+        
+        tabQueue.click(); 
     }
+    
+    // Sempre popula e renderiza ao abrir
+    renderPaginatedTasks(); 
+    renderJobQueue();
+    renderJobHistory();
+    document.getElementById('scheduler-modal-overlay').classList.add('visible');
+    document.querySelector('input[name="scheduler_task"]').focus(); // Foca no primeiro rádio
+}
 
     // 10. Fecha o modal do agendador
     function closeSchedulerModal() {
         document.getElementById('scheduler-modal-overlay').classList.remove('visible');
     }
     
+    // NOVO: Função para salvar a fila e o histórico no servidor
+function saveScheduleToServer() {
+    // O servidor sabe quem é o usuário pela sessão
+    fetch('/api/scheduler/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            queue: jobQueue,
+            history: jobHistory
+        })
+    }).catch(err => console.error("Falha ao salvar agendamento:", err));
+}
+
+// NOVO: Função para aplicar máscaras de input
+function setupInputMasks() {
+    const dateInput = document.getElementById('scheduler-date');
+    if (!dateInput.maskApplied) { // Evita adicionar o listener múltiplas vezes
+        dateInput.maskApplied = true;
+        dateInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+            if (v.length > 8) v = v.slice(0, 8);
+            if (v.length > 4) {
+                v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+            } else if (v.length > 2) {
+                v = `${v.slice(0, 2)}/${v.slice(2)}`;
+            }
+            e.target.value = v;
+        });
+    }
+
+    const timeInput = document.getElementById('scheduler-time');
+    if (!timeInput.maskApplied) {
+        timeInput.maskApplied = true;
+        timeInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 4) v = v.slice(0, 4);
+            if (v.length > 2) {
+                v = `${v.slice(0, 2)}:${v.slice(2)}`;
+            }
+            e.target.value = v;
+        });
+    }
+}
+
+// NOVO: Função para processar a fila carregada (verifica tarefas perdidas)
+function processLoadedSchedule(data) {
+    const now = Date.now();
+    const validQueue = [];
+    let loadedHistory = data.history || [];
+    
+    (data.queue || []).forEach(job => {
+        if (job.startTime < now) {
+            // Se a tarefa já passou, marca como falha e move para o histórico
+            job.status = 'failed'; 
+            loadedHistory.unshift(job); // Adiciona no início do histórico
+        } else {
+            validQueue.push(job); // Mantém na fila
+        }
+    });
+
+    // Atualiza as variáveis globais
+    jobQueue = validQueue.sort((a, b) => a.startTime - b.startTime);
+    jobHistory = loadedHistory.slice(0, 4); // Limita o histórico
+    
+    // Renderiza as listas atualizadas
+    renderJobQueue(); 
+    renderJobHistory();
+    
+    // Salva de volta no servidor caso tarefas tenham sido movidas
+    if (data.queue.length !== validQueue.length) {
+        saveScheduleToServer();
+    }
+}
 
     // --- Adiciona Listeners de Eventos (mantidos) ---
 
@@ -938,26 +1028,41 @@ function renderJobList(listElement, jobs, showRemoveButton) {
     }
     // -------------------------------------------------------------
 
-    // --- Função de Inicialização ---
-    function initialize() {
-        fetch('/api/hub/get-connections')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'sucesso') {
-                    savedConnections = data.connections;
-                    console.log("Conexões salvas carregadas:", savedConnections);
-                } else {
-                    console.log("Nenhuma conexão salva encontrada (usuário não logado no Hub?).");
-                }
-            })
-            .catch(err => {
-                console.error("Erro ao buscar conexões:", err);
-            })
-            .finally(() => {
-                updateUiState();
-                startSchedulerMotor(); 
-            });
-    }
+    /// --- Função de Inicialização ---
+function initialize() {
+    // 1. Coleta as tarefas (síncrono, necessário para o agendador)
+    collectAllTasks(); 
+    
+    // 2. Busca conexões salvas
+    fetch('/api/hub/get-connections')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                savedConnections = data.connections;
+                console.log("Conexões salvas carregadas:", savedConnections);
+            } else {
+                console.log("Nenhuma conexão salva encontrada (usuário não logado no Hub?).");
+            }
+        })
+        .catch(err => {
+            console.error("Erro ao buscar conexões:", err);
+        })
+        .finally(() => {
+            // 3. Busca o agendamento salvo
+            fetch('/api/scheduler/load')
+                .then(res => res.json())
+                .then(data => {
+                    // 4. Processa a fila (move tarefas passadas para o histórico)
+                    processLoadedSchedule(data);
+                })
+                .catch(err => console.error("Falha ao carregar agendamento:", err))
+                .finally(() => {
+                    // 5. Inicia a UI e o motor do agendador (APENAS após tudo carregar)
+                    updateUiState();
+                    startSchedulerMotor(); 
+                });
+        });
+}
 
     // --- Estado Inicial ---
     initialize();
