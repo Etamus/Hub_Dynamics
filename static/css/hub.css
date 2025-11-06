@@ -637,7 +637,7 @@ body.theme-dark .logo-dark {
     border-radius: 8px;
     box-shadow: 0 4px 15px var(--shadow-color);
     min-width: 200px;
-    padding: 5px; /* <-- Verifique se está 5px */
+    padding: 8px; /* <-- Verifique se está 5px */
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
@@ -650,6 +650,8 @@ body.theme-dark .logo-dark {
     transform: translateY(0);
 }
 
+/* Em: hub.css */
+
 .access-dropdown-header {
     padding: 10px 15px;
     border-bottom: 1px solid var(--border-color);
@@ -658,15 +660,19 @@ body.theme-dark .logo-dark {
 .access-dropdown-header strong {
     color: var(--text-primary-color);
     font-size: 0.95rem;
+    
+    /* === NOVO: FORÇA TEXTO PARA MAIÚSCULAS === */
+    text-transform: uppercase;
+    /* ========================================= */
 }
 .access-dropdown-header span {
     color: var(--text-secondary-color);
     font-size: 0.8rem;
     display: block;
 }
-
-/* Em: hub.css */
-
+#access-connections-btn {
+    margin-top: 10px; /* Ajuste este valor (ex: 5px, 10px, etc.) */
+}
 /* Em: hub.css */
 
 .header-tools .access-dropdown-item {
@@ -680,7 +686,7 @@ body.theme-dark .logo-dark {
     background: none !important; /* Força que não tenha fundo */
     
     border: none;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--text-primary-color);
     cursor: pointer;
     box-sizing: border-box;

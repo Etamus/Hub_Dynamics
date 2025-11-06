@@ -634,6 +634,20 @@ body {
     overflow-y: auto; /* Permite rolagem se houver muitas tarefas */
     padding-right: 5px;
 }
+/* Em: automacao.css (NOVO BLOCO) */
+
+/* --- ESTILO PARA O PLACEHOLDER INVISÍVEL (EVITAR PULO) --- */
+
+.scheduler-task-placeholder {
+    /* Copia o estilo do label para manter a altura (com padding e border) */
+    padding: 12px 15px; /* Altura do label + 2px da borda (10px + 2) */
+    border: 2px solid transparent; /* Bordas transparentes para manter o espaçamento */
+    border-radius: 8px;
+    
+    /* Garante invisibilidade e que não interfira no layout/clique */
+    visibility: hidden;
+    pointer-events: none;
+}
 
 .scheduler-task-label {
     display: flex;
@@ -668,60 +682,69 @@ body {
     width: 0;
     height: 0;
 }
-
-/* Estilos dos detalhes da tarefa */
-.scheduler-task-label .task-name {
-    flex-grow: 1;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.scheduler-task-label .task-icon-system {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 3px 6px;
-    border-radius: 4px;
-    margin-right: 15px;
-    min-width: 35px;
-    text-align: center;
-}
-
-/* Cores dos rótulos de sistema */
-.scheduler-task-label .task-icon-system.sap {
-    color: #1c4587;
-    background-color: #e3f2fd;
-}
-.scheduler-task-label .task-icon-system.bw {
-    color: #007bff;
-    background-color: #d8f0ff;
-}
 /* Em: automacao.css */
 
-/* --- NOVOS ESTILOS PARA TEXTO "SAP" / "BW" NA FILA E HISTÓRICO --- */
+/* --- NOVOS ESTILOS PARA IMAGENS NOS BOTÕES DE TAREFA DO AGENDADOR --- */
 
-.queue-item-system-text {
-    font-size: 0.75rem; /* Menor que o nome da tarefa */
-    font-weight: 700;
-    padding: 2px 5px; /* Preenchimento pequeno */
-    border-radius: 4px;
+.scheduler-task-label .scheduler-task-system-image {
+    height: 20px; /* Tamanho da logo */
+    width: auto;
+    margin-right: 15px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Opcional: Reintroduzir o estilo para ícones na fila/histórico (que usa a classe .queue-item-task-icon) */
+.queue-item-task-icon {
+    height: 16px; /* Tamanho do ícone */
+    width: auto;
     margin-right: 8px;
     vertical-align: middle;
     position: relative;
     top: -1px;
+    /* Certifique-se de que o display: none da última vez foi removido */
+    display: inline-block; 
+}
+/* Em: automacao.css */
+
+/* --- ESTILOS PARA PAGINAÇÃO DE TAREFAS NO AGENDADOR --- */
+
+.task-pagination-controls {
+    /* Layout dos controles de paginação (centralizado) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0 5px 0;
+    margin-top: 15px; /* Separação maior dos botões */
+    border-top: 1px solid var(--border-color, #eee); /* Linha divisória */
 }
 
-/* Cores dos rótulos de sistema na Fila/Histórico (Copiado das regras do scheduler-task-label) */
-.queue-item-system-text.sap {
-    color: #1c4587;
-    background-color: #e3f2fd;
-}
-.queue-item-system-text.bw {
-    color: #007bff;
-    background-color: #d8f0ff;
+.pagination-btn {
+    /* Botões de chevron */
+    background: none;
+    border: none;
+    color: var(--color-blue, #007bff); /* Cor de link/interação */
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 1rem;
+    transition: background-color 0.2s;
 }
 
-/* Opcional: Remover regras de ícone de imagem que não serão mais usadas na lista */
-.queue-item-task-icon {
-    display: none; /* Esconde o elemento da imagem se ainda estiver referenciado por algum CSS antigo */
+.pagination-btn:hover:not(:disabled) {
+    background-color: var(--hover-bg-color, #f0f0f0);
+    border-radius: 4px;
+}
+
+.pagination-btn:disabled {
+    /* Botões inativos */
+    color: var(--text-muted-color, #aaa); 
+    cursor: not-allowed;
+}
+
+.page-info {
+    /* Texto "X de Y" */
+    margin: 0 15px;
+    font-size: 0.85rem;
+    color: var(--text-muted-color, #666);
+    font-weight: 500;
 }

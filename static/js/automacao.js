@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let schedulerInterval = null; 
     let isSchedulerRunning = false; 
 
+    let schedulerAllTasks = []; // Armazena todas as tarefas disponíveis
+    let currentTaskPage = 0; // Página atual da seleção de tarefas
+    const TASKS_PER_PAGE = 3; // O limite de 3 botões visíveis
+
     // --- Seletores dos Elementos ---
     const statusBox = document.getElementById('status');
     const systemRadios = document.querySelectorAll('input[name="login_system"]');
@@ -488,46 +492,136 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(schedulerModal);
     }
     
-    // 2. Preenche os botões de rádio (MODIFICADO)
-    function populateSchedulerTasks() {
-        const container = document.getElementById('scheduler-tasks-container');
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        // 1. Mapeia todas as tarefas (SAP + BW)
-        const allTasks = [];
-        const sapTasks = document.querySelectorAll('#sap-tasks-section .task-button');
-        sapTasks.forEach(task => {
-            const taskName = task.dataset.taskName;
-            if (taskName) {
-                allTasks.push({ name: taskName, type: 'sap' });
-            }
-        });
-        
-        const bwTask = document.getElementById('bw-extract-btn');
-        if (bwTask) {
-            allTasks.push({ name: 'Relatório Peças', type: 'bw' });
-        }
+    // Em: automacao.js
 
-        // 2. Cria os botões de rádio
-        allTasks.forEach((task, index) => {
-            const taskValue = `${task.type}|${task.name}`;
-            const isChecked = index === 0 ? 'checked' : ''; // Seleciona o primeiro por padrão
-            
-            const label = document.createElement('label');
-            label.className = `scheduler-task-label ${task.type}`;
-            label.innerHTML = `
-                <input type="radio" name="scheduler_task" value="${taskValue}" ${isChecked}>
-                <span class="task-icon-system ${task.type}">${task.type.toUpperCase()}</span>
-                <span class="task-name">${task.name}</span>
-            `;
-            container.appendChild(label);
-        });
+// Em: automacao.js
+
+// 1. Função para coletar todas as tarefas (Chamar apenas uma vez na inicialização do script)
+function collectAllTasks() {
+    schedulerAllTasks = [];
+    
+    // SAP Tasks
+    const sapTasks = document.querySelectorAll('#sap-tasks-section .task-button');
+    sapTasks.forEach(task => {
+        const taskName = task.dataset.taskName;
+        if (taskName) {
+            schedulerAllTasks.push({ name: taskName, type: 'sap' });
+        }
+    });
+    
+    // BW Task
+    const bwTask = document.getElementById('bw-extract-btn');
+    if (bwTask) {
+        schedulerAllTasks.push({ name: 'Relatório Peças', type: 'bw' });
     }
 
-    // 3. Função de renderização genérica (para Fila e Histórico) - CORRIGIDA
-    function renderJobList(listElement, jobs, showRemoveButton) {
+    // Opcional: Selecionar o primeiro item na inicialização se a lista não estiver vazia
+    if (schedulerAllTasks.length > 0) {
+        const firstTaskValue = `${schedulerAllTasks[0].type}|${schedulerAllTasks[0].name}`;
+        // Pode ser necessário ajustar como você define o input checked para o primeiro item.
+        // Seus botões de rádio serão re-renderizados em renderPaginatedTasks.
+    }
+}
+
+// Em: automacao.js
+
+// 2. Função principal que renderiza a seleção de tarefas com paginação
+function renderPaginatedTasks() {
+    const container = document.getElementById('scheduler-tasks-container');
+    if (!container) return;
+
+    // Garante que a lista de tarefas está preenchida
+    if (schedulerAllTasks.length === 0) {
+        collectAllTasks();
+        if (schedulerAllTasks.length === 0) return;
+    }
+    
+    container.innerHTML = '';
+    
+    const totalTasks = schedulerAllTasks.length;
+    const startIndex = currentTaskPage * TASKS_PER_PAGE;
+    const endIndex = startIndex + TASKS_PER_PAGE;
+    const tasksToRender = schedulerAllTasks.slice(startIndex, endIndex);
+    
+    const totalPages = Math.ceil(totalTasks / TASKS_PER_PAGE);
+
+    // --- 1. Renderiza as tarefas visíveis ---
+    tasksToRender.forEach((task, index) => {
+        const actualIndex = startIndex + index;
+        const taskValue = `${task.type}|${task.name}`;
+        
+        // Use a primeira tarefa do array COMPLETO como checked se nenhum estiver marcado
+        const isChecked = actualIndex === 0 ? 'checked' : ''; 
+        
+        const imagePath = task.type === 'sap' 
+            ? '/static/icones/sap_logo.png' 
+            : '/static/icones/bwhanashort_logo.png';
+        
+        const label = document.createElement('label');
+        label.className = `scheduler-task-label ${task.type}`;
+        label.innerHTML = `
+            <input type="radio" name="scheduler_task" value="${taskValue}" ${isChecked}>
+            <img src="${imagePath}" alt="${task.type.toUpperCase()} Logo" class="scheduler-task-system-image">
+            <span class="task-name">${task.name}</span>
+        `;
+        container.appendChild(label);
+    });
+
+    // --- 2. Injeta Placeholders Invisíveis para manter a altura ---
+    const tasksRenderedCount = tasksToRender.length;
+    const placeholdersNeeded = TASKS_PER_PAGE - tasksRenderedCount;
+
+    for (let i = 0; i < placeholdersNeeded; i++) {
+        const placeholder = document.createElement('div');
+        // Usamos 'scheduler-task-placeholder' para o CSS de invisibilidade
+        placeholder.className = 'scheduler-task-placeholder'; 
+        container.appendChild(placeholder);
+    }
+    // -----------------------------------------------------------------
+
+    
+    // --- 3. Renderiza Controles de Paginação (se necessário) ---
+    if (totalPages > 1) {
+        const paginationDiv = document.createElement('div');
+        paginationDiv.className = 'task-pagination-controls';
+        
+        const prevButton = `<button class="pagination-btn" onclick="handleTaskPagination(-1)" ${currentTaskPage === 0 ? 'disabled' : ''} aria-label="Página anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>`;
+        
+        const pageInfo = `<span class="page-info">${currentTaskPage + 1} de ${totalPages}</span>`;
+        
+        const nextButton = `<button class="pagination-btn" onclick="handleTaskPagination(1)" ${currentTaskPage >= totalPages - 1 ? 'disabled' : ''} aria-label="Próxima página">
+            <i class="fas fa-chevron-right"></i>
+        </button>`;
+
+        paginationDiv.innerHTML = prevButton + pageInfo + nextButton;
+        container.appendChild(paginationDiv);
+    }
+}
+
+// 3. Função para mudar a página (Chamar via click no HTML)
+function handleTaskPagination(direction) {
+    const totalTasks = schedulerAllTasks.length;
+    const totalPages = Math.ceil(totalTasks / TASKS_PER_PAGE);
+    
+    let newPage = currentTaskPage + direction;
+    
+    if (newPage >= 0 && newPage < totalPages) {
+        currentTaskPage = newPage;
+        renderPaginatedTasks(); // Re-renderiza a lista de botões
+    }
+}
+
+// === NOVO: EXPOR FUNÇÃO PARA O ESCOPO GLOBAL ===
+window.handleTaskPagination = handleTaskPagination;
+
+    // Em: automacao.js
+
+// Em: automacao.js
+
+// 3. Função de renderização genérica (para Fila e Histórico) - CORRIGIDA COM ANO
+function renderJobList(listElement, jobs, showRemoveButton) {
     listElement.innerHTML = '';
     
     if (jobs.length === 0) {
@@ -547,21 +641,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.className = `queue-item ${job.status}`;
         
+        // --- MODIFICAÇÃO DE DATA: Adicionado 'year: 'numeric'' ---
         const time = new Date(job.startTime).toLocaleString('pt-BR', { 
-            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', // AGORA INCLUI O ANO
+            hour: '2-digit', 
+            minute: '2-digit' 
         });
+        // -----------------------------------------------------------
+        
         const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
         
         const removeButtonHtml = showRemoveButton
             ? `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`
             : '';
         
-        // --- NOVO: TROCANDO PNG POR TEXTO ESTILIZADO ---
-        const systemType = job.taskInfo.type;
-        const systemText = systemType.toUpperCase();
+        // --- Lógica de Imagem (baseada no pedido anterior) ---
+        const imagePath = job.taskInfo.type === 'sap' 
+            ? '/static/icones/sap_logo.png' 
+            : '/static/icones/bwhanashort_logo.png'; 
         
-        const taskIconHtml = `<span class="queue-item-system-text ${systemType}">${systemText}</span>`;
-        // ------------------------------------------------
+        const taskIconHtml = `<img src="${imagePath}" class="queue-item-task-icon" alt="${job.taskInfo.type} logo">`;
+        // ----------------------------------------------------
 
         li.innerHTML = `
             <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
@@ -740,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Sempre popula e renderiza ao abrir
-        populateSchedulerTasks(); 
+        renderPaginatedTasks(); 
         renderJobQueue();
         renderJobHistory();
         document.getElementById('scheduler-modal-overlay').classList.add('visible');
