@@ -383,7 +383,7 @@ body {
     font-size: 1.4rem;
     color: var(--text-primary-color);
     margin-top: 0;
-    margin-bottom: 20px; 
+    margin-bottom: 45px; /* <--- AUMENTADO de 20px para 35px */
 }
 #confirm-modal-overlay .modal-button-container {
     margin-top: -20px; 
@@ -607,4 +607,121 @@ body {
 }
 .queue-item-remove:hover {
     color: #dc3545;
+}
+/* --- NOVO: Estilo do Botão "Adicionar Conexão" --- */
+.modal-form .btn-save-conn {
+    width: 60%;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -5px; /* <--- VALOR REDUZIDO PARA DIMINUIR O ESPAÇO */
+
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+}
+.modal-form .btn-save-conn:hover {
+    background-color: var(--accent-color-hover);
+}
+/* --- NOVOS ESTILOS PARA SELEÇÃO DE TAREFA DO AGENDADOR (BOTÕES DE RÁDIO) --- */
+
+.scheduler-tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaço entre os botões */
+    margin-top: 10px;
+    max-height: 250px;
+    overflow-y: auto; /* Permite rolagem se houver muitas tarefas */
+    padding-right: 5px;
+}
+
+.scheduler-task-label {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--card-bg-color);
+    color: var(--text-primary-color);
+    position: relative;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Efeito de hover e check */
+.scheduler-task-label:hover {
+    border-color: var(--accent-color);
+    background-color: var(--bg-color);
+}
+.scheduler-task-label:has(input:checked) {
+    border-color: #28a745; /* Cor de sucesso para tarefa selecionada */
+    background-color: var(--bg-color);
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+/* Esconde o rádio nativo */
+.scheduler-task-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Estilos dos detalhes da tarefa */
+.scheduler-task-label .task-name {
+    flex-grow: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.scheduler-task-label .task-icon-system {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-right: 15px;
+    min-width: 35px;
+    text-align: center;
+}
+
+/* Cores dos rótulos de sistema */
+.scheduler-task-label .task-icon-system.sap {
+    color: #1c4587;
+    background-color: #e3f2fd;
+}
+.scheduler-task-label .task-icon-system.bw {
+    color: #007bff;
+    background-color: #d8f0ff;
+}
+/* Em: automacao.css */
+
+/* --- NOVOS ESTILOS PARA TEXTO "SAP" / "BW" NA FILA E HISTÓRICO --- */
+
+.queue-item-system-text {
+    font-size: 0.75rem; /* Menor que o nome da tarefa */
+    font-weight: 700;
+    padding: 2px 5px; /* Preenchimento pequeno */
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+/* Cores dos rótulos de sistema na Fila/Histórico (Copiado das regras do scheduler-task-label) */
+.queue-item-system-text.sap {
+    color: #1c4587;
+    background-color: #e3f2fd;
+}
+.queue-item-system-text.bw {
+    color: #007bff;
+    background-color: #d8f0ff;
+}
+
+/* Opcional: Remover regras de ícone de imagem que não serão mais usadas na lista */
+.queue-item-task-icon {
+    display: none; /* Esconde o elemento da imagem se ainda estiver referenciado por algum CSS antigo */
 }

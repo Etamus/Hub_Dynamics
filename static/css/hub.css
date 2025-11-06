@@ -595,3 +595,219 @@ body.theme-dark .logo-dark {
         font-size: 0.9rem;
     }
 }
+/* ============================================= */
+/* ===== NOVOS ESTILOS (ACESSO E CONEXÕES) ===== */
+/* ============================================= */
+
+/* Contêiner para o botão de Acesso e Dropdown */
+.access-container {
+    position: relative;
+}
+
+/* Botão de Acesso (copia o estilo dos outros botões do header) */
+.access-button {
+    font-size: 1.8rem;
+    color: var(--text-tertiary-color);
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 5px;
+}
+.access-button i.fa-user-check {
+    /* Ajusta o ícone se ele parecer desalinhado, movendo-o para a esquerda */
+    position: relative;
+    left: 5px; 
+}
+.access-button:hover {
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* Dropdown Menu */
+.access-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    z-index: 1100;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    min-width: 200px;
+    padding: 5px; /* <-- Verifique se está 5px */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    /* overflow: hidden; <-- REMOVA ou GARANTA que não está aqui */
+}
+.access-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.access-dropdown-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+.access-dropdown-header strong {
+    color: var(--text-primary-color);
+    font-size: 0.95rem;
+}
+.access-dropdown-header span {
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+    display: block;
+}
+
+/* Em: hub.css */
+
+/* Em: hub.css */
+
+.header-tools .access-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 12px;
+    
+    /* REMOVENDO EFEITO DE BACKGROUND INDESEJADO */
+    background: none !important; /* Força que não tenha fundo */
+    
+    border: none;
+    font-size: 0.9rem;
+    color: var(--text-primary-color);
+    cursor: pointer;
+    box-sizing: border-box;
+    border-radius: 4px;
+
+    /* ANIMAÇÃO: Adiciona uma transição suave para escala/cor */
+    transition: color 0.2s ease, transform 0.2s ease; 
+}
+
+/* NOVO: Estilos ao passar o mouse */
+.header-tools .access-dropdown-item:hover {
+    /* MANTÉM: O aumento de escala para simular o "aumento da fonte" */
+    transform: scale(1.05); 
+    
+    /* AJUSTE: Mude a cor do texto/ícone para dar destaque, se desejar */
+    color: var(--accent-color); 
+    
+    /* REMOVIDO: background-color: var(--bg-color); */
+    background: none !important; /* Garante que o hover não aplique fundo */
+}
+
+/* NOVO: Aplica o mesmo hover aos elementos internos (ícone) */
+.header-tools .access-dropdown-item:hover i {
+    color: var(--accent-color);
+    transform: scale(1.1); /* Um aumento leve no ícone também */
+}
+.header-tools .access-dropdown-item i {
+    font-size: 0.9rem; /* <-- Ícone do mesmo tamanho da fonte */
+    margin-right: 10px;
+    width: 15px;
+    text-align: center;
+    color: var(--text-secondary-color);
+    flex-shrink: 0;
+}
+.header-tools .access-dropdown-item.danger {
+    color: #dc3545;
+}
+.header-tools .access-dropdown-item.danger i {
+    color: #dc3545;
+}
+
+/* Estilos para o Modal de Login do Hub */
+.hub-modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+.button-full-width {
+    width: 60%;
+    padding: 12px 20px;
+    display: block;        /* Garantir que se comporte como bloco (geralmente não é necessário em botões, mas é seguro) */
+    margin-left: auto;     /* Centraliza o botão */
+    margin-right: auto;    /* Centraliza o botão */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background-color: var(--accent-color);
+    color: white;
+}
+.button-full-width:hover {
+    background-color: var(--accent-color-hover);
+}
+.hub-form-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.hub-form-error.hidden {
+    display: none;
+}
+
+/* Estilos para o Modal de Conexões */
+#connections-list-container {
+    padding: 15px 25px 25px;
+    text-align: left;
+}
+.connection-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+.connection-icon {
+    height: 24px;
+    margin-right: 15px;
+}
+.connection-details {
+    flex-grow: 1;
+}
+.connection-details strong {
+    color: var(--text-primary-color);
+    font-size: 1.1rem;
+}
+.connection-details span {
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+    display: block;
+}
+.connection-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+.connection-remove-btn:hover {
+    color: #dc3545;
+}
+.no-connections {
+    text-align: center;
+    color: var(--text-secondary-color);
+    font-style: italic;
+    padding: 20px 0;
+}

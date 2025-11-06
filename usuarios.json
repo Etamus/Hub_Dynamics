@@ -1,0 +1,16 @@
+{
+  "admin": {
+    "password": "admin",
+    "connections": {
+      "sap": null,
+      "bw": null
+    }
+  },
+  "lopesm21": {
+    "password": "1234",
+    "connections": {
+      "sap": null,
+      "bw": null
+    }
+  }
+}

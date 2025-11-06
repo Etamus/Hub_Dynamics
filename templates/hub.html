@@ -50,7 +50,14 @@
             <span>Hub Spare Parts</span>
         </div>
         <div class="header-tools">
-            <button id="about-btn" aria-label="Ajuda" title="Ajuda"><i class="fas fa-question-circle"></i></button>
+            
+            <div class="access-container">
+                <button id="access-btn" class="access-button" aria-label="Acesso" title="Acesso">
+                    <i class="fas fa-user"></i> </button>
+                <div class="access-dropdown" id="access-dropdown">
+                    </div>
+            </div>
+            <button id="about-btn" aria-label="Sobre" title="Sobre"><i class="fas fa-question-circle"></i></button>
             <button id="settings-btn" aria-label="Configurações" title="Configurações"><i class="fas fa-cog"></i></button>
             <button id="fullscreen-btn" aria-label="Tela Cheia" title="Tela Cheia"><i class="fas fa-expand"></i></button>
         </div>
@@ -134,27 +141,28 @@
                 </div>
 
                 <div class="setting-group">
-                    <label>Quantidade (Acesso Rápido)</label>
+                    <label>Quantidade de Cards</label>
                     <div class="count-selector">
                         <div class="setting-option" data-count="4">
-                            <span>4 Itens</span>
+                            <span>4 Espaços</span>
                         </div>
                         <div class="setting-option" data-count="6">
-                            <span>6 Itens</span>
+                            <span>6 Espaços</span>
                         </div>
                         <div class="setting-option" data-count="8">
-                            <span>8 Itens</span>
+                            <span>8 Espaços</span>
                         </div>
                     </div>
 
                     <button class="button-danger" id="clear-recents-btn">
                         <i class="fas fa-trash-alt"></i>
-                        Limpar Acessos
+                        Limpar Cards
                     </button>
                 </div>
                 </div>
         </div>
     </div>
+
     <div class="settings-modal-overlay" id="about-overlay">
         <div class="settings-modal">
             <div class="settings-header">
@@ -163,7 +171,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v1.5</p>
+                    <p><strong>Versão Atual:</strong> v1.7</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -174,6 +182,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v1.7:</strong> Acesso de usuário, conexões e melhorias na página de automatizações</li>
                         <li><strong>v1.5:</strong> Qualidade de vida, correções de instabilidade e melhorias nas páginas</li>
                         <li><strong>v1.1.4:</strong> Adicionado Barra de Pesquisa na Página Inicial</li>
                         <li><strong>v1.1.2:</strong> Adição de apresentações 'Processo de devolução' ao Library</li>
@@ -193,6 +202,37 @@
         </div>
     </div>
 
+
+    <div class="settings-modal-overlay" id="hub-login-overlay">
+        <div class="settings-modal" style="max-width: 340px;">
+            <div class="settings-header">
+                <h2>Acesso</h2> <button class="settings-close-btn" id="hub-login-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" style="padding: 20px 30px 30px;">
+                <p id="hub-login-error" class="hub-form-error hidden"></p>
+                <div class="modal-input-group" style="margin-bottom: 15px;">
+                    <label for="hub-user">Usuário:</label>
+                    <input type="text" id="hub-user" class="hub-modal-input">
+                </div>
+                <div class="modal-input-group" style="margin-bottom: 25px;">
+                    <label for="hub-pass">Senha:</label>
+                    <input type="password" id="hub-pass" class="hub-modal-input">
+                </div>
+                <button class="button-full-width" id="hub-login-submit-btn">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="connections-overlay">
+        <div class="settings-modal" style="max-width: 400px;">
+            <div class="settings-header">
+                <h2>Minhas Conexões</h2>
+                <button class="settings-close-btn" id="connections-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" id="connections-list-container">
+                </div>
+        </div>
+    </div>
     <script src="/static/js/shared.js" defer></script>
     <script src="/static/js/hub.js" defer></script>
     

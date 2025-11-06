@@ -1,9 +1,16 @@
 import subprocess
 import os
 import sys
-from flask import Flask, render_template, request, jsonify, send_from_directory
+# NOVAS IMPORTAÇÕES
+import json
+from flask import (
+    Flask, render_template, request, jsonify, send_from_directory,
+    session, redirect, url_for
+)
 
 app = Flask(__name__)
+# NOVO: Chave secreta para gerenciar sessões de usuário do Hub
+app.secret_key = 'sua_chave_secreta_aqui_mude_isso' 
 
 # --- Variáveis de Estado Globais ---
 is_sap_logged_in = False
@@ -13,6 +20,8 @@ last_bw_creds = {}
 # --- Caminhos e Configurações ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DRIVE_ROOT = os.path.join(BASE_DIR, "drive") 
+# NOVO: Caminho para o arquivo de usuários
+USUARIOS_DB = os.path.join(BASE_DIR, "usuarios.json")
 
 SCRIPT_RUNNER_SIMPLES = os.path.join(BASE_DIR, "runner.ps1")
 SCRIPT_RUNNER_SAP_LOGIN = os.path.join(BASE_DIR, "sap_login_runner.ps1")
@@ -20,12 +29,33 @@ SCRIPT_CLEANUP = os.path.join(BASE_DIR, "cleanup_process.ps1")
 SCRIPT_BW_HANA = os.path.join(BASE_DIR, "bw_hana_extractor.py")
 DOWNLOAD_DIR = "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros"
 
-# --- NOMES DAS MACROS ATUALIZADOS ---
 macros_disponiveis = {
     "Base Mãe": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Input diário PÇ's.xlsm", "macro": "Org_relatorio_diario" },
     "Outlook": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm", "macro": "EnviarEmails" },
     "Cancelamento Aging": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Criação Aging.xlsm", "macro": "cancelar_fora_prazo" }
 }
+
+# --- NOVAS FUNÇÕES: Gerenciamento de Usuários (Hub) ---
+
+def load_users():
+    """Carrega os usuários do arquivo JSON."""
+    if not os.path.exists(USUARIOS_DB):
+        return {}
+    try:
+        with open(USUARIOS_DB, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_users(users_data):
+    """Salva os usuários no arquivo JSON."""
+    try:
+        with open(USUARIOS_DB, 'w', encoding='utf-8') as f:
+            json.dump(users_data, f, indent=2)
+    except Exception as e:
+        print(f"Erro ao salvar usuários: {e}")
+
+# --- FIM DAS NOVAS FUNÇÕES ---
 
 def find_file_by_prefix(directory, prefix):
     try:
@@ -36,11 +66,12 @@ def find_file_by_prefix(directory, prefix):
         return None
     return None
 
-# --- ROTAS DE PÁGINAS ---
+# --- ROTAS DE PÁGINAS (MODIFICADAS) ---
 
 @app.route('/')
 def hub():
-    return render_template('hub.html')
+    # Passa o status de login do Hub para o template
+    return render_template('hub.html', is_hub_logged_in=session.get('username'))
 
 @app.route('/automacao')
 def automacao():
@@ -50,19 +81,27 @@ def automacao():
     last_bw_creds = {}
     
     initial_zv62n_file = find_file_by_prefix(DOWNLOAD_DIR, "ZV62N")
-    return render_template('automacao.html', macros=macros_disponiveis, initial_zv62n_file=initial_zv62n_file)
+    # Passa o status de login do Hub para o template
+    return render_template(
+        'automacao.html', 
+        macros=macros_disponiveis, 
+        initial_zv62n_file=initial_zv62n_file,
+        is_hub_logged_in=session.get('username') # <-- ADICIONADO
+    )
 
 @app.route('/dashboards')
 def dashboards():
-    return render_template('dashboards.html')
+    # Passa o status de login do Hub para o template
+    return render_template('dashboards.html', is_hub_logged_in=session.get('username')) # <-- ADICIONADO
 
 @app.route('/drive')
 def drive():
-    return render_template('drive.html')
+    # Passa o status de login do Hub para o template
+    return render_template('drive.html', is_hub_logged_in=session.get('username')) # <-- ADICIONADO
 
 
 # --- ROTAS DE API (DRIVE) ---
-
+# (Sem alterações aqui... o código abaixo permanece o mesmo)
 @app.route('/api/browse')
 def api_browse():
     relative_path = request.args.get('path', '')
@@ -79,7 +118,7 @@ def api_browse():
             item_path = os.path.join(current_path, item)
             is_dir = os.path.isdir(item_path)
             content.append({"name": item, "is_dir": is_dir})
-        
+    
         content.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
         
         return jsonify({
@@ -107,8 +146,70 @@ def api_download():
     except FileNotFoundError:
         return "Arquivo não encontrado.", 404
 
-# --- ROTAS DE API (AUTOMAÇÃO) ---
+# --- NOVAS ROTAS DE API (HUB LOGIN & CONEXÕES) ---
 
+@app.route('/api/hub/login', methods=['POST'])
+def hub_login():
+    """Login do usuário principal do Hub."""
+    users = load_users()
+    username = request.form['username']
+    password = request.form['password']
+    
+    user_data = users.get(username)
+    
+    if user_data and user_data['password'] == password:
+        session['username'] = username
+        return jsonify({"status": "sucesso", "username": username})
+    
+    return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
+
+@app.route('/api/hub/logout', methods=['POST'])
+def hub_logout():
+    """Logout do usuário principal do Hub."""
+    session.pop('username', None)
+    return jsonify({"status": "sucesso"})
+
+@app.route('/api/hub/check-session')
+def check_session():
+    """Verifica se há um usuário logado na sessão do Hub."""
+    username = session.get('username')
+    if username:
+        return jsonify({"status": "logado", "username": username})
+    return jsonify({"status": "deslogado"})
+
+@app.route('/api/hub/get-connections')
+def get_connections():
+    """Busca as conexões SAP/BW salvas para o usuário logado."""
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+        
+    users = load_users()
+    connections = users.get(username, {}).get('connections', {})
+    return jsonify({"status": "sucesso", "connections": connections})
+
+@app.route('/api/hub/remove-connection/<system>', methods=['POST'])
+def remove_connection(system):
+    """Remove uma conexão SAP ou BW salva."""
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    
+    if system not in ['sap', 'bw']:
+        return jsonify({"status": "erro", "mensagem": "Sistema inválido."}), 400
+
+    users = load_users()
+    if username in users and system in users[username]['connections']:
+        users[username]['connections'][system] = None
+        save_users(users)
+        return jsonify({"status": "sucesso", "mensagem": f"Conexão {system.upper()} removida."})
+    
+    return jsonify({"status": "erro", "mensagem": "Conexão não encontrada."}), 404
+
+# --- FIM DAS NOVAS ROTAS DE API ---
+
+# --- ROTAS DE API (AUTOMAÇÃO) ---
+# (A rota /executar-macro não precisa de alterações)
 @app.route('/executar-macro', methods=['POST'])
 def executar_macro():
     if not is_sap_logged_in: 
@@ -123,7 +224,6 @@ def executar_macro():
     contexto = f"tarefa '{nome_macro_selecionada}'"
     resultado = executar_comando_externo(comando, contexto_tarefa=contexto)
     
-    # --- LÓGICA DE DOWNLOAD ATUALIZADA ---
     if resultado['status'] == 'sucesso' and nome_macro_selecionada == "Base Mãe":
         nome_arquivo_download = find_file_by_prefix(DOWNLOAD_DIR, "ZV62N")
         if nome_arquivo_download: 
@@ -133,6 +233,7 @@ def executar_macro():
             
     return jsonify(resultado)
 
+# (A rota /executar-bw-hana não precisa de alterações)
 @app.route('/executar-bw-hana', methods=['POST'])
 def executar_bw_hana():
     if not is_bw_hana_logged_in: 
@@ -159,7 +260,21 @@ def download_file(filename):
     except FileNotFoundError: 
         return "Arquivo não encontrado.", 404
 
-# --- ROTAS DE LOGIN / LOGOUT (ESTADO) ---
+# --- ROTAS DE LOGIN / LOGOUT (ESTADO) (MODIFICADAS) ---
+
+def save_connection_if_requested(system, user, password):
+    """Salva a conexão no JSON se o usuário estiver logado no Hub."""
+    save_conn = request.form.get('save_connection') == 'true'
+    username = session.get('username')
+    
+    if save_conn and username:
+        users = load_users()
+        if username in users:
+            if 'connections' not in users[username]:
+                users[username]['connections'] = {}
+            users[username]['connections'][system] = {'user': user, 'pass': password}
+            save_users(users)
+            print(f"Conexão {system} salva para {username}")
 
 @app.route('/login-sap', methods=['POST'])
 def login_sap():
@@ -179,7 +294,10 @@ def login_sap():
         is_sap_logged_in = True
         is_bw_hana_logged_in = False
         last_bw_creds = {}
-        resultado['mensagem'] = "Login realizado com sucesso." # --- MENSAGEM ATUALIZADA ---
+        resultado['mensagem'] = "Login realizado com sucesso."
+        
+        # NOVO: Salva a conexão se solicitado
+        save_connection_if_requested('sap', usuario, senha)
     else:
         is_sap_logged_in = False
         executar_comando_externo([ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_CLEANUP ], "Cleanup Pós-Falha de Login")
@@ -202,14 +320,19 @@ def login_bw_hana():
     
     executar_comando_externo([ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_CLEANUP ], "Limpeza pré-login")
     
+    usuario = request.form['usuario']
+    senha = request.form['senha']
+    
     last_bw_creds = {
-        'user': request.form['usuario'],
-        'pass': request.form['senha']
+        'user': usuario,
+        'pass': senha
     }
     is_bw_hana_logged_in = True
     is_sap_logged_in = False
     
-    # --- MENSAGEM ATUALIZADA ---
+    # NOVO: Salva a conexão se solicitado
+    save_connection_if_requested('bw', usuario, senha)
+    
     return jsonify({"status": "sucesso", "mensagem": "Login realizado com sucesso."})
 
 @app.route('/logout-bw-hana', methods=['POST'])
@@ -224,7 +347,7 @@ def logout_bw_hana():
     return jsonify({"status": "sucesso", "mensagem": "Estado de login BW HANA reiniciado."})
 
 # --- Função de Execução de Comando ---
-
+# (Sem alterações aqui)
 def executar_comando_externo(comando, contexto_tarefa="Tarefa genérica", timeout_seconds=600): # 10 min de timeout padrão
     try:
         resultado = subprocess.run(comando, capture_output=True, check=True, text=False, timeout=timeout_seconds)
@@ -249,5 +372,5 @@ def executar_comando_externo(comando, contexto_tarefa="Tarefa genérica", timeou
 
 if __name__ == '__main__':
     print("Servidor Iniciado...")
-    print(f"Acesse o Hub em http://[SEU_IP]:5000") 
+    print(f"Acesse o Hub em http://192.168.15.24:5000") 
     app.run(host='0.0.0.0', port=5000)

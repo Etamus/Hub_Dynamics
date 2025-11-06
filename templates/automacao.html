@@ -101,19 +101,23 @@
                     <input type="password" id="modal-pass">
                 </div>
                 <button id="modal-execute-btn" class="button btn-execute">Logar</button>
-            </div>
+                
+                {% if is_hub_logged_in %}
+                <button id="modal-save-conn-btn" class="button btn-save-conn">Adicionar Conexão</button>
+                {% endif %}
+                </div>
         </div>
     </div>
 
     <div id="confirm-modal-overlay" class="modal-overlay"> 
-        <div class="modal-content">
-                        <h2 id="confirm-modal-title">Deseja deslogar?</h2>
-            <div class="modal-button-container">
-                <button id="confirm-modal-no-btn" class="button btn-cancel">Não</button>
-                <button id="confirm-modal-yes-btn" class="button btn-danger">Sim</button>
-            </div>
-        </div>
-    </div>
+        <div class="modal-content">
+                    <h2 id="confirm-modal-title">Deseja deslogar?</h2>
+            <div class="modal-button-container">
+                <button id="confirm-modal-no-btn" class="button btn-cancel">Não</button>
+                <button id="confirm-modal-yes-btn" class="button btn-danger">Sim</button>
+            </div>
+        </div>
+    </div>
     
     <script src="/static/js/automacao.js" defer></script>
     <script src="/static/js/shared.js" defer></script>

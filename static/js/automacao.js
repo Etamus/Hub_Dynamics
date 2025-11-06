@@ -5,9 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTaskInfo = null;
     let statusTimeout;
     
-    // --- NOVO: Variáveis do Agendador ---
+    let savedConnections = {}; // Será preenchido com { sap: {...}, bw: {...} }
+
+    // --- Variáveis do Agendador ---
     let jobQueue = []; 
-    let jobHistory = []; // <-- NOVO: Histórico de jobs (máx. 4)
+    let jobHistory = [];
     let schedulerInterval = null; 
     let isSchedulerRunning = false; 
 
@@ -24,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalUser = document.getElementById('modal-user');
     const modalPass = document.getElementById('modal-pass');
     const modalExecuteBtn = document.getElementById('modal-execute-btn');
-    const modalLoginCloseBtn = document.getElementById('login-modal-close-btn'); // 'X'
+    const modalLoginCloseBtn = document.getElementById('login-modal-close-btn');
+    const modalSaveConnBtn = document.getElementById('modal-save-conn-btn'); 
     const modalLogoSap = document.getElementById('modal-logo-sap');
     const modalLogoBw = document.getElementById('modal-logo-bw');
 
@@ -34,11 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmModalYesBtn = document.getElementById('confirm-modal-yes-btn');
     const confirmModalNoBtn = document.getElementById('confirm-modal-no-btn');
 
-    // --- NOVO: Seletor do Agendador ---
     const schedulerBtn = document.getElementById('scheduler-btn');
     
     // --- Funções de Feedback (Status Box) ---
-
     function showStatus(message, type = 'processing', sticky = false) {
         clearTimeout(statusTimeout);
         statusBox.className = `status-box ${type} visible`;
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isSchedulerJob) {
             allTaskButtons.forEach(btn => btn.classList.add('disabled'));
             if(modalExecuteBtn) modalExecuteBtn.disabled = true;
+            if(modalSaveConnBtn) modalSaveConnBtn.disabled = true;
             if(modalLoginCloseBtn) modalLoginCloseBtn.disabled = true; 
             if(logoutBtn) logoutBtn.disabled = true;
             if(schedulerBtn) schedulerBtn.disabled = true;
@@ -67,11 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function enableUI() {
         allTaskButtons.forEach(btn => btn.classList.remove('disabled'));
         if (modalExecuteBtn) modalExecuteBtn.disabled = false;
+        if (modalSaveConnBtn) modalSaveConnBtn.disabled = false;
         if (modalLoginCloseBtn) modalLoginCloseBtn.disabled = false; 
         if (logoutBtn) logoutBtn.disabled = false;
         if(schedulerBtn) schedulerBtn.disabled = false;
     }
-
+    
     function handleFetchError(error, isSchedulerJob = false) {
         if (!isSchedulerJob) {
             enableUI();
@@ -79,23 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
         showStatus('Erro de comunicação com o servidor.', 'error', true);
         console.error('Erro de Fetch:', error);
         
-        // --- MODIFICADO: Atualiza a fila do agendador ---
         if (isSchedulerJob) {
             const job = jobQueue.find(j => j.status === 'running');
             if (job) {
                 job.status = 'failed';
-                // Move para o histórico
                 jobHistory.unshift(job);
-                jobHistory = jobHistory.slice(0, 4); // Mantém apenas 4
-                jobQueue = jobQueue.filter(j => j.id !== job.id); // Remove da fila
+                jobHistory = jobHistory.slice(0, 4); 
+                jobQueue = jobQueue.filter(j => j.id !== job.id);
                 renderJobQueue();
                 renderJobHistory();
             }
-            isSchedulerRunning = false; // Libera o motor
+            isSchedulerRunning = false;
         }
     }
     
-    // Processa o resultado de uma TAREFA
     function handleTaskResult(data, isSchedulerJob = false) {
         if (!isSchedulerJob) {
             enableUI();
@@ -120,21 +120,20 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus('ERRO: ' + data.mensagem, 'error', true);
         }
         
-        // --- MODIFICADO: Atualiza a fila do agendador ---
         if (isSchedulerJob) {
             const job = jobQueue.find(j => j.status === 'running');
             if (job) {
                 job.status = (data.status === 'sucesso') ? 'done' : 'failed';
-                // Move para o histórico
                 jobHistory.unshift(job);
-                jobHistory = jobHistory.slice(0, 4); // Mantém apenas 4
-                jobQueue = jobQueue.filter(j => j.id !== job.id); // Remove da fila
+                jobHistory = jobHistory.slice(0, 4);
+                jobQueue = jobQueue.filter(j => j.id !== job.id);
                 renderJobQueue();
                 renderJobHistory();
             }
-            isSchedulerRunning = false; // Libera o motor
+            isSchedulerRunning = false;
         }
     }
+
 
     // --- Funções do Modal de Login ---
 
@@ -159,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.classList.remove('visible');
     }
 
-    function handleLogin() {
+    function handleLogin(saveConnection = false) {
         const user = modalUser.value;
         const pass = modalPass.value;
 
@@ -171,6 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new URLSearchParams();
         formData.append('usuario', user);
         formData.append('senha', pass);
+        if (saveConnection) {
+            formData.append('save_connection', 'true');
+        }
 
         let endpoint = '';
         let systemType = currentTaskInfo.type;
@@ -198,6 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         isSapLoggedIn = false;
                         isBwLoggedIn = true;
                     }
+                    
+                    if (saveConnection) {
+                        if (!savedConnections[systemType]) savedConnections[systemType] = {};
+                        savedConnections[systemType].user = user;
+                        savedConnections[systemType].pass = pass;
+                        showStatus("Conexão salva com sucesso. Você pode fechar o Hub para persistir o login.", 'success', true);
+                    }
+                    
                     updateUiState();
                     
                 } else {
@@ -208,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Funções do Modal de Confirmação ---
-            
     function openConfirmModal(onConfirm, onCancel) {
         confirmModalOverlay.classList.add('visible');
         
@@ -236,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
     function closeConfirmModal() {
         confirmModalOverlay.classList.remove('visible');
     }
@@ -264,6 +272,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    function autoLoginAndExecute(taskInfo, credentials, isSchedulerJob = false) {
+        const systemType = taskInfo.type;
+        const endpoint = (systemType === 'sap') ? '/login-sap' : '/login-bw-hana';
+        
+        setProcessing(`Autenticando com conexão salva ${systemType.toUpperCase()}...`, isSchedulerJob);
+
+        const formData = new URLSearchParams();
+        formData.append('usuario', credentials.user);
+        formData.append('senha', credentials.pass);
+
+        fetch(endpoint, { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                if (systemType === 'sap') {
+                    isSapLoggedIn = true;
+                    isBwLoggedIn = false;
+                } else {
+                    isBwLoggedIn = true;
+                    isSapLoggedIn = false;
+                }
+                
+                if (!isSchedulerJob) {
+                    updateUiState();
+                }
+                
+                executeTask(taskInfo, isSchedulerJob);
+            } else {
+                if (!isSchedulerJob) {
+                    enableUI();
+                    showStatus('Falha na conexão salva. Faça o login manual.', 'error', true);
+                    openLoginModal(taskInfo);
+                } else {
+                    const job = jobQueue.find(j => j.status === 'running');
+                    if (job) {
+                        job.status = 'failed';
+                        jobHistory.unshift(job);
+                        jobHistory = jobHistory.slice(0, 4); 
+                        jobQueue = jobQueue.filter(j => j.id !== job.id);
+                        renderJobQueue();
+                        renderJobHistory();
+                    }
+                    isSchedulerRunning = false;
+                }
+            }
+        })
+        .catch(error => {
+            handleFetchError(error, isSchedulerJob);
+            if (!isSchedulerJob) {
+                openLoginModal(taskInfo);
+            }
+        });
+    }
+
     // --- Funções de UI (Seleção de Sistema e Logout) ---
 
     function handleLogout() {
@@ -274,6 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (isBwLoggedIn) {
             endpoint = '/logout-bw-hana';
             setProcessing("Realizando logout do BW...");
+        } else {
+            isSapLoggedIn = false;
+            isBwLoggedIn = false;
+            updateUiState();
+            return;
         }
 
         fetch(endpoint, { method: 'POST' })
@@ -281,15 +348,29 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 enableUI();
                 showStatus(data.mensagem, 'success');
+            })
+            .catch(error => {
+                handleFetchError(error, false); 
+                showStatus("Logout forçado localmente após erro de comunicação.", 'error');
+            })
+            .finally(() => {
                 isSapLoggedIn = false;
                 isBwLoggedIn = false;
                 updateUiState();
-            })
-            .catch(handleFetchError);
+            });
     }
 
     function updateUiState() {
-        if (isSapLoggedIn || isBwLoggedIn) {
+        let showLogout = false;
+        
+        if (isSapLoggedIn && !savedConnections.sap) {
+            showLogout = true;
+        }
+        else if (isBwLoggedIn && !savedConnections.bw) {
+            showLogout = true;
+        } 
+
+        if (showLogout) {
             logoutBtn.classList.remove('hidden');
         } else {
             logoutBtn.classList.add('hidden');
@@ -301,15 +382,25 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('input[name="login_system"][value="bw"]').checked = true;
         }
         
-        handleSystemChange(true);
+        const selectedSystem = document.querySelector('input[name="login_system"]:checked').value;
+        if (selectedSystem === 'sap') {
+            sapTasksSection.classList.remove('hidden');
+            bwTasksSection.classList.add('hidden');
+        } else {
+            sapTasksSection.classList.add('hidden');
+            bwTasksSection.classList.remove('hidden');
+        }
     }
 
     function handleSystemChange(isUpdate = false) {
+        if (isUpdate) {
+            return;
+        }
+
         const selectedSystem = document.querySelector('input[name="login_system"]:checked').value;
 
         const showCorrectTasks = () => {
-            const currentSystem = document.querySelector('input[name="login_system"]:checked').value;
-            if (currentSystem === 'sap') {
+            if (selectedSystem === 'sap') {
                 sapTasksSection.classList.remove('hidden');
                 bwTasksSection.classList.add('hidden');
             } else {
@@ -318,10 +409,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (!isUpdate) {
-            const needsLogout = (selectedSystem === 'sap' && isBwLoggedIn) || (selectedSystem === 'bw' && isSapLoggedIn);
-            
-            if (needsLogout) {
+        const needsLogout = (selectedSystem === 'sap' && isBwLoggedIn) || (selectedSystem === 'bw' && isSapLoggedIn);
+        
+        const hasAnySavedConnection = savedConnections.sap || savedConnections.bw;
+
+        if (needsLogout) {
+            if (hasAnySavedConnection) {
+                handleLogout(); 
+            } else {
                 openConfirmModal(
                     () => {
                         handleLogout();
@@ -331,17 +426,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.querySelector(`input[name="login_system"][value="${loggedInSystem}"]`).checked = true;
                     }
                 );
-            } else {
-                showCorrectTasks();
             }
         } else {
             showCorrectTasks();
         }
     }
     
-    // --- NOVO: Funções do Agendador (Redesign) ---
+    // --- Funções do Agendador (Redesign) ---
 
-    // 1. Injeta o HTML do modal do agendador
+    // 1. Injeta o HTML do modal do agendador (MODIFICADO)
     function injectSchedulerHTML() {
         const schedulerModal = document.createElement('div');
         schedulerModal.id = 'scheduler-modal-overlay';
@@ -354,13 +447,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="scheduler-body">
                     <div class="scheduler-form">
-                        <div class="modal-input-group">
-                            <label for="scheduler-task-select">Tarefa:</label>
-                            <select id="scheduler-task-select" aria-label="Selecionar tarefa para agendar">
-                                <option value="" disabled selected hidden>Selecione uma tarefa...</option>
-                            </select>
-                        </div>
                         
+                        <div class="modal-input-group">
+                            <label>Tarefa:</label>
+                            <div id="scheduler-tasks-container" class="scheduler-tasks-container">
+                                </div>
+                        </div>
+
                         <div class="scheduler-datetime-group">
                             <div class="modal-input-group">
                                 <label for="scheduler-date">Data:</label>
@@ -395,128 +488,139 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(schedulerModal);
     }
     
-    // 2. Preenche o <select> com as tarefas (ÍCONES ATUALIZADOS)
+    // 2. Preenche os botões de rádio (MODIFICADO)
     function populateSchedulerTasks() {
-        const select = document.getElementById('scheduler-task-select');
-        if (!select) return;
+        const container = document.getElementById('scheduler-tasks-container');
+        if (!container) return;
         
-        select.innerHTML = '<option value="" disabled selected hidden>Selecione uma tarefa...</option>';
+        container.innerHTML = '';
         
+        // 1. Mapeia todas as tarefas (SAP + BW)
+        const allTasks = [];
         const sapTasks = document.querySelectorAll('#sap-tasks-section .task-button');
         sapTasks.forEach(task => {
             const taskName = task.dataset.taskName;
             if (taskName) {
-                const option = document.createElement('option');
-                option.value = `sap|${taskName}`;
-                option.textContent = taskName; // Como explicado, imagens não funcionam aqui
-                select.appendChild(option);
+                allTasks.push({ name: taskName, type: 'sap' });
             }
         });
         
         const bwTask = document.getElementById('bw-extract-btn');
         if (bwTask) {
-            const option = document.createElement('option');
-            option.value = 'bw|Relatório Peças';
-            option.textContent = 'Relatório Peças'; // Como explicado, imagens não funcionam aqui
-            select.appendChild(option);
+            allTasks.push({ name: 'Relatório Peças', type: 'bw' });
         }
-    }
 
-    // --- FUNÇÃO DE RENDERIZAÇÃO GENÉRICA (para Fila e Histórico) ---
-    function renderJobList(listElement, jobs, showRemoveButton) {
-        listElement.innerHTML = '';
-        
-        if (jobs.length === 0) {
-            const message = listElement.id.includes('history') ? 'Histórico não encontrado.' : 'A fila está vazia.';
-            listElement.innerHTML = `<li class="queue-item empty">${message}</li>`;
-            return;
-        }
-        
-        const statusMap = {
-            'pending': { icon: 'fa-hourglass-start', text: 'Pendente' },
-            'running': { icon: 'fa-circle-notch fa-spin', text: 'Rodando' },
-            'done': { icon: 'fa-check-circle', text: 'Concluído' },
-            'failed': { icon: 'fa-times-circle', text: 'Falhou' }
-        };
-        
-        jobs.forEach((job) => {
-            const li = document.createElement('li');
-            li.className = `queue-item ${job.status}`;
+        // 2. Cria os botões de rádio
+        allTasks.forEach((task, index) => {
+            const taskValue = `${task.type}|${task.name}`;
+            const isChecked = index === 0 ? 'checked' : ''; // Seleciona o primeiro por padrão
             
-            const time = new Date(job.startTime).toLocaleString('pt-BR', { 
-                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' 
-            });
-            const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
-            
-            const removeButtonHtml = showRemoveButton
-                ? `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`
-                : '';
-            
-            // --- AJUSTE AQUI: Troca 'bwhana_logo.png' por 'bwhanashort_logo.png' ---
-            const iconPath = job.taskInfo.type === 'sap' 
-                ? '/static/icones/sap_logo.png' 
-                : '/static/icones/bwhanashort_logo.png'; // Caminho do novo ícone
-            const taskIconHtml = `<img src="${iconPath}" class="queue-item-task-icon" alt="${job.taskInfo.type} logo">`;
-
-            li.innerHTML = `
-                <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
-                <div class="queue-item-details">
-                    <strong>${taskIconHtml}${job.taskInfo.name}</strong>
-                    <em>${time}</em>
-                </div>
-                ${removeButtonHtml}
+            const label = document.createElement('label');
+            label.className = `scheduler-task-label ${task.type}`;
+            label.innerHTML = `
+                <input type="radio" name="scheduler_task" value="${taskValue}" ${isChecked}>
+                <span class="task-icon-system ${task.type}">${task.type.toUpperCase()}</span>
+                <span class="task-name">${task.name}</span>
             `;
-            listElement.appendChild(li);
+            container.appendChild(label);
         });
-        
-        if (showRemoveButton) {
-            listElement.querySelectorAll('.queue-item-remove').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const jobId = btn.dataset.jobId;
-                    jobQueue = jobQueue.filter(job => job.id !== jobId);
-                    renderJobQueue();
-                });
-            });
-        }
     }
 
-    // 3. Renderiza a fila na UI (Design Moderno com Ícones)
+    // 3. Função de renderização genérica (para Fila e Histórico) - CORRIGIDA
+    function renderJobList(listElement, jobs, showRemoveButton) {
+    listElement.innerHTML = '';
+    
+    if (jobs.length === 0) {
+        const message = listElement.id.includes('history') ? 'Não há histórico.' : 'Não há tarefas.';
+        listElement.innerHTML = `<li class="queue-item empty">${message}</li>`;
+        return;
+    }
+    
+    const statusMap = {
+        'pending': { icon: 'fa-hourglass-start', text: 'Pendente' },
+        'running': { icon: 'fa-circle-notch fa-spin', text: 'Rodando' },
+        'done': { icon: 'fa-check-circle', text: 'Concluído' },
+        'failed': { icon: 'fa-times-circle', text: 'Falhou' }
+    };
+    
+    jobs.forEach((job) => {
+        const li = document.createElement('li');
+        li.className = `queue-item ${job.status}`;
+        
+        const time = new Date(job.startTime).toLocaleString('pt-BR', { 
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' 
+        });
+        const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
+        
+        const removeButtonHtml = showRemoveButton
+            ? `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`
+            : '';
+        
+        // --- NOVO: TROCANDO PNG POR TEXTO ESTILIZADO ---
+        const systemType = job.taskInfo.type;
+        const systemText = systemType.toUpperCase();
+        
+        const taskIconHtml = `<span class="queue-item-system-text ${systemType}">${systemText}</span>`;
+        // ------------------------------------------------
+
+        li.innerHTML = `
+            <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
+            <div class="queue-item-details">
+                <strong>${taskIconHtml}${job.taskInfo.name}</strong>
+                <em>${time}</em>
+            </div>
+            ${removeButtonHtml}
+        `;
+        listElement.appendChild(li);
+    });
+    
+    if (showRemoveButton) {
+        listElement.querySelectorAll('.queue-item-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const jobId = btn.dataset.jobId;
+                jobQueue = jobQueue.filter(job => job.id !== jobId);
+                renderJobQueue();
+            });
+        });
+    }
+}
+
+    // 4. Renderiza a fila na UI
     function renderJobQueue() {
         const list = document.getElementById('scheduler-queue-list');
         if (!list) return;
-        renderJobList(list, jobQueue, true); // true = mostrar botão 'X'
+        renderJobList(list, jobQueue, true);
     }
     
-    // --- NOVA FUNÇÃO: Renderiza o Histórico ---
+    // 5. Renderiza o Histórico
     function renderJobHistory() {
         const list = document.getElementById('scheduler-history-list');
         if (!list) return;
-        renderJobList(list, jobHistory, false); // false = não mostrar botão 'X'
+        renderJobList(list, jobHistory, false);
     }
 
-    // 4. Adiciona uma tarefa à fila (LENDO DATA/HORA SEPARADOS)
+    // 6. Adiciona uma tarefa à fila (MODIFICADO)
     function addJobToQueue() {
-        const select = document.getElementById('scheduler-task-select');
+        const selectedRadio = document.querySelector('input[name="scheduler_task"]:checked'); // <-- NOVO: Pega o rádio selecionado
         const dateInput = document.getElementById('scheduler-date');
         const timeInput = document.getElementById('scheduler-time');
         
-        const [type, name] = select.value.split('|');
-        const dateValue = dateInput.value;
-        const timeValue = timeInput.value;
-        
-        if (!type || !name) {
+        if (!selectedRadio) { // <-- NOVO: Verifica se há rádio selecionado
             alert('Por favor, selecione uma tarefa.');
             return;
         }
-
+        
+        const [type, name] = selectedRadio.value.split('|'); // <-- NOVO: Pega o valor do rádio
+        const dateValue = dateInput.value;
+        const timeValue = timeInput.value;
+        
+        // (Verificação de data/hora permanece a mesma)
         if (!dateValue || !timeValue) {
             alert('Por favor, selecione data e hora.');
             return;
         }
         
-        // Combina data e hora
         const startTime = new Date(`${dateValue}T${timeValue}`).getTime();
-        
         const oneMinuteFromNow = Date.now() + 60000;
         
         if (isNaN(startTime) || startTime < oneMinuteFromNow) {
@@ -535,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
         jobQueue.sort((a, b) => a.startTime - b.startTime);
         renderJobQueue();
         
-        select.value = '';
+        // Limpa os campos após adicionar (mantém o rádio selecionado para a próxima)
         dateInput.value = '';
         timeInput.value = '';
         
@@ -544,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 5. O "motor" que verifica a fila
+    // 7. O "motor" que verifica a fila
     function startSchedulerMotor() {
         if (schedulerInterval) {
             clearInterval(schedulerInterval);
@@ -555,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000); 
     }
 
-    // 6. Lógica de verificação da fila
+    // 8. Lógica de verificação da fila (mantida)
     function checkJobQueue() {
         if (isSchedulerRunning || jobQueue.length === 0) {
             return; 
@@ -568,11 +672,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const needsSap = jobToRun.taskInfo.type === 'sap';
             const needsBw = jobToRun.taskInfo.type === 'bw';
             
-            if ((needsSap && !isSapLoggedIn) || (needsBw && !isBwLoggedIn)) {
+            const sapConnection = savedConnections.sap;
+            const bwConnection = savedConnections.bw;
+
+            let loginActive = (needsSap && isSapLoggedIn) || (needsBw && isBwLoggedIn);
+            let connectionAvailable = (needsSap && sapConnection) || (needsBw && bwConnection);
+
+            if (!loginActive && !connectionAvailable) {
                 jobToRun.status = 'failed';
-                showStatus(`Agendador: '${jobToRun.taskInfo.name}' falhou. Motivo: Login necessário não estava ativo.`, 'error', true);
+                showStatus(`Agendador: '${jobToRun.taskInfo.name}' falhou. Motivo: Login necessário não estava ativo nem salvo.`, 'error', true);
                 
-                // Move para o histórico
                 jobHistory.unshift(jobToRun);
                 jobHistory = jobHistory.slice(0, 4);
                 jobQueue = jobQueue.filter(j => j.id !== jobToRun.id);
@@ -581,21 +690,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderJobHistory();
                 return;
             }
-            
+
             isSchedulerRunning = true;
             jobToRun.status = 'running';
             showStatus(`Agendador: Iniciando tarefa '${jobToRun.taskInfo.name}'...`, 'processing', true);
             renderJobQueue();
 
-            executeTask(jobToRun.taskInfo, true); // 'true' = é um trabalho do agendador
+            if (loginActive) {
+                executeTask(jobToRun.taskInfo, true);
+            } else {
+                const credentials = needsSap ? sapConnection : bwConnection;
+                autoLoginAndExecute(jobToRun.taskInfo, credentials, true);
+            }
         }
     }
-    
-    // 7. Abre o modal do agendador
+
+    // 9. Abre o modal do agendador (MODIFICADO)
     function openSchedulerModal() {
         const modal = document.getElementById('scheduler-modal-overlay');
         
-        // --- NOVO: Lógica das Abas ---
         if (!modal) {
             injectSchedulerHTML();
             
@@ -623,24 +736,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 queueContainer.classList.add('hidden');
             });
             
-            // Define o estado inicial das abas
             tabQueue.click(); 
         }
         
-        populateSchedulerTasks();
+        // Sempre popula e renderiza ao abrir
+        populateSchedulerTasks(); 
         renderJobQueue();
-        renderJobHistory(); // Renderiza o histórico também
+        renderJobHistory();
         document.getElementById('scheduler-modal-overlay').classList.add('visible');
-        document.getElementById('scheduler-task-select').focus();
+        document.querySelector('input[name="scheduler_task"]').focus(); // Foca no primeiro rádio
     }
 
-    // 8. Fecha o modal do agendador
+    // 10. Fecha o modal do agendador
     function closeSchedulerModal() {
         document.getElementById('scheduler-modal-overlay').classList.remove('visible');
     }
     
 
-    // --- Adiciona Listeners de Eventos ---
+    // --- Adiciona Listeners de Eventos (mantidos) ---
 
     // 1. Seleção de Sistema (Rádios)
     systemRadios.forEach(radio => {
@@ -660,6 +773,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: taskType
             };
 
+            if (info.type === 'sap' && savedConnections.sap) {
+                autoLoginAndExecute(info, savedConnections.sap, false);
+                return;
+            }
+            if (info.type === 'bw' && savedConnections.bw) {
+                autoLoginAndExecute(info, savedConnections.bw, false);
+                return;
+            }
+
             if ((info.type === 'sap' && isSapLoggedIn) || (info.type === 'bw' && isBwLoggedIn)) {
                 executeTask(info, false); 
             } else {
@@ -669,10 +791,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Botões do Modal de Login
-    modalExecuteBtn.addEventListener('click', handleLogin);
+    modalExecuteBtn.addEventListener('click', () => handleLogin(false));
+    if (modalSaveConnBtn) {
+        modalSaveConnBtn.addEventListener('click', () => handleLogin(true));
+    }
+    
     modalLoginCloseBtn.addEventListener('click', closeLoginModal);
     modalPass.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleLogin();
+        if (e.key === 'Enter') handleLogin(false);
     });
     
     // 4. Botão de Logout
@@ -700,7 +826,38 @@ document.addEventListener('DOMContentLoaded', () => {
         schedulerBtn.addEventListener('click', openSchedulerModal);
     }
 
+    // --- NOVO: Listener para fechar o seletor de hora nativo ---
+    const schedulerTimeInput = document.getElementById('scheduler-time');
+    if (schedulerTimeInput) {
+        schedulerTimeInput.addEventListener('change', () => {
+            // Força a perda de foco quando o valor é alterado (ou seja, quando o usuário seleciona)
+            schedulerTimeInput.blur();
+        });
+    }
+    // -------------------------------------------------------------
+
+    // --- Função de Inicialização ---
+    function initialize() {
+        fetch('/api/hub/get-connections')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    savedConnections = data.connections;
+                    console.log("Conexões salvas carregadas:", savedConnections);
+                } else {
+                    console.log("Nenhuma conexão salva encontrada (usuário não logado no Hub?).");
+                }
+            })
+            .catch(err => {
+                console.error("Erro ao buscar conexões:", err);
+            })
+            .finally(() => {
+                updateUiState();
+                startSchedulerMotor(); 
+            });
+    }
+
     // --- Estado Inicial ---
-    handleSystemChange(true); 
-    startSchedulerMotor(); 
+    initialize();
+
 });
