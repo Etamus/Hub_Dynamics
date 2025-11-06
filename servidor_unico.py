@@ -7,6 +7,8 @@ from flask import (
     Flask, render_template, request, jsonify, send_from_directory,
     session, redirect, url_for
 )
+from werkzeug.utils import secure_filename
+import time # Adicionado para evitar cache de imagem
 
 app = Flask(__name__)
 # NOVO: Chave secreta para gerenciar sessões de usuário do Hub
@@ -20,8 +22,11 @@ last_bw_creds = {}
 # --- Caminhos e Configurações ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DRIVE_ROOT = os.path.join(BASE_DIR, "drive") 
-# NOVO: Caminho para o arquivo de usuários
 USUARIOS_DB = os.path.join(BASE_DIR, "usuarios.json")
+
+# NOVO: Diretório para cache de imagens
+CACHE_DIR = os.path.join(BASE_DIR, "cache")
+os.makedirs(CACHE_DIR, exist_ok=True) # Garante que a pasta 'cache' exista
 
 SCRIPT_RUNNER_SIMPLES = os.path.join(BASE_DIR, "runner.ps1")
 SCRIPT_RUNNER_SAP_LOGIN = os.path.join(BASE_DIR, "sap_login_runner.ps1")
@@ -34,6 +39,11 @@ macros_disponiveis = {
     "Outlook": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm", "macro": "EnviarEmails" },
     "Cancelamento Aging": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Criação Aging.xlsm", "macro": "cancelar_fora_prazo" }
 }
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'} # REMOVIDO 'gif'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- NOVAS FUNÇÕES: Gerenciamento de Usuários (Hub) ---
 
@@ -55,9 +65,28 @@ def save_users(users_data):
     except Exception as e:
         print(f"Erro ao salvar usuários: {e}")
 
+def get_user_profile_data():
+    """Retorna dados de perfil necessários para renderização do Hub."""
+    username = session.get('username')
+    profile_data = {'username': username, 'profile_image': None}
+    
+    if username:
+        users = load_users()
+        user_data = users.get(username, {})
+        
+        # Obtém o nome do arquivo de imagem do usuário (se existir)
+        image_filename = user_data.get('profile_image')
+        
+        if image_filename:
+            # Adiciona um timestamp para evitar problemas de cache no navegador
+            profile_data['profile_image'] = f'/cache/{image_filename}?t={int(time.time())}'
+            
+    return profile_data
+
 # --- FIM DAS NOVAS FUNÇÕES ---
 
 def find_file_by_prefix(directory, prefix):
+    """Procura por um arquivo baseado no prefixo."""
     try:
         for filename in os.listdir(directory):
             if filename.startswith(prefix): 
@@ -70,8 +99,8 @@ def find_file_by_prefix(directory, prefix):
 
 @app.route('/')
 def hub():
-    # Passa o status de login do Hub para o template
-    return render_template('hub.html', is_hub_logged_in=session.get('username'))
+    profile_data = get_user_profile_data()
+    return render_template('hub.html', **profile_data)
 
 @app.route('/automacao')
 def automacao():
@@ -81,27 +110,25 @@ def automacao():
     last_bw_creds = {}
     
     initial_zv62n_file = find_file_by_prefix(DOWNLOAD_DIR, "ZV62N")
+    
     # Passa o status de login do Hub para o template
     return render_template(
         'automacao.html', 
         macros=macros_disponiveis, 
         initial_zv62n_file=initial_zv62n_file,
-        is_hub_logged_in=session.get('username') # <-- ADICIONADO
+        is_hub_logged_in=session.get('username')
     )
 
 @app.route('/dashboards')
 def dashboards():
-    # Passa o status de login do Hub para o template
-    return render_template('dashboards.html', is_hub_logged_in=session.get('username')) # <-- ADICIONADO
+    return render_template('dashboards.html', is_hub_logged_in=session.get('username')) 
 
 @app.route('/drive')
 def drive():
-    # Passa o status de login do Hub para o template
-    return render_template('drive.html', is_hub_logged_in=session.get('username')) # <-- ADICIONADO
+    return render_template('drive.html', is_hub_logged_in=session.get('username')) 
 
 
 # --- ROTAS DE API (DRIVE) ---
-# (Sem alterações aqui... o código abaixo permanece o mesmo)
 @app.route('/api/browse')
 def api_browse():
     relative_path = request.args.get('path', '')
@@ -146,7 +173,79 @@ def api_download():
     except FileNotFoundError:
         return "Arquivo não encontrado.", 404
 
-# --- NOVAS ROTAS DE API (HUB LOGIN & CONEXÕES) ---
+# --- NOVAS ROTAS DE API (PERFIL E CACHE) ---
+
+@app.route('/api/profile/upload', methods=['POST'])
+def profile_upload():
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    
+    if 'file' not in request.files:
+        return jsonify({"status": "erro", "mensagem": "Nenhuma imagem selecionada."}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"status": "erro", "mensagem": "Nome de arquivo inválido."}), 400
+    
+    if file and allowed_file(file.filename):
+        # Cria um nome seguro e único baseado no username
+        file_extension = file.filename.rsplit('.', 1)[1].lower()
+        new_filename = f'{username}.{file_extension}'
+        filepath = os.path.join(CACHE_DIR, new_filename)
+
+        # 1. Salva o arquivo no disco
+        file.save(filepath)
+
+        # 2. Atualiza o JSON de usuários
+        users = load_users()
+        if username in users:
+            # 3. Opcional: Remove a imagem antiga se a extensão for diferente
+            old_filename = users[username].get('profile_image')
+            if old_filename and old_filename != new_filename and os.path.exists(os.path.join(CACHE_DIR, old_filename)):
+                 os.remove(os.path.join(CACHE_DIR, old_filename))
+                 
+            users[username]['profile_image'] = new_filename
+            save_users(users)
+            
+            return jsonify({"status": "sucesso", "mensagem": "Imagem de perfil atualizada.", "url": f'/cache/{new_filename}?t={int(time.time())}'})
+        
+        return jsonify({"status": "erro", "mensagem": "Erro ao salvar perfil do usuário."}), 500
+    
+    return jsonify({"status": "erro", "mensagem": "Tipo de arquivo não permitido."}), 400
+
+@app.route('/cache/<filename>')
+def serve_cache(filename):
+    """Serve arquivos da pasta 'cache'."""
+    return send_from_directory(CACHE_DIR, filename)
+
+# Em: servidor_unico.py (Adicione junto às rotas de API do Hub)
+
+@app.route('/api/profile/remove-image', methods=['POST'])
+def profile_remove_image():
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+
+    users = load_users()
+    if username in users:
+        old_filename = users[username].get('profile_image')
+        
+        # 1. Remove o arquivo do cache se ele existir
+        if old_filename:
+            filepath = os.path.join(CACHE_DIR, old_filename)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        
+        # 2. Remove a referência do JSON e salva
+        users[username]['profile_image'] = None
+        save_users(users)
+        
+        return jsonify({"status": "sucesso", "mensagem": "Imagem removida.", "default_url": "/static/icones/default_profile.png"})
+    
+    return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+
+# --- ROTAS DE API (HUB LOGIN & CONEXÕES) ---
 
 @app.route('/api/hub/login', methods=['POST'])
 def hub_login():
@@ -159,7 +258,14 @@ def hub_login():
     
     if user_data and user_data['password'] == password:
         session['username'] = username
-        return jsonify({"status": "sucesso", "username": username})
+        
+        # Puxa a imagem do perfil para retornar na sessão
+        image_filename = user_data.get('profile_image')
+        
+        # --- CORREÇÃO APLICADA AQUI ---
+        image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+        
+        return jsonify({"status": "sucesso", "username": username, "profile_image": image_url})
     
     return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
 
@@ -174,8 +280,18 @@ def check_session():
     """Verifica se há um usuário logado na sessão do Hub."""
     username = session.get('username')
     if username:
-        return jsonify({"status": "logado", "username": username})
-    return jsonify({"status": "deslogado"})
+        # Puxa a imagem do perfil para retornar na sessão
+        users = load_users()
+        user_data = users.get(username, {})
+        image_filename = user_data.get('profile_image')
+        
+        # --- CORREÇÃO APLICADA AQUI ---
+        image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+        
+        return jsonify({"status": "logado", "username": username, "profile_image": image_url})
+    
+    # --- CORREÇÃO APLICADA AQUI ---
+    return jsonify({"status": "deslogado", "profile_image": "/static/icones/default_profile.png"})
 
 @app.route('/api/hub/get-connections')
 def get_connections():
@@ -206,10 +322,8 @@ def remove_connection(system):
     
     return jsonify({"status": "erro", "mensagem": "Conexão não encontrada."}), 404
 
-# --- FIM DAS NOVAS ROTAS DE API ---
 
 # --- ROTAS DE API (AUTOMAÇÃO) ---
-# (A rota /executar-macro não precisa de alterações)
 @app.route('/executar-macro', methods=['POST'])
 def executar_macro():
     if not is_sap_logged_in: 
@@ -233,7 +347,6 @@ def executar_macro():
             
     return jsonify(resultado)
 
-# (A rota /executar-bw-hana não precisa de alterações)
 @app.route('/executar-bw-hana', methods=['POST'])
 def executar_bw_hana():
     if not is_bw_hana_logged_in: 
@@ -260,7 +373,7 @@ def download_file(filename):
     except FileNotFoundError: 
         return "Arquivo não encontrado.", 404
 
-# --- ROTAS DE LOGIN / LOGOUT (ESTADO) (MODIFICADAS) ---
+# --- ROTAS DE LOGIN / LOGOUT (ESTADO) ---
 
 def save_connection_if_requested(system, user, password):
     """Salva a conexão no JSON se o usuário estiver logado no Hub."""
@@ -296,7 +409,6 @@ def login_sap():
         last_bw_creds = {}
         resultado['mensagem'] = "Login realizado com sucesso."
         
-        # NOVO: Salva a conexão se solicitado
         save_connection_if_requested('sap', usuario, senha)
     else:
         is_sap_logged_in = False
@@ -330,7 +442,6 @@ def login_bw_hana():
     is_bw_hana_logged_in = True
     is_sap_logged_in = False
     
-    # NOVO: Salva a conexão se solicitado
     save_connection_if_requested('bw', usuario, senha)
     
     return jsonify({"status": "sucesso", "mensagem": "Login realizado com sucesso."})
@@ -347,7 +458,6 @@ def logout_bw_hana():
     return jsonify({"status": "sucesso", "mensagem": "Estado de login BW HANA reiniciado."})
 
 # --- Função de Execução de Comando ---
-# (Sem alterações aqui)
 def executar_comando_externo(comando, contexto_tarefa="Tarefa genérica", timeout_seconds=600): # 10 min de timeout padrão
     try:
         resultado = subprocess.run(comando, capture_output=True, check=True, text=False, timeout=timeout_seconds)
@@ -372,5 +482,5 @@ def executar_comando_externo(comando, contexto_tarefa="Tarefa genérica", timeou
 
 if __name__ == '__main__':
     print("Servidor Iniciado...")
-    print(f"Acesse o Hub em http://192.168.15.24:5000") 
+    print(f"Acesse o Hub em http://[SEU_IP]:5000") 
     app.run(host='0.0.0.0', port=5000)

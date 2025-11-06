@@ -4,7 +4,8 @@
     "connections": {
       "sap": null,
       "bw": null
-    }
+    },
+    "profile_image": "admin.jpg"
   },
   "lopesm21": {
     "password": "1234",
