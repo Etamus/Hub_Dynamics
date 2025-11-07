@@ -6,10 +6,7 @@ A aplicação oferece uma interface web unificada para executar tarefas, visuali
 
 ---
 
-<img width="1918" height="921" alt="{B3DE957F-2CAD-4107-A91F-7141739BFEAF}" src="https://github.com/user-attachments/assets/98847626-77d2-433d-ab50-2e69961ab65c" />
-<img width="1919" height="921" alt="{B51FF8DE-9581-4E1A-A66C-8C5C2F5E7BD5}" src="https://github.com/user-attachments/assets/6ed9c0fc-5600-42cf-8e9c-592d3b33ad1c" />
-<img width="1920" height="921" alt="{1AEBCF6E-E632-4FC8-8413-95EE0AE2D650}" src="https://github.com/user-attachments/assets/ce7425c5-ae96-46c9-a541-ad57556fe592" />
-<img width="1919" height="923" alt="{61063D0D-0FD7-492B-8596-49CD5B00A6DD}" src="https://github.com/user-attachments/assets/bda3e1a3-fb3f-4819-9e01-bca540c6bd7d" />
+<img width="1918" height="922" alt="{1F41C8FE-5761-413F-A4B9-F9D2F57B5B41}" src="https://github.com/user-attachments/assets/4587de1f-edee-4a43-986c-a7b94268898f" />
 
 ---
 
