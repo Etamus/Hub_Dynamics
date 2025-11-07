@@ -550,8 +550,45 @@ body.theme-dark .logo-dark {
     color: white;
 }
 
-/* ============================================= */
+/* --- ESTILOS DE BOTÃO PADRÃO (Importado de automacao.css) --- */
+.button {
+    border: none; 
+    padding: 12px 20px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 15px; 
+    font-weight: 600; 
+    transition: all 0.2s ease;
+}
 
+/* Cores dos botões */
+.button.btn-execute, .button.btn-success {
+    background-color: #28a745; 
+    color: white;
+}
+.button.btn-execute:hover, .button.btn-success:hover {
+    background-color: #218838;
+}
+.button.btn-cancel {
+    background-color: var(--bg-color);
+    color: var(--text-secondary-color);
+    border: 1px solid var(--border-color);
+}
+.button.btn-cancel:hover {
+    background-color: var(--border-color);
+}
+/* Garante que o .btn-danger tenha fundo vermelho sólido */
+.button.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+.button.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+/* ============================================= */
 
 @media (max-width: 768px) {
     .top-header {
@@ -902,4 +939,445 @@ body.theme-dark .logo-dark {
 .cropper-container img {
     display: block;
     max-width: 100%;
+}
+/* --- ESTILOS DO MODAL DE REGISTRO E ADMIN --- */
+
+/* Reutiliza o estilo das abas do agendador */
+.scheduler-queue-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+.scheduler-tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px; /* Alinha com a borda */
+}
+.scheduler-tab:hover {
+    color: var(--text-primary-color);
+}
+.scheduler-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+.settings-modal .hub-modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    -webkit-appearance: none;
+    appearance: none;
+}
+/* Garante que o select no modal de registro se pareça com o input */
+.settings-modal select.hub-modal-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+.settings-modal .scheduler-datetime-group {
+    display: flex;
+    gap: 10px;
+}
+.settings-modal .scheduler-datetime-group .modal-input-group {
+    flex: 1;
+}
+
+/* Display do Token */
+.token-display {
+    padding: 15px;
+    background-color: var(--bg-color);
+    border: 1px dashed var(--accent-color);
+    color: var(--text-primary-color);
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 8px;
+    word-break: break-all;
+    cursor: text;
+}
+
+/* Display do Status da Consulta */
+.consult-status-box {
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center; /* <-- ADICIONE ESTA LINHA */
+
+    /* --- ADICIONE ESTAS 3 LINHAS --- */
+    width: 55%;                /* Define a largura (ex: 60% do espaço) */
+    margin-left: auto;         /* Centraliza o bloco da caixa */
+    margin-right: auto;        /* Centraliza o bloco da caixa */
+}
+.consult-status-box.pending {
+    background-color: var(--bg-color);
+    color: var(--text-tertiary-color);
+    border: 1px solid var(--border-color);
+}
+.consult-status-box.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+.consult-status-box.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* --- ESTILOS DO MODAL DE ADMIN (REVISÃO COMPLETA) --- */
+#admin-list-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px; /* Padding sutil para a rolagem */
+    background-color: var(--bg-color); /* Fundo sutil */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espaço entre os cards de solicitação */
+}
+
+.admin-request-card {
+    display: flex;
+    flex-direction: column; /* Empilha a info e o form de rejeição */
+    padding: 20px;
+    border-radius: 10px;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 4px 12px var(--shadow-color-light);
+    border: 1px solid var(--border-color);
+}
+
+/* Container principal (Info + Botões de Ação) */
+.admin-request-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-request-info {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.admin-request-info .username {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary-color);
+    margin-bottom: 2px;
+}
+
+.admin-request-info .details {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    line-height: 1.5;
+}
+.admin-request-info .details strong {
+    color: var(--text-tertiary-color); /* Um pouco mais escuro que o texto secundário */
+}
+
+.admin-request-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0; /* Impede que os botões encolham */
+    align-items: center;
+}
+
+/* Botões de ação do Admin (usando classes de botão existentes) */
+.admin-request-actions .button {
+    border: none; /* Garante que não tenha borda */
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    min-width: 100px; /* Largura mínima para os botões */
+    text-align: center;
+}
+
+.admin-justification-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.admin-justification-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end; /* Alinha os botões Salvar/Cancelar à direita */
+    gap: 10px;
+}
+
+.admin-justification-actions .button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: none;
+}
+.admin-justification-actions .button.btn-cancel {
+    background-color: var(--bg-color);
+    color: var(--text-secondary-color);
+    border: 1px solid var(--border-color);
+}
+
+.no-requests {
+    text-align: center;
+    color: var(--text-secondary-color);
+    font-style: italic;
+    padding: 40px 20px;
+    background-color: var(--card-bg-color);
+    border-radius: 10px;
+}
+/* --- CORREÇÃO: Classe de utilidade .hidden --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- ESTILOS DO MODAL DE REGISTRO E ADMIN --- */
+
+/* Reutiliza o estilo das abas do agendador */
+.scheduler-queue-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+.scheduler-tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px; /* Alinha com a borda */
+}
+.scheduler-tab:hover {
+    color: var(--text-primary-color);
+}
+.scheduler-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+/* Garante que o select no modal de registro se pareça com o input */
+.settings-modal select.hub-modal-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+.settings-modal .scheduler-datetime-group {
+    display: flex;
+    gap: 10px;
+}
+.settings-modal .scheduler-datetime-group .modal-input-group {
+    flex: 1;
+}
+
+/* Display do Token */
+.token-display {
+    padding: 15px;
+    background-color: var(--bg-color);
+    border: 1px dashed var(--accent-color);
+    color: var(--text-primary-color);
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 8px;
+    word-break: break-all;
+    cursor: text;
+    margin-top: 20px; /* Adiciona espaço acima do token */
+}
+
+/* Display do Status da Consulta */
+.consult-status-box {
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.consult-status-box.pending {
+    background-color: var(--bg-color);
+    color: var(--text-tertiary-color);
+    border: 1px solid var(--border-color);
+}
+.consult-status-box.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+.consult-status-box.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* --- ESTILOS DO MODAL DE ADMIN (REVISÃO COMPLETA) --- */
+#admin-list-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px; /* Padding sutil para a rolagem */
+    background-color: var(--bg-color); /* Fundo sutil */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espaço entre os cards de solicitação */
+}
+
+.admin-request-card {
+    display: flex;
+    flex-direction: column; /* Empilha a info e o form de rejeição */
+    padding: 20px;
+    border-radius: 10px;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 4px 12px var(--shadow-color-light);
+    border: 1px solid var(--border-color);
+}
+
+/* Container principal (Info + Botões de Ação) */
+.admin-request-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-request-info {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.admin-request-info .username {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary-color);
+    margin-bottom: 2px;
+}
+
+.admin-request-info .details {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    line-height: 1.5;
+}
+.admin-request-info .details strong {
+    color: var(--text-tertiary-color);
+}
+
+.admin-request-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0; /* Impede que os botões encolham */
+    align-items: center;
+}
+
+/* Botões de ação do Admin (usando classes de botão existentes) */
+.admin-request-actions .button {
+    /* Ajusta o padding para ser menor (padrão 12px 20px é muito grande) */
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    min-width: 90px;
+    text-align: center;
+}
+
+.admin-justification-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.admin-justification-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end; /* Alinha os botões Salvar/Cancelar à direita */
+    gap: 10px;
+}
+
+.admin-justification-actions .button {
+    /* Ajusta o padding para ser menor */
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+.no-requests {
+    text-align: center;
+    color: var(--text-secondary-color);
+    font-style: italic;
+    padding: 40px 20px;
+    background-color: var(--card-bg-color);
+    border-radius: 10px;
+}
+.admin-justification-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+/* Centraliza o texto de Justificativa */
+#consult-justification {
+    text-align: center;
+}
+/* --- AJUSTE DE LARGURA PARA O ERRO DE CONSULTA DE TOKEN --- */
+#consult-status-error {
+    width: 75%; /* Define a largura (ex: 80% do contêiner) */
+    
+    /* Centraliza o bloco do erro */
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* Garante que o texto dentro dele também esteja centralizado */
+    text-align: center; 
+}
+/* --- AJUSTE DE LARGURA DO ERRO DE REGISTRO --- */
+
+#register-status.hub-form-error {
+    width: 90%; /* Define a largura para 80% (ou o valor que preferir) */
+    margin-left: auto; /* Centraliza o elemento */
+    margin-right: auto; /* Centraliza o elemento */
+    margin-top: 15px; /* Mantém o espaçamento superior */
+    box-sizing: border-box; /* Garante que o padding não quebre o layout */
+}
+/* Adiciona margem acima da seção "Defina sua nova senha" no modal de Registro */
+#consult-new-password-section {
+    margin-top: 25px; /* Ajuste este valor (ex: 20px, 30px) como preferir */
+}
+/* --- CORREÇÃO: Efeitos :hover para os botões do modal Admin --- */
+
+/* 1. Garante que TODOS os botões no modal admin tenham a transição */
+.admin-request-actions .button,
+.admin-justification-actions .button {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* 2. Hover do "Aprovar" (btn-execute/btn-success) */
+.admin-request-actions .button.btn-execute:hover,
+.admin-request-actions .button.btn-success:hover {
+    background-color: #218838;
+}
+
+/* 3. Hover do "Reprovar" e "Confirmar" (btn-danger) */
+.admin-request-actions .button.btn-danger:hover,
+.admin-justification-actions .button.btn-danger:hover {
+    background-color: #92111e;
+}
+
+/* 4. Hover do "Cancelar" (btn-cancel) */
+.admin-justification-actions .button.btn-cancel:hover {
+    background-color: var(--border-color);
 }

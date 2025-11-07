@@ -9,10 +9,14 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 import time # Adicionado para evitar cache de imagem
+import secrets  # <-- ADICIONE
+import datetime # <-- ADICIONE
+from datetime import timezone, timedelta # <-- ADICIONE timezone, timedelta
 
 app = Flask(__name__)
 # NOVO: Chave secreta para gerenciar sessões de usuário do Hub
-app.secret_key = 'sua_chave_secreta_aqui_mude_isso' 
+app.secret_key = 'sua_chave_secreta_aqui_mude_isso'
+BRASILIA_TZ = timezone(timedelta(hours=-3)) # <-- ADICIONE ESTA LINHA
 
 # --- Variáveis de Estado Globais ---
 is_sap_logged_in = False
@@ -24,6 +28,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DRIVE_ROOT = os.path.join(BASE_DIR, "drive") 
 USUARIOS_DB = os.path.join(BASE_DIR, "usuarios.json")
 SCHEDULER_DB = os.path.join(BASE_DIR, "scheduler_db.json") # <-- ADICIONE ESTA LINHA
+REQUESTS_DB = os.path.join(BASE_DIR, "requests_db.json") # <-- ADICIONE ESTA LINHA
 
 # NOVO: Diretório para cache de imagens
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
@@ -83,6 +88,24 @@ def save_schedules(schedules_data):
             json.dump(schedules_data, f, indent=2)
     except Exception as e:
         print(f"Erro ao salvar agendamentos: {e}")
+
+def load_requests():
+    """Carrega todos os pedidos de acesso do arquivo JSON."""
+    if not os.path.exists(REQUESTS_DB):
+        return {}
+    try:
+        with open(REQUESTS_DB, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_requests(requests_data):
+    """Salva todos os pedidos de acesso no arquivo JSON."""
+    try:
+        with open(REQUESTS_DB, 'w', encoding='utf-8') as f:
+            json.dump(requests_data, f, indent=2)
+    except Exception as e:
+        print(f"Erro ao salvar pedidos de acesso: {e}")        
 
 def get_user_profile_data():
     """Retorna dados de perfil necessários para renderização do Hub."""
@@ -373,6 +396,163 @@ def remove_connection(system):
     
     return jsonify({"status": "erro", "mensagem": "Conexão não encontrada."}), 404
 
+# --- NOVAS ROTAS DE API (REGISTRO DE USUÁRIO) ---
+
+@app.route('/api/hub/register', methods=['POST'])
+def hub_register():
+    data = request.json
+    username = data.get('username')
+    area = data.get('area')
+    role = data.get('role')
+
+    if not username or not area or not role:
+        return jsonify({"status": "erro", "mensagem": "Todos os campos são obrigatórios."}), 400
+
+    users = load_users()
+    if username in users:
+        return jsonify({"status": "erro", "mensagem": "Este número de funcionário já está cadastrado."}), 400
+
+    requests = load_requests()
+    # Verifica se já existe um pedido pendente para este usuário
+    if any(r['username'] == username and r['status'] == 'Aguardando Aprovação' for r in requests.values()):
+        return jsonify({"status": "erro", "mensagem": "Você já possui uma solicitação pendente."}), 400
+
+    token = secrets.token_hex(16)
+    requests[token] = {
+        "username": username,
+        "area": area,
+        "role": role,
+        "status": "Aguardando Aprovação",
+        "request_date": datetime.datetime.now(BRASILIA_TZ).isoformat(), # <-- CORREÇÃO DE FUSO
+        "justification": None,
+        "expiration_date": None
+    }
+    save_requests(requests)
+    
+    return jsonify({"status": "sucesso", "mensagem": "Solicitação enviada. Guarde seu token!", "token": token})
+
+@app.route('/api/hub/consult', methods=['POST'])
+def hub_consult():
+    data = request.json
+    token = data.get('token')
+    if not token:
+        return jsonify({"status": "erro", "mensagem": "Token é obrigatório."}), 400
+
+    requests = load_requests()
+    request_data = requests.get(token)
+
+    if not request_data:
+        return jsonify({"status": "erro", "mensagem": "Token inválido ou não encontrado."}), 404
+        
+    # Verifica se o token aprovado expirou
+    if request_data['status'] == 'Aprovado':
+        expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
+        if datetime.datetime.utcnow() > expiration_date:
+            request_data['status'] = 'Expirado'
+            request_data['justification'] = 'O prazo de 7 dias para cadastro de senha expirou. Faça uma nova solicitação.'
+            requests[token] = request_data
+            save_requests(requests)
+            
+    return jsonify({"status": "sucesso", "request_data": request_data})
+
+@app.route('/api/hub/complete-registration', methods=['POST'])
+def hub_complete_registration():
+    data = request.json
+    token = data.get('token')
+    password = data.get('password')
+
+    if not token or not password:
+        return jsonify({"status": "erro", "mensagem": "Token e senha são obrigatórios."}), 400
+
+    requests = load_requests()
+    request_data = requests.get(token)
+
+    if not request_data or request_data['status'] != 'Aprovado':
+        return jsonify({"status": "erro", "mensagem": "Token inválido, expirado ou não aprovado."}), 403
+    
+    # Verifica a expiração novamente
+    expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
+    if datetime.datetime.utcnow() > expiration_date:
+        return jsonify({"status": "erro", "mensagem": "Este token expirou. Faça uma nova solicitação."}), 403
+
+    # Adiciona o usuário ao DB principal
+    users = load_users()
+    username = request_data['username']
+    
+    if username in users:
+         return jsonify({"status": "erro", "mensagem": "Este usuário já foi registrado. Tente fazer login."}), 400
+         
+    users[username] = {
+        "password": password,
+        "role": request_data['role'], # Adiciona a role
+        "profile_image": None,
+        "connections": {
+            "sap": None,
+            "bw": None
+        }
+    }
+    save_users(users)
+    
+    # Remove o token do DB de solicitações
+    del requests[token]
+    save_requests(requests)
+    
+    return jsonify({"status": "sucesso", "mensagem": "Cadastro concluído! Você já pode fazer login."})
+
+
+# --- ROTAS DE ADMINISTRAÇÃO ---
+
+def is_admin():
+    """Verifica se o usuário logado é 'admin'."""
+    return session.get('username') == 'admin'
+
+@app.route('/api/admin/get-requests')
+def admin_get_requests():
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+        
+    requests = load_requests()
+    # Filtra apenas solicitações pendentes
+    pending_requests = {token: data for token, data in requests.items() if data['status'] == 'Aguardando Aprovação'}
+    return jsonify({"status": "sucesso", "requests": pending_requests})
+
+@app.route('/api/admin/approve', methods=['POST'])
+def admin_approve():
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    token = request.json.get('token')
+    requests = load_requests()
+    
+    if token in requests and requests[token]['status'] == 'Aguardando Aprovação':
+        requests[token]['status'] = 'Aprovado'
+        # Define a data de expiração para 7 dias a partir de agora
+        requests[token]['expiration_date'] = (datetime.datetime.now(BRASILIA_TZ) + timedelta(days=7)).isoformat() # <-- CORREÇÃO DE FUSO
+        save_requests(requests)
+        return jsonify({"status": "sucesso"})
+    
+    return jsonify({"status": "erro", "mensagem": "Solicitação não encontrada ou já processada."}), 404
+
+@app.route('/api/admin/reject', methods=['POST'])
+def admin_reject():
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    token = request.json.get('token')
+    justification = request.json.get('justification')
+    
+    if not justification:
+        return jsonify({"status": "erro", "mensagem": "A justificativa é obrigatória."}), 400
+        
+    requests = load_requests()
+    
+    if token in requests and requests[token]['status'] == 'Aguardando Aprovação':
+        requests[token]['status'] = 'Reprovado'
+        requests[token]['justification'] = justification
+        save_requests(requests)
+        return jsonify({"status": "sucesso"})
+    
+    return jsonify({"status": "erro", "mensagem": "Solicitação não encontrada ou já processada."}), 404
 
 # --- ROTAS DE API (AUTOMAÇÃO) ---
 @app.route('/executar-macro', methods=['POST'])

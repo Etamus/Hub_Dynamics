@@ -3,6 +3,24 @@
     "queue": [],
     "history": [
       {
+        "id": "job_1762456076967",
+        "startTime": 1762457400000,
+        "status": "failed",
+        "taskInfo": {
+          "name": "Outlook",
+          "type": "sap"
+        }
+      },
+      {
+        "id": "job_1762454449357",
+        "startTime": 1762455120000,
+        "status": "failed",
+        "taskInfo": {
+          "name": "Cancelamento Aging",
+          "type": "sap"
+        }
+      },
+      {
         "id": "job_1762447244846",
         "startTime": 1762447320000,
         "status": "failed",

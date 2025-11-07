@@ -59,6 +59,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropperImage = document.getElementById('cropper-image');
     const cropperSaveBtn = document.getElementById('cropper-save-btn');
     
+    // NOVO: Modal de Registro
+    const registerOverlay = document.getElementById('register-overlay');
+    const registerCloseBtn = document.getElementById('register-close-btn');
+    const tabRegister = document.getElementById('tab-register');
+    const tabConsult = document.getElementById('tab-consult');
+    const registerTabContent = document.getElementById('register-tab-content');
+    const consultTabContent = document.getElementById('consult-tab-content');
+    
+    // Form de Registro
+    const registerForm = document.getElementById('register-form');
+    const registerUser = document.getElementById('register-user');
+    const registerArea = document.getElementById('register-area');
+    const registerRole = document.getElementById('register-role');
+    const registerSubmitBtn = document.getElementById('register-submit-btn');
+    const registerStatus = document.getElementById('register-status');
+    const registerTokenDisplay = document.getElementById('register-token-display');
+    const tokenGenerated = document.getElementById('token-generated');
+    
+    // Form de Consulta
+    const consultToken = document.getElementById('consult-token');
+    const consultTokenBtn = document.getElementById('consult-token-btn');
+    const consultStatusError = document.getElementById('consult-status-error'); // <-- ADICIONE ESTA LINHA
+    const consultStatusWrapper = document.getElementById('consult-status-wrapper');
+    const consultStatusResult = document.getElementById('consult-status-result');
+    const consultJustification = document.getElementById('consult-justification');
+    const consultNewPasswordSection = document.getElementById('consult-new-password-section');
+    const consultPasswordError = document.getElementById('consult-password-error');
+    const consultNewPassword = document.getElementById('consult-new-password');
+    const consultSavePasswordBtn = document.getElementById('consult-save-password-btn');
+
+    // NOVO: Modal de Admin
+    const adminOverlay = document.getElementById('admin-overlay');
+    const adminCloseBtn = document.getElementById('admin-close-btn');
+    const adminListContainer = document.getElementById('admin-list-container');
 
     // --- 1. LÓGICA DO SELETOR DE TEMA ---
     
@@ -203,50 +237,68 @@ document.addEventListener('DOMContentLoaded', () => {
      * ATUALIZADO: Atualiza a UI do dropdown, a IMAGEM do botão e a largura mínima.
      */
     function updateAccessDropdown(username = null, profileImageUrl = null) {
-        currentHubUser = username;
-        accessDropdown.innerHTML = '';
-        
-        // 1. ATUALIZA A IMAGEM E LARGURA DO DROPDOWN
-        currentProfileUrl = profileImageUrl || defaultProfileUrl;
-        profileImgThumb.src = currentProfileUrl;
-        
-        if (username) {
-            accessDropdown.style.minWidth = '200px';
-        } else {
-            accessDropdown.style.minWidth = '130px';
+    currentHubUser = username;
+    accessDropdown.innerHTML = '';
+    
+    currentProfileUrl = profileImageUrl || defaultProfileUrl;
+    profileImgThumb.src = currentProfileUrl;
+    
+    if (username) {
+        accessDropdown.style.minWidth = '200px';
+    } else {
+        accessDropdown.style.minWidth = '180px';
+    }
+
+    if (username) {
+        let adminButton = '';
+        // Mostra o botão de Admin se o usuário for 'admin'
+        if (username.toLowerCase() === 'admin') {
+            adminButton = `
+            <button class="access-dropdown-item" id="access-admin-btn">
+                <i class="fas fa-user-shield"></i>Administração
+            </button>`;
         }
 
-        // 2. PREENCHE O DROPDOWN
-        if (username) {
-            accessDropdown.innerHTML = `
-                <div class="access-dropdown-header">
-                    <strong>${username}</strong>
-                    <span>Logado</span>
-                </div>
-                <button class="access-dropdown-item" id="access-profile-btn">
-                    <i class="fas fa-camera"></i>Perfil
-                </button>
-                <button class="access-dropdown-item" id="access-connections-btn">
-                    <i class="fas fa-plug"></i>Minhas Conexões
-                </button>
-                <button class="access-dropdown-item danger" id="access-logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>Deslogar
-                </button>
-            `;
-            // Adiciona listeners
-            document.getElementById('access-profile-btn').addEventListener('click', () => openProfileModal(username, currentProfileUrl));
-            document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
-            document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
-            
-        } else {
-            accessDropdown.innerHTML = `
-                <button class="access-dropdown-item" id="access-login-btn">
-                    <i class="fas fa-sign-in-alt"></i>Logar
-                </button>
-            `;
-            document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
+        accessDropdown.innerHTML = `
+            <div class="access-dropdown-header">
+                <strong>${username}</strong>
+                <span>Logado</span>
+            </div>
+            <button class="access-dropdown-item" id="access-profile-btn">
+                <i class="fas fa-camera"></i>Perfil
+            </button>
+            ${adminButton} 
+            <button class="access-dropdown-item" id="access-connections-btn">
+                <i class="fas fa-plug"></i>Minhas Conexões
+            </button>
+            <button class="access-dropdown-item danger" id="access-logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Deslogar
+            </button>
+        `;
+        document.getElementById('access-profile-btn').addEventListener('click', () => openProfileModal(username, currentProfileUrl));
+        document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
+        document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
+        
+        // Listener do botão de Admin (se ele existir)
+        const adminBtn = document.getElementById('access-admin-btn');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', openAdminModal);
         }
+            
+    } else {
+        // --- Usuário está DESLOGADO (Adiciona "Registrar") ---
+        accessDropdown.innerHTML = `
+            <button class="access-dropdown-item" id="access-login-btn">
+                <i class="fas fa-sign-in-alt"></i>Logar
+            </button>
+            <button class="access-dropdown-item" id="access-register-btn">
+                <i class="fas fa-user-plus"></i>Solicitar Acesso
+            </button>
+        `;
+        document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
+        document.getElementById('access-register-btn').addEventListener('click', openRegisterModal);
     }
+}
 
     // --- Lógica de Recorte (Cropper.js) ---
 
@@ -603,4 +655,339 @@ fetch('/api/hub/check-session')
     }
 });
 
-});
+// --- NOVA LÓGICA: MODAL DE REGISTRO ---
+
+    function openRegisterModal() {
+        accessDropdown.classList.remove('visible');
+        registerOverlay.classList.add('visible');
+        // Reseta o modal para a aba de registro
+        showRegisterTab('register');
+        
+        // --- CORREÇÃO: Reseta o layout do formulário ---
+        document.getElementById('register-fields').classList.remove('hidden'); // Mostra os campos
+        registerTokenDisplay.classList.add('hidden'); // Esconde o token
+        
+        consultStatusWrapper.classList.add('hidden');
+        registerStatus.classList.add('hidden');
+        consultPasswordError.classList.add('hidden');
+        
+        // Limpa os campos
+        registerUser.value = '';
+        registerArea.value = '';
+        registerRole.value = '';
+        consultToken.value = '';
+        consultNewPassword.value = '';
+    }
+
+    function showRegisterTab(tabName) {
+        if (tabName === 'register') {
+            tabRegister.classList.add('active');
+            tabConsult.classList.remove('active');
+            registerTabContent.classList.remove('hidden');
+            consultTabContent.classList.add('hidden');
+        } else {
+            tabRegister.classList.remove('active');
+            tabConsult.classList.add('active');
+            registerTabContent.classList.add('hidden');
+            consultTabContent.classList.remove('hidden');
+        }
+    }
+    
+    // Listeners das Abas de Registro
+    tabRegister.addEventListener('click', () => showRegisterTab('register'));
+    tabConsult.addEventListener('click', () => showRegisterTab('consult'));
+    registerCloseBtn.addEventListener('click', () => registerOverlay.classList.remove('visible'));
+    registerOverlay.addEventListener('click', (e) => {
+        if (e.target === registerOverlay) registerOverlay.classList.remove('visible');
+    });
+
+    // Enviar Solicitação de Registro
+    registerSubmitBtn.addEventListener('click', () => {
+        const username = registerUser.value.trim();
+        const area = registerArea.value;
+        const role = registerRole.value;
+
+        if (!username || !area) {
+            registerStatus.textContent = "Preencha o N° de Funcionário e a Área.";
+            registerStatus.classList.remove('hidden');
+            return;
+        }
+
+        registerStatus.classList.add('hidden');
+        registerSubmitBtn.disabled = true;
+
+        fetch('/api/hub/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, area: area, role: role })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                tokenGenerated.textContent = data.token;
+                
+                // --- CORREÇÃO: Esconde apenas os campos, não o form todo ---
+                document.getElementById('register-fields').classList.add('hidden');
+                
+                registerTokenDisplay.classList.remove('hidden');
+            } else {
+                registerStatus.textContent = data.mensagem;
+                registerStatus.classList.remove('hidden');
+            }
+        })
+        .finally(() => {
+            registerSubmitBtn.disabled = false;
+        });
+    });
+
+    // Consultar Token
+    consultTokenBtn.addEventListener('click', () => {
+        const token = consultToken.value.trim();
+        if (!token) return;
+
+        consultTokenBtn.disabled = true;
+        consultStatusWrapper.classList.add('hidden');
+        consultNewPasswordSection.classList.add('hidden');
+        consultPasswordError.classList.add('hidden');
+        consultStatusError.classList.add('hidden'); // <-- ADICIONADO: Esconde o erro
+        
+        fetch('/api/hub/consult', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                const status = data.request_data.status;
+                consultStatusResult.textContent = status;
+                consultStatusResult.className = 'consult-status-box'; // Reseta classes
+                consultJustification.classList.add('hidden');
+
+                if (status === 'Aguardando Aprovação') {
+                    consultStatusResult.classList.add('pending');
+                } else if (status === 'Aprovado') {
+                    consultStatusResult.classList.add('approved');
+                    consultNewPasswordSection.classList.remove('hidden');
+                } else { // Reprovado ou Expirado
+                    consultStatusResult.classList.add('rejected');
+                    consultJustification.textContent = `Justificativa: ${data.request_data.justification || 'N/A'}`;
+                    consultJustification.classList.remove('hidden');
+                }
+                consultStatusWrapper.classList.remove('hidden');
+            } else {
+                // --- CORREÇÃO: Remove o alert() e usa o <p> ---
+                // alert(data.mensagem); 
+                consultStatusError.textContent = data.mensagem;
+                consultStatusError.classList.remove('hidden');
+                // ---------------------------------------------
+            }
+        })
+        .finally(() => {
+            consultTokenBtn.disabled = false;
+        });
+    });
+    
+    // Salvar Nova Senha
+    consultSavePasswordBtn.addEventListener('click', () => {
+        const token = consultToken.value.trim();
+        const password = consultNewPassword.value;
+        
+        if (!password || password.length < 4) {
+            consultPasswordError.textContent = "A senha deve ter pelo menos 4 caracteres.";
+            consultPasswordError.classList.remove('hidden');
+            return;
+        }
+
+        consultPasswordError.classList.add('hidden');
+        consultSavePasswordBtn.disabled = true;
+
+        fetch('/api/hub/complete-registration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token, password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                registerOverlay.classList.remove('visible'); // Fecha modal de registro
+                openHubLoginModal(); // Abre modal de login
+            } else {
+                consultPasswordError.textContent = data.mensagem;
+                consultPasswordError.classList.remove('hidden');
+            }
+        })
+        .finally(() => {
+            consultSavePasswordBtn.disabled = false;
+        });
+    });
+
+
+    // --- NOVA LÓGICA: MODAL DE ADMINISTRAÇÃO ---
+
+    function openAdminModal() {
+        accessDropdown.classList.remove('visible');
+        adminListContainer.innerHTML = '<p class="no-requests">Carregando solicitações...</p>';
+        adminOverlay.classList.add('visible');
+        
+        fetch('/api/admin/get-requests')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                renderAdminRequests(data.requests);
+            } else {
+                adminListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+            }
+        });
+    }
+
+    // SUBSTITUA a função renderAdminRequests por esta:
+function renderAdminRequests(requests) {
+    adminListContainer.innerHTML = '';
+    const tokens = Object.keys(requests);
+    
+    if (tokens.length === 0) {
+        adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
+        return;
+    }
+    
+    tokens.forEach(token => {
+        const req = requests[token];
+        
+        // --- CORREÇÃO (Req 2): Formata a data ISO (agora com fuso) para PT-BR local
+        const requestDate = new Date(req.request_date).toLocaleString('pt-BR', {
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit'
+        });
+        
+        const item = document.createElement('div');
+        item.className = 'admin-request-card'; // <-- CORRIGIDO (estava item.className)
+        item.dataset.token = token;
+        
+        item.innerHTML = `
+            <div class="admin-request-main">
+                <div class="admin-request-info">
+                    <div class="username">${req.username.toUpperCase()}</div> 
+                    <div class="details">
+                        <strong>Área:</strong> ${req.area} | <strong>Função:</strong> ${req.role}
+                        <br>
+                        <strong>Solicitado em:</strong> ${requestDate}
+                    </div>
+                </div>
+                <div class="admin-request-actions">
+                    <button class="button btn-execute admin-approve-btn">Aprovar</button>
+                    <button class="button btn-danger admin-reject-btn">Reprovar</button>
+                </div>
+            </div>
+            <div class="admin-justification-form hidden">
+                <textarea class="admin-justification-input" placeholder="Justificativa da reprovação..."></textarea>
+                <div class="admin-justification-actions">
+                    <button class="button btn-cancel admin-reject-cancel-btn">Cancelar</button>
+                    <button class="button btn-danger admin-reject-save-btn">Confirmar</button>
+                </div>
+            </div>
+        `;
+        adminListContainer.appendChild(item);
+    });
+
+    // Adiciona listeners aos botões
+    adminListContainer.querySelectorAll('.admin-approve-btn').forEach(btn => {
+        btn.addEventListener('click', handleAdminApprove);
+    });
+    adminListContainer.querySelectorAll('.admin-reject-btn').forEach(btn => {
+        btn.addEventListener('click', showAdminRejectionForm);
+    });
+    adminListContainer.querySelectorAll('.admin-reject-save-btn').forEach(btn => {
+        btn.addEventListener('click', handleAdminReject);
+    });
+    adminListContainer.querySelectorAll('.admin-reject-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', hideAdminRejectionForm);
+    });
+}
+
+    function handleAdminApprove(e) {
+    const item = e.target.closest('.admin-request-card'); // <-- CORREÇÃO (Req 1)
+    const token = item.dataset.token;
+    e.target.disabled = true;
+    
+    fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'sucesso') {
+            // --- CORREÇÃO (Req 2): Remove o item em vez de esmaecer ---
+            item.remove();
+            
+            // Verifica se a lista ficou vazia
+            if (adminListContainer.children.length === 0) {
+                 adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
+            }
+        } else {
+            alert(data.mensagem);
+            e.target.disabled = false;
+        }
+    });
+}
+    
+    // SUBSTITUA a função showAdminRejectionForm por esta:
+function showAdminRejectionForm(e) {
+    const item = e.target.closest('.admin-request-card'); // <-- CORREÇÃO
+    item.querySelector('.admin-justification-form').classList.remove('hidden');
+    item.querySelector('.admin-request-main').classList.add('hidden'); // Esconde a linha principal
+}
+
+// SUBSTITUA a função hideAdminRejectionForm por esta:
+function hideAdminRejectionForm(e) {
+    const item = e.target.closest('.admin-request-card'); // <-- CORREÇÃO
+    item.querySelector('.admin-justification-form').classList.add('hidden');
+    item.querySelector('.admin-justification-input').value = ''; // Limpa o texto
+    item.querySelector('.admin-request-main').classList.remove('hidden'); // Mostra a linha principal
+}
+
+// SUBSTITUA a função handleAdminReject por esta:
+function handleAdminReject(e) {
+    const item = e.target.closest('.admin-request-card'); // <-- CORREÇÃO (Req 1)
+    const token = item.dataset.token;
+    const justification = item.querySelector('.admin-justification-input').value;
+    
+    if (!justification) {
+        alert("Por favor, insira uma justificativa.");
+        return;
+    }
+    
+    e.target.disabled = true;
+
+    fetch('/api/admin/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, justification: justification })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'sucesso') {
+            // --- CORREÇÃO (Req 2): Remove o item em vez de esmaecer ---
+            item.remove();
+            
+            // Verifica se a lista ficou vazia
+            if (adminListContainer.children.length === 0) {
+                 adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
+            }
+        } else {
+            alert(data.mensagem);
+            e.target.disabled = false;
+        }
+    });
+}
+
+    // Listener de fechamento do Modal de Admin
+    adminCloseBtn.addEventListener('click', () => adminOverlay.classList.remove('visible'));
+    adminOverlay.addEventListener('click', (e) => {
+        if (e.target === adminOverlay) adminOverlay.classList.remove('visible');
+    });
+});    

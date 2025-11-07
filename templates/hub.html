@@ -171,7 +171,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v1.8.4</p>
+                    <p><strong>Versão Atual:</strong> v1.9</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -182,6 +182,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v1.9:</strong> Novo registro de usuário, consulta e sistema de perfis</li>
                         <li><strong>v1.8.4:</strong> Mudanças de placeholders e ajustes de icones no agendamento de tarefas</li>
                         <li><strong>v1.8.2:</strong> Melhorias no perfil de usuário do hub</li>
                         <li><strong>v1.8:</strong> Agendador de tarefas aprimorado e correções de estrutura</li>
@@ -281,6 +282,103 @@
             </div>
         </div>
     </div>
+
+    <div class="settings-modal-overlay" id="register-overlay">
+    <div class="settings-modal" style="max-width: 450px;">
+        <div class="settings-header">
+            <h2>Solicitar Acesso</h2>
+            <button class="settings-close-btn" id="register-close-btn">&times;</button>
+        </div>
+        <div class="scheduler-queue-tabs" style="padding-left: 20px;">
+            <span id="tab-register" class="scheduler-tab active" data-tab="register">Registro</span>
+            <span id="tab-consult" class="scheduler-tab" data-tab="consult">Consulta</span>
+        </div>
+        
+        <div id="register-tab-content" class="settings-body" style="padding: 10px 30px 30px;">
+            
+            <div id="register-form">
+                <div id="register-fields">
+                    <div class="modal-input-group" style="margin-bottom: 15px;">
+                        <label for="register-user">Nº de Funcionário:</label>
+                        <input type="text" id="register-user" class="hub-modal-input" placeholder="Ex: LOPESM21" maxlength="10">
+                    </div>
+                    
+                    <div class="scheduler-datetime-group" style="gap: 15px;">
+                        <div class="modal-input-group" style="margin-bottom: 15px;">
+                            <label for="register-area">Área:</label>
+                            <select id="register-area" class="hub-modal-input">
+                                <option value="" disabled selected hidden>Selecione...</option>
+                                <option value="Logística">Logística</option>
+                                <option value="Comercial">Comercial</option>
+                                <option value="Financeiro">Financeiro</option>
+                                <option value="Jurídico">Jurídico</option>
+                                <option value="Vendas">Vendas</option>
+                                <option value="Footprint">Footprint</option>
+                            </select>
+                        </div>
+                        <div class="modal-input-group" style="margin-bottom: 15px;">
+                            <label for="register-role">Função:</label>
+                            <select id="register-role" class="hub-modal-input">
+                                <option value="" disabled selected hidden>Selecione...</option>
+                                <option value="Visualizador">Visualizador</option>
+                                <option value="Operador">Operador</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button id="register-submit-btn" class="button-full-width" style="width: 40%; margin-top: 15px;">Solicitar</button>
+
+                    <p id="register-status" class="hub-form-error hidden" style="text-align: center; margin-top: 15px;"></p>
+                </div>
+
+                <div id="register-token-display" class="hidden" style="text-align: center;">
+                    <p style="color: var(--text-secondary-color); margin-top: -10px;">Sua solicitação foi enviada!</p>
+                    <p style="color: var(--text-primary-color); font-weight: 500;">Guarde este token para consultar seu status:</p>
+                    <div class="token-display" id="token-generated"></div>
+                    </div>
+            </div>
+        </div>
+        
+        <div id="consult-tab-content" class="settings-body hidden" style="padding: 10px 30px 30px;">
+
+            <div class="modal-input-group" style="margin-bottom: 15px;">
+                <label for="consult-token">Insira seu Token de Acesso:</label>
+                <input type="text" id="consult-token" class="hub-modal-input">
+            </div>
+            <button id="consult-token-btn" class="button-full-width" style="width: 40%; margin-top: 30px;">Consultar</button>
+            
+            <p id="consult-status-error" class="hub-form-error hidden" style="text-align: center;"></p>
+
+            <div id="consult-status-wrapper" class="hidden" style="margin-top: 25px; text-align: left;">
+                <hr style="border-color: var(--border-color); border-top: 0;">
+                <p style="font-weight: 600; color: var(--text-primary-color);">Status da Solicitação:</p>
+                <div class="consult-status-box" id="consult-status-result"></div>
+                <p id="consult-justification" class="hidden" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+                
+                <div id="consult-new-password-section" class="hidden">
+                    <p id="consult-password-error" class="hub-form-error hidden"></p>
+                    <div class="modal-input-group" style="margin-bottom: 15px;">
+                        <label for="consult-new-password">Defina sua nova senha:</label>
+                        <input type="password" id="consult-new-password" class="hub-modal-input" maxlength="20">
+                    </div>
+                    <button id="consult-save-password-btn" class="button-full-width" style="width: 40%; margin-top: 30px;">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <div class="settings-modal-overlay" id="admin-overlay">
+        <div class="settings-modal" style="max-width: 800px;">
+            <div class="settings-header">
+                <h2>Administração</h2>
+                <button class="settings-close-btn" id="admin-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" id="admin-list-container" style="padding: 20px 30px 30px;">
+                </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script> <script src="/static/js/shared.js" defer></script>
     <script src="/static/js/hub.js" defer></script>
     
