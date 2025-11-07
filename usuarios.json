@@ -13,8 +13,20 @@
   },
   "lopesm21": {
     "password": "1234",
+    "role": "Executor",
+    "area": "Log\u00edstica",
+    "connections": {
+      "sap": null,
+      "bw": null
+    },
+    "login_attempts": 0,
+    "lockout_until": null
+  },
+  "paixaj": {
+    "password": "1234",
     "role": "Analista",
     "area": "Log\u00edstica",
+    "profile_image": null,
     "connections": {
       "sap": null,
       "bw": null

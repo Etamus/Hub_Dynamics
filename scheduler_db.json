@@ -1,16 +1,27 @@
 {
   "global_schedule": {
-    "queue": [
+    "queue": [],
+    "history": [
       {
-        "id": "job_1762516162451",
+        "creator": "admin",
+        "id": "job_1762548031551",
+        "startTime": 1762548120000,
+        "status": "failed",
+        "taskInfo": {
+          "name": "Outlook",
+          "type": "sap"
+        }
+      },
+      {
+        "creator": "lopesm21",
+        "id": "job_1762547797147",
+        "startTime": 1762547880000,
+        "status": "failed",
         "taskInfo": {
           "name": "Base M\u00e3e",
           "type": "sap"
-        },
-        "startTime": 1762539780000,
-        "status": "pending"
+        }
       }
-    ],
-    "history": []
+    ]
   }
 }

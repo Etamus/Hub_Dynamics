@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isBwLoggedIn = false;
     let currentTaskInfo = null;
     let statusTimeout;
+    let currentHubUser = null; // <-- ADICIONE ESTA LINHA
     
     let savedConnections = {}; // Será preenchido com { sap: {...}, bw: {...} }
 
@@ -207,6 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         isBwLoggedIn = true;
                     }
                     
+                    currentHubUser = localStorage.getItem('hubUsername') || null;
+
                     if (saveConnection) {
                         if (!savedConnections[systemType]) savedConnections[systemType] = {};
                         savedConnections[systemType].user = user;
@@ -454,23 +457,29 @@ function injectSchedulerHTML() {
             <div class="scheduler-body">
                 <div class="scheduler-form">
                     
-                    <div class="modal-input-group">
-                        <label>Tarefa:</label>
-                        <div id="scheduler-tasks-container" class="scheduler-tasks-container">
-                            </div>
-                    </div>
-
                     <div class="scheduler-datetime-group">
                         <div class="modal-input-group">
                             <label for="scheduler-date">Data:</label>
                             <div class="input-with-icon-wrapper">
-                                <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10"> <i class="fas fa-calendar-alt input-icon"></i> </div>
+                                <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10">
+                                <i class="fas fa-calendar-alt input-icon" id="scheduler-calendar-icon"></i>
+                                <input type="date" id="scheduler-date-native" class="scheduler-native-input">
+                            </div>
                         </div>
                         <div class="modal-input-group">
                             <label for="scheduler-time">Hora:</label>
                             <div class="input-with-icon-wrapper">
-                                <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5"> <i class="fas fa-clock input-icon"></i> </div>
+                                <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5">
+                                <i class="fas fa-clock input-icon" id="scheduler-clock-icon"></i>
+                                <input type="time" id="scheduler-time-native" class="scheduler-native-input">
+                            </div>
                         </div>
+                    </div>
+                    
+                    <div class="modal-input-group">
+                        <label>Tarefa:</label>
+                        <div id="scheduler-tasks-container" class="scheduler-tasks-container">
+                            </div>
                     </div>
                     
                     <div class="scheduler-button-container">
@@ -645,21 +654,40 @@ function renderJobList(listElement, jobs, showRemoveButton) {
         const li = document.createElement('li');
         li.className = `queue-item ${job.status}`;
         
-        // --- MODIFICAÇÃO DE DATA: Adicionado 'year: 'numeric'' ---
-        const time = new Date(job.startTime).toLocaleString('pt-BR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric', // AGORA INCLUI O ANO
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        // -----------------------------------------------------------
+        // --- INÍCIO DA ALTERAÇÃO (Req 1): Formato de Data/Hora ---
+        const jobDate = new Date(job.startTime).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        }); // Ex: 07/11/2025
+        
+        const jobTime = new Date(job.startTime).toLocaleString('pt-BR', {
+            hour: '2-digit', minute: '2-digit'
+        }); // Ex: 17:55
+        // --- FIM DA ALTERAÇÃO ---
         
         const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
+
+        // --- INÍCIO DA NOVA LÓGICA (Req 1 e 2) ---
+        let actionItemHtml = ''; // O HTML para o "X" ou o nome
         
-        const removeButtonHtml = showRemoveButton
-            ? `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`
-            : '';
+        const jobCreator = job.creator || null; 
+        const currentUser = currentHubUser || null;
+        const creatorName = (jobCreator || "Sistema").toUpperCase(); 
+
+        if (showRemoveButton) { 
+            // Estamos na aba "Fila"
+            if (jobCreator === currentUser) {
+                // O usuário atual é o criador: Mostrar o 'X'
+                actionItemHtml = `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`;
+            } else {
+                // Não é o criador: Mostrar o nome
+                actionItemHtml = `<span class="queue-item-creator" title="Agendado por ${creatorName}">${creatorName}</span>`;
+            }
+        } else {
+            // --- CORREÇÃO: Estamos na aba "Histórico" ---
+            // Mostra o nome do criador (seja quem for)
+            actionItemHtml = `<span class="queue-item-creator" title="Agendado por ${creatorName}">${creatorName}</span>`;
+        }
+        // --- FIM DA LÓGICA DE AÇÃO ----
         
         // --- Lógica de Imagem (baseada no pedido anterior) ---
         const imagePath = job.taskInfo.type === 'sap' 
@@ -669,14 +697,17 @@ function renderJobList(listElement, jobs, showRemoveButton) {
         const taskIconHtml = `<img src="${imagePath}" class="queue-item-task-icon" alt="${job.taskInfo.type} logo">`;
         // ----------------------------------------------------
 
+        // --- ALTERAÇÃO NO INNERHTML (Req 1) ---
         li.innerHTML = `
             <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
             <div class="queue-item-details">
                 <strong>${taskIconHtml}${job.taskInfo.name}</strong>
-                <em>${time}</em>
+                <em class="queue-item-datetime">Data: ${jobDate}</em>
+                <em class="queue-item-datetime">Hora: ${jobTime}</em>
             </div>
-            ${removeButtonHtml}
+            ${actionItemHtml}
         `;
+        // --- FIM DA ALTERAÇÃO ---
         listElement.appendChild(li);
     });
     
@@ -735,6 +766,14 @@ function addJobToQueue() {
     const startTime = new Date(isoDateString).getTime();
     // --------------------------------------------------
 
+    // --- REQ 2: Verificação de Duplicatas ---
+    const existingJob = jobQueue.find(job => job.startTime === startTime && job.taskInfo.type === type);
+    if (existingJob) {
+        alert("Já existe uma tarefa desta plataforma agendada para esta data e hora.");
+        return;
+    }
+    // --- Fim da Verificação ---
+
     const oneMinuteFromNow = Date.now() + 60000;
     
     if (isNaN(startTime) || startTime < oneMinuteFromNow) {
@@ -746,7 +785,8 @@ function addJobToQueue() {
         id: `job_${Date.now()}`,
         taskInfo: { name: name, type: type },
         startTime: startTime,
-        status: 'pending' 
+        status: 'pending',
+        creator: currentHubUser || null // <-- REQ 1: Salva o criador (null se deslogado) 
     };
     
     jobQueue.push(newJob);
@@ -885,10 +925,21 @@ function saveScheduleToServer() {
 }
 
 // NOVO: Função para aplicar máscaras de input
+// NOVO: Função para aplicar máscaras de input
 function setupInputMasks() {
     const dateInput = document.getElementById('scheduler-date');
+    const timeInput = document.getElementById('scheduler-time');
+    
+    // --- NOVOS SELETORES ---
+    const calendarIcon = document.getElementById('scheduler-calendar-icon');
+    const clockIcon = document.getElementById('scheduler-clock-icon');
+    const dateNative = document.getElementById('scheduler-date-native');
+    const timeNative = document.getElementById('scheduler-time-native');
+
     if (!dateInput.maskApplied) { // Evita adicionar o listener múltiplas vezes
         dateInput.maskApplied = true;
+        
+        // Listener da MÁSCARA (para digitação)
         dateInput.addEventListener('input', (e) => {
             let v = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
             if (v.length > 8) v = v.slice(0, 8);
@@ -899,11 +950,30 @@ function setupInputMasks() {
             }
             e.target.value = v;
         });
+
+        // --- Listener do ÍCONE (clica no input nativo) ---
+        calendarIcon.addEventListener('click', () => {
+            try {
+                dateNative.showPicker(); // Método moderno para abrir o seletor
+            } catch (error) {
+                dateNative.click(); // Fallback para navegadores mais antigos
+            }
+        });
+
+        // --- Listener do INPUT NATIVO (formata e preenche o input visível) ---
+        dateNative.addEventListener('change', (e) => {
+            if (!e.target.value) return; // Se o usuário cancelar
+            // Valor (ex: 2025-12-01)
+            const [year, month, day] = e.target.value.split('-');
+            // Formata (ex: 01/12/2025)
+            dateInput.value = `${day}/${month}/${year}`;
+        });
     }
 
-    const timeInput = document.getElementById('scheduler-time');
     if (!timeInput.maskApplied) {
         timeInput.maskApplied = true;
+        
+        // Listener da MÁSCARA (para digitação)
         timeInput.addEventListener('input', (e) => {
             let v = e.target.value.replace(/\D/g, '');
             if (v.length > 4) v = v.slice(0, 4);
@@ -911,6 +981,21 @@ function setupInputMasks() {
                 v = `${v.slice(0, 2)}:${v.slice(2)}`;
             }
             e.target.value = v;
+        });
+
+        // --- Listener do ÍCONE ---
+        clockIcon.addEventListener('click', () => {
+             try {
+                timeNative.showPicker(); // Método moderno
+            } catch (error) {
+                timeNative.click(); // Fallback
+            }
+        });
+        
+        // --- Listener do INPUT NATIVO ---
+        timeNative.addEventListener('change', (e) => {
+            if (!e.target.value) return; // Se o usuário cancelar
+            timeInput.value = e.target.value; // (Formato HH:MM já é o correto)
         });
     }
 }
@@ -1030,6 +1115,7 @@ function processLoadedSchedule(data) {
 
     /// --- Função de Inicialização ---
 function initialize() {
+    currentHubUser = localStorage.getItem('hubUsername') || null;
     // 1. Coleta as tarefas (síncrono, necessário para o agendador)
     collectAllTasks(); 
     

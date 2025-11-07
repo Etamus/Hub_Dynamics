@@ -463,7 +463,8 @@ body {
 /* NOVO: Wrapper para centralizar o botão "Adicionar" */
 .scheduler-button-container {
     text-align: center;
-    margin-top: 10px; 
+    margin-top: 40px;
+    margin-bottom: 20px;  
 }
 /* BOTÃO "ADICIONAR" MENOR E CENTRALIZADO */
 .scheduler-form .button.btn-execute {
@@ -660,9 +661,6 @@ body {
     flex-direction: column;
     gap: 10px; /* Espaço entre os botões */
     margin-top: 10px;
-    max-height: 250px;
-    overflow-y: auto; /* Permite rolagem se houver muitas tarefas */
-    padding-right: 5px;
 }
 /* Em: automacao.css (NOVO BLOCO) */
 
@@ -793,8 +791,13 @@ body {
     right: 12px;
     transform: translateY(-50%);
     color: var(--text-secondary-color);
-    pointer-events: none; /* Permite clicar no input "através" do ícone */
+    cursor: pointer; /* <-- ADICIONE ESTA LINHA */
     font-size: 0.9rem; /* Tamanho do ícone */
+    transition: color 0.2s ease; /* <-- ADICIONE (para o hover) */
+}
+/* ADICIONE esta regra de hover para o ícone */
+.input-with-icon-wrapper .input-icon:hover {
+    color: var(--accent-color);
 }
 
 /* 3. Ajuste do input (que está dentro do wrapper) para dar espaço ao ícone */
@@ -804,4 +807,56 @@ body {
     
     /* Faz o texto começar alinhado à esquerda (caso tenha centralização em outro lugar) */
     text-align: left;
+}
+/* --- ESTILO PARA O INPUT NATIVO (INVISÍVEL) --- */
+.scheduler-native-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0; /* Totalmente invisível */
+    pointer-events: none; /* Não pode ser clicado diretamente */
+}
+/* --- ESTILO PARA O NOME DO CRIADOR (AGENDADOR) --- */
+.queue-item-creator {
+    /* Alinhamento (para ocupar o espaço do 'X') */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centralizado */
+    margin-left: 10px; /* Espaço à esquerda */
+    padding: 5px;
+    
+    /* Largura - para evitar que nomes longos quebrem o layout */
+    min-width: 40px; 
+    max-width: 70px; /* Ajuste se os nomes forem muito longos */
+
+    /* Estilo (Req) */
+    color: var(--text-secondary-color); /* Cinza */
+    font-size: 0.9rem; /* Pequeno */
+    font-weight: 600;
+    line-height: 1;
+    
+    /* Truncamento (caso o nome seja muito longo) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Apenas para garantir alinhamento caso o card seja flex */
+    flex-shrink: 0;
+}
+/* --- AJUSTE DE EXIBIÇÃO DATA/HORA DO AGENDADOR --- */
+
+/* Nova regra para as linhas de Data e Hora */
+.queue-item-datetime {
+    display: block; /* Força quebra de linha */
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    font-style: normal;
+    line-height: 1.4; /* Espaçamento entre "Data:" e "Hora:" */
+}
+
+/* Ajuste de margem para o título da tarefa */
+.queue-item-details strong {
+    margin-bottom: 3px; /* Adiciona um pequeno espaço antes da Data */
 }
