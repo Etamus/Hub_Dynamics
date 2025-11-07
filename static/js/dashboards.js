@@ -41,7 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateLocalStorage(id, name, icon) {
         if (!id || !name || !icon) return;
 
-        let recents = JSON.parse(localStorage.getItem('recentDashboards')) || [];
+        // --- LÓGICA DE USUÁRIO (Req 1) ---
+        // Lê o usuário salvo pelo hub.js ou usa '_guest'
+        const username = localStorage.getItem('hubUsername') || '_guest';
+        const storageKey = `recentDashboards_${username}`;
+        // --------------------------------
+
+        let recents = JSON.parse(localStorage.getItem(storageKey)) || [];
         
         const newItem = { id, name, icon };
 
@@ -59,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recents = recents.slice(0, savedCount); 
         // --- FIM DA CORREÇÃO ---
         
-        localStorage.setItem('recentDashboards', JSON.stringify(recents));
+        localStorage.setItem(storageKey, JSON.stringify(recents));
     }
 
 /**

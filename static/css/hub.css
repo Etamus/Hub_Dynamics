@@ -43,17 +43,22 @@ body {
 
 /* --- ADICIONE ESTAS 3 REGRAS ABAIXO --- */
 
-/* 1. Esconde o logo escuro por padrão */
+/* 1. Esconde o logo claro por padrão */
+.logo-light {
+    display: none;
+}
+/* 2. Esconde o logo escuro por padrão */
 .logo-dark {
     display: none;
 }
 
-/* 2. No modo escuro, esconde o logo claro */
-body.theme-dark .logo-light {
-    display: none;
+/* 3. Mostra o logo claro SOMENTE se o body NÃO tiver .theme-dark */
+/* (O script inline no HTML garante que .theme-dark exista antes disto) */
+body:not(.theme-dark) .logo-light {
+    display: block;
 }
 
-/* 3. No modo escuro, mostra o logo escuro */
+/* 4. Mostra o logo escuro SOMENTE se o body TIVER .theme-dark */
 body.theme-dark .logo-dark {
     display: block;
 }

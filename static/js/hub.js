@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultProfileUrl = "/static/icones/default_profile.png"; // Imagem padrão
     const accessDropdown = document.getElementById('access-dropdown');
     
-    let currentHubUser = null; 
+    let currentHubUser = null;
+    let currentHubArea = null; // <-- ADICIONE ESTA LINHA 
+    let currentHubRole = null; // <-- ADICIONE ESTA LINHA
     let currentProfileUrl = defaultProfileUrl; // URL da imagem atual
     let cropper = null; // Instância do Cropper.js
     let selectedFile = null; // Arquivo original selecionado
@@ -114,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearRecents() {
-        localStorage.removeItem('recentDashboards');
+        localStorage.removeItem(getStorageKey('recentDashboards'));
+        localStorage.removeItem(getStorageKey('pinnedDashboards'));
         renderQuickLinks();
     }
     
@@ -137,11 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
     clearRecentsBtn.addEventListener('click', clearRecents);
     
     
-    // --- 2. LÓGICA DE ACESSO RÁPIDO (COM PINS) ---
+    // --- 2. LÓGICA DE ACESSO RÁPIDO (COM PINS) (MODIFICADO) ---
 
-    function getRecents() { return JSON.parse(localStorage.getItem('recentDashboards')) || []; }
-    function getPinned() { return JSON.parse(localStorage.getItem('pinnedDashboards')) || []; }
-    function savePinned(pinned) { localStorage.setItem('pinnedDashboards', JSON.stringify(pinned)); }
+    function getStorageKey(baseKey) {
+        // Usa o usuário logado ou '_guest' se estiver deslogado
+        const userKey = currentHubUser || '_guest';
+        return `${baseKey}_${userKey}`;
+    }
+
+    function getRecents() { 
+        return JSON.parse(localStorage.getItem(getStorageKey('recentDashboards'))) || []; 
+    }
+    function getPinned() { 
+        return JSON.parse(localStorage.getItem(getStorageKey('pinnedDashboards'))) || []; 
+    }
+    function savePinned(pinned) { 
+        localStorage.setItem(getStorageKey('pinnedDashboards'), JSON.stringify(pinned)); 
+    }
     function togglePin(item) {
         let pinned = getPinned();
         const isPinned = pinned.some(p => p.id === item.id);
@@ -236,8 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * ATUALIZADO: Atualiza a UI do dropdown, a IMAGEM do botão e a largura mínima.
      */
-    function updateAccessDropdown(username = null, profileImageUrl = null) {
+    function updateAccessDropdown(username = null, profileImageUrl = null, area = null, role = null) { // <-- Argumento 'role' adicionado
     currentHubUser = username;
+    currentHubArea = area; // <-- Salva a área globalmente
+    currentHubRole = role; // <-- ADICIONE ESTA LINHA
     accessDropdown.innerHTML = '';
     
     currentProfileUrl = profileImageUrl || defaultProfileUrl;
@@ -262,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         accessDropdown.innerHTML = `
             <div class="access-dropdown-header">
                 <strong>${username}</strong>
-                <span>Logado</span>
+                <span>${area || 'N/A'}</span>
             </div>
             <button class="access-dropdown-item" id="access-profile-btn">
                 <i class="fas fa-camera"></i>Perfil
@@ -382,7 +399,7 @@ function uploadCroppedImage(formData) {
             // --- CORREÇÃO (Req. 4): Atualiza a URL local ---
             currentProfileUrl = data.url; 
             
-            updateAccessDropdown(currentHubUser, data.url); 
+            updateAccessDropdown(currentHubUser, data.url, currentHubArea); 
             profilePreviewImg.src = data.url;
         } else {
             profileUploadStatus.textContent = data.mensagem || "Erro ao fazer upload.";
@@ -471,7 +488,7 @@ profileRemoveBtn.addEventListener('click', () => {
             // --- CORREÇÃO (Req. 4): Atualiza a URL local ---
             currentProfileUrl = data.default_url; 
 
-            updateAccessDropdown(currentHubUser, data.default_url); 
+            updateAccessDropdown(currentHubUser, data.default_url, currentHubArea);
             profilePreviewImg.src = data.default_url;
             profileRemoveBtn.classList.add('hidden'); // Esconde o botão
         } else {
@@ -515,9 +532,7 @@ profileRemoveBtn.addEventListener('click', () => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'sucesso') {
-                updateAccessDropdown(data.username, data.profile_image); 
-                closeHubLoginModal();
-                if (window.location.pathname.includes('/automacao')) { window.location.reload(); }
+                window.location.reload();
             } else { showHubLoginError(data.mensagem || "Erro desconhecido."); }
         })
         .catch(() => showHubLoginError("Erro de comunicação com o servidor."));
@@ -526,10 +541,7 @@ profileRemoveBtn.addEventListener('click', () => {
     function handleHubLogout() {
         fetch('/api/hub/logout', { method: 'POST' })
         .then(() => {
-            updateAccessDropdown(null); 
-            profileImgThumb.src = defaultProfileUrl; // Garantir que a imagem volte ao default
-            accessDropdown.classList.remove('visible');
-            if (window.location.pathname.includes('/automacao')) { window.location.reload(); }
+            window.location.href = '/';
         });
     }
 
@@ -649,10 +661,20 @@ fetch('/api/hub/check-session')
     currentProfileUrl = data.profile_image || defaultProfileUrl;
     
     if(data.status === 'logado') {
-        updateAccessDropdown(data.username, data.profile_image); 
+        currentHubUser = data.username; // Define o usuário global
+        currentHubArea = data.area; // Define a área global
+        currentHubRole = data.role; // Salva a role
+        localStorage.setItem('hubUsername', data.username); // Sincroniza o localStorage
+        updateAccessDropdown(data.username, data.profile_image, data.area, data.role);
     } else {
-        updateAccessDropdown(null, data.profile_image); // Envia a default_url
+        currentHubUser = null;
+        currentHubArea = null;
+        currentHubRole = null;
+        localStorage.removeItem('hubUsername');
+        updateAccessDropdown(null, data.profile_image, null, null);
     }
+
+    renderQuickLinks(); // Renderiza os links rápidos corretos (logado ou guest)
 });
 
 // --- NOVA LÓGICA: MODAL DE REGISTRO ---

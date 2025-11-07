@@ -110,7 +110,11 @@ def save_requests(requests_data):
 def get_user_profile_data():
     """Retorna dados de perfil necessários para renderização do Hub."""
     username = session.get('username')
-    profile_data = {'username': username, 'profile_image': None}
+    profile_data = {
+        'username': None, 
+        'profile_image': "/static/icones/default_profile.png", 
+        'role': None
+    }
     
     if username:
         users = load_users()
@@ -122,6 +126,15 @@ def get_user_profile_data():
         if image_filename:
             # Adiciona um timestamp para evitar problemas de cache no navegador
             profile_data['profile_image'] = f'/cache/{image_filename}?t={int(time.time())}'
+
+        # --- LÓGICA DE ROLE (Req 1) ---
+        role = user_data.get('role', 'Analista') # Padrão 'Analista'
+        # Trata 'admin' como 'Executor'
+        if username.lower() == 'admin':
+            role = 'Executor'
+            
+        profile_data['role'] = role
+        # -----------------------------    
             
     return profile_data
 
@@ -306,8 +319,13 @@ def hub_login():
         
         # --- CORREÇÃO APLICADA AQUI ---
         image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+
+        # --- ADICIONADO: Enviar a Área do usuário ---
+        area = user_data.get('area', 'N/A') # 'N/A' como fallback
+
+        role = user_data.get('role', 'Analista') # De 'Visualizador' para 'Analista'
         
-        return jsonify({"status": "sucesso", "username": username, "profile_image": image_url})
+        return jsonify({"status": "sucesso", "username": username, "profile_image": image_url, "area": area, "role": role})
     
     return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
 
@@ -329,8 +347,13 @@ def check_session():
         
         # --- CORREÇÃO APLICADA AQUI ---
         image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+
+        # --- ADICIONADO: Enviar a Área do usuário ---
+        area = user_data.get('area', 'N/A') # 'N/A' como fallback
+
+        role = user_data.get('role', 'Analista') # De 'Visualizador' para 'Analista'
         
-        return jsonify({"status": "logado", "username": username, "profile_image": image_url})
+        return jsonify({"status": "logado", "username": username, "profile_image": image_url, "area": area, "role": role})
     
     # --- CORREÇÃO APLICADA AQUI ---
     return jsonify({"status": "deslogado", "profile_image": "/static/icones/default_profile.png"})
@@ -338,28 +361,23 @@ def check_session():
 @app.route('/api/scheduler/load')
 def scheduler_load():
     """Carrega a fila e o histórico do usuário logado."""
-    username = session.get('username')
-    if not username:
-        # Se o usuário não estiver logado no Hub, retorna uma fila vazia
-        return jsonify({"queue": [], "history": []})
+    schedule_key = "global_schedule"
         
     all_schedules = load_schedules()
-    user_schedule = all_schedules.get(username, {"queue": [], "history": []})
+    user_schedule = all_schedules.get(schedule_key, {"queue": [], "history": []})
     return jsonify(user_schedule)
 
 @app.route('/api/scheduler/save', methods=['POST'])
 def scheduler_save():
     """Salva a fila e o histórico do usuário logado."""
-    username = session.get('username')
-    if not username:
-        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    schedule_key = "global_schedule"
     
     data = request.json
     job_queue = data.get('queue', [])
     job_history = data.get('history', [])
     
     all_schedules = load_schedules()
-    all_schedules[username] = {
+    all_schedules[schedule_key] = {
         "queue": job_queue,
         "history": job_history
     }
@@ -446,12 +464,20 @@ def hub_consult():
         
     # Verifica se o token aprovado expirou
     if request_data['status'] == 'Aprovado':
-        expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
-        if datetime.datetime.utcnow() > expiration_date:
-            request_data['status'] = 'Expirado'
-            request_data['justification'] = 'O prazo de 7 dias para cadastro de senha expirou. Faça uma nova solicitação.'
-            requests[token] = request_data
-            save_requests(requests)
+        if request_data.get('expiration_date'): 
+            try:
+                expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
+                if datetime.datetime.now(datetime.timezone.utc) > expiration_date:
+                    request_data['status'] = 'Expirado'
+                    request_data['justification'] = 'O prazo de 7 dias para cadastro de senha expirou. Faça uma nova solicitação.'
+                    requests[token] = request_data
+                    save_requests(requests)
+            except (ValueError, TypeError):
+                # Ignora datas de expiração mal formatadas
+                pass 
+        else:
+            # Caso de segurança: Aprovado mas sem data (não deveria acontecer)
+            request_data['status'] = 'Erro: Aprovado sem data de expiração'
             
     return jsonify({"status": "sucesso", "request_data": request_data})
 
@@ -472,7 +498,7 @@ def hub_complete_registration():
     
     # Verifica a expiração novamente
     expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
-    if datetime.datetime.utcnow() > expiration_date:
+    if datetime.datetime.now(datetime.timezone.utc) > expiration_date:
         return jsonify({"status": "erro", "mensagem": "Este token expirou. Faça uma nova solicitação."}), 403
 
     # Adiciona o usuário ao DB principal
@@ -485,6 +511,7 @@ def hub_complete_registration():
     users[username] = {
         "password": password,
         "role": request_data['role'], # Adiciona a role
+        "area": request_data['area'], # <-- ADICIONE ESTA LINHA
         "profile_image": None,
         "connections": {
             "sap": None,

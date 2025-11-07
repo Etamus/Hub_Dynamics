@@ -76,6 +76,7 @@
         </div>
         
         <div class="hub-cards" id="hub-cards-container">
+            {% if role == 'Executor' %}
             <a href="/automacao" class="hub-card" aria-label="Automatizações. Execute robôs para tarefas de SAP, BW e extração de relatórios.">
                 <div class="card-media-area">
                     <div class="card-preview"> <img src="/static/gifs/automacao.gif" alt="Preview Automações"> </div>
@@ -86,6 +87,8 @@
                 </div>
                 <p>Execute robôs para tarefas de SAP, BW e extração de relatórios.</p>
             </a>
+            {% endif %}
+
             <a href="/dashboards" class="hub-card" aria-label="Dashboards. Acesse o portal com os dashboards do Looker Studio e Tableau.">
                 <div class="card-media-area">
                     <div class="card-preview"> <img src="/static/gifs/dashboards.gif" alt="Preview Dashboards"> </div>
@@ -96,6 +99,8 @@
                 </div>
                 <p>Acesse o portal com os dashboards do Looker Studio e Tableau.</p>
             </a>
+
+            {% if role == 'Executor' or role == 'Analista' %}
             <a href="/drive" class="hub-card" aria-label="Drive (F:) Online. Navegue pelas pastas da rede sem necessidade de uso da VPN.">
                 <div class="card-media-area">
                     <div class="card-preview"> <img src="/static/gifs/drive.gif" alt="Preview Drive"> </div>
@@ -106,6 +111,7 @@
                 </div>
                 <p>Navegue pelas pastas da rede sem necessidade de uso da VPN.</p>
             </a>
+            {% endif %}
         </div>
         
         <div class="quick-links-section" id="quick-links-section">
@@ -171,7 +177,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v1.9</p>
+                    <p><strong>Versão Atual:</strong> v2.0</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -182,6 +188,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v2.0:</strong> Melhorias no registro, tela de administração e lógica dos perfis</li>
                         <li><strong>v1.9:</strong> Novo registro de usuário, consulta e sistema de perfis</li>
                         <li><strong>v1.8.4:</strong> Mudanças de placeholders e ajustes de icones no agendamento de tarefas</li>
                         <li><strong>v1.8.2:</strong> Melhorias no perfil de usuário do hub</li>
@@ -290,7 +297,7 @@
             <button class="settings-close-btn" id="register-close-btn">&times;</button>
         </div>
         <div class="scheduler-queue-tabs" style="padding-left: 20px;">
-            <span id="tab-register" class="scheduler-tab active" data-tab="register">Registro</span>
+            <span id="tab-register" class="scheduler-tab active" data-tab="register">Preenchimento</span>
             <span id="tab-consult" class="scheduler-tab" data-tab="consult">Consulta</span>
         </div>
         
@@ -313,15 +320,14 @@
                                 <option value="Financeiro">Financeiro</option>
                                 <option value="Jurídico">Jurídico</option>
                                 <option value="Vendas">Vendas</option>
-                                <option value="Footprint">Footprint</option>
                             </select>
                         </div>
                         <div class="modal-input-group" style="margin-bottom: 15px;">
                             <label for="register-role">Função:</label>
                             <select id="register-role" class="hub-modal-input">
                                 <option value="" disabled selected hidden>Selecione...</option>
-                                <option value="Visualizador">Visualizador</option>
-                                <option value="Operador">Operador</option>
+                                <option value="Analista">Analista</option>
+                                <option value="Executor">Executor</option>
                             </select>
                         </div>
                     </div>

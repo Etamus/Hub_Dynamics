@@ -1,6 +1,8 @@
 {
   "admin": {
     "password": "admin",
+    "role": "Admin",
+    "area": "Log\u00edstica",
     "connections": {
       "sap": null,
       "bw": null
@@ -9,6 +11,8 @@
   },
   "lopesm21": {
     "password": "1234",
+    "role": "Analista",
+    "area": "Log\u00edstica",
     "connections": {
       "sap": null,
       "bw": null
