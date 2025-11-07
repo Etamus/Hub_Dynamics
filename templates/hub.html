@@ -87,6 +87,22 @@
                 </div>
                 <p>Execute robôs para tarefas de SAP, BW e extração de relatórios.</p>
             </a>
+            {% else %}
+                <div class="hub-card disabled">
+                    <div class="card-media-area">
+                        <div class="card-content">
+                            <div class="card-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
+                            <h2>Automatizações</h2>
+                        </div>
+                    </div>
+                    
+                    {% if role %}
+                        <p>Solicite para ter acesso.</p>
+                    {% else %}
+                        <p>Faça login para ter acesso.</p>
+                    {% endif %}
+                    
+                </div>
             {% endif %}
 
             <a href="/dashboards" class="hub-card" aria-label="Dashboards. Acesse o portal com os dashboards do Looker Studio e Tableau.">
@@ -111,7 +127,17 @@
                 </div>
                 <p>Navegue pelas pastas da rede sem necessidade de uso da VPN.</p>
             </a>
+            {% else %}
+                <div class="hub-card disabled">
+                    <div class="card-media-area">
+                        <div class="card-content">
+                            <div class="card-icon"> <i class="fas fa-hdd" aria-hidden="true"></i> </div>
+                            <h2>Drive (F:) Online</h2>
+                        </div>
+                    </div>
+                    <p>Faça login para ter acesso.</p> </div>
             {% endif %}
+
         </div>
         
         <div class="quick-links-section" id="quick-links-section">
@@ -177,7 +203,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v2.0</p>
+                    <p><strong>Versão Atual:</strong> v2.4</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -188,6 +214,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v2.4:</strong> Novo layout, funcionalidades e correções gerais</li>
                         <li><strong>v2.0:</strong> Melhorias no registro, tela de administração e lógica dos perfis</li>
                         <li><strong>v1.9:</strong> Novo registro de usuário, consulta e sistema de perfis</li>
                         <li><strong>v1.8.4:</strong> Mudanças de placeholders e ajustes de icones no agendamento de tarefas</li>
@@ -255,6 +282,9 @@
                 <img id="profile-preview-img" src="/static/icones/default_profile.png" alt="Prévia do Perfil" class="profile-preview-large">
                 <p class="profile-username-display">Carregando...</p>
 
+                <div class="profile-user-details">
+                    <span id="profile-role-display"></span> | <span id="profile-area-display"></span>
+                </div>
                 <form id="profile-upload-form" enctype="multipart/form-data" style="margin-top: 20px;">
                     <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
                     
@@ -380,8 +410,21 @@
                 <h2>Administração</h2>
                 <button class="settings-close-btn" id="admin-close-btn">&times;</button>
             </div>
-            <div class="settings-body" id="admin-list-container" style="padding: 20px 30px 30px;">
-                </div>
+            
+            <div class="scheduler-queue-tabs" style="padding-left: 20px;">
+                <span id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">Solicitações Pendentes</span>
+                <span id="tab-admin-users" class="scheduler-tab" data-tab="users">Gerenciar Usuários</span>
+            </div>
+
+            <div id="admin-requests-tab" class="settings-body" style="padding: 20px 30px 30px;">
+                <div id="admin-list-container">
+                    </div>
+            </div>
+            
+            <div id="admin-users-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
+                <div id="admin-user-list-container">
+                    </div>
+            </div>
         </div>
     </div>
 

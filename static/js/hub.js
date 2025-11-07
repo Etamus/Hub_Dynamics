@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // const profileSaveBtn = document.getElementById('profile-save-btn'); // Botão 'Salvar Perfil'
     const profileRemoveBtn = document.getElementById('profile-remove-btn'); // NOVO: Botão de Remover
     const profileUsernameDisplay = document.querySelector('.profile-username-display');
+    const profileAreaDisplay = document.getElementById('profile-area-display');
+    const profileRoleDisplay = document.getElementById('profile-role-display');
     const profileUploadStatus = document.getElementById('profile-upload-status');
     
     // Novo Modal de Recorte
@@ -95,6 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminOverlay = document.getElementById('admin-overlay');
     const adminCloseBtn = document.getElementById('admin-close-btn');
     const adminListContainer = document.getElementById('admin-list-container');
+
+    // --- ADICIONE ESTAS 4 LINHAS ---
+    const tabAdminRequests = document.getElementById('tab-admin-requests');
+    const tabAdminUsers = document.getElementById('tab-admin-users');
+    const adminRequestsTab = document.getElementById('admin-requests-tab');
+    const adminUsersTab = document.getElementById('admin-users-tab');
+    const adminUserListContainer = document.getElementById('admin-user-list-container');
 
     // --- 1. LÓGICA DO SELETOR DE TEMA ---
     
@@ -419,6 +428,12 @@ function uploadCroppedImage(formData) {
     function openProfileModal(username, currentImageUrl) {
     accessDropdown.classList.remove('visible');
     profileUsernameDisplay.textContent = username;
+
+    // --- ADIÇÃO DA LÓGICA DE PREENCHIMENTO ---
+    profileAreaDisplay.textContent = currentHubArea || 'N/A';
+    profileRoleDisplay.textContent = currentHubRole || 'N/A';
+    // ------------------------------------------
+
     profilePreviewImg.src = currentImageUrl;
     profileFileInput.value = null; // Limpa o input de arquivo
     profileUploadStatus.textContent = "Selecione uma imagem (PNG, JPG)";
@@ -850,6 +865,8 @@ fetch('/api/hub/check-session')
     function openAdminModal() {
         accessDropdown.classList.remove('visible');
         adminListContainer.innerHTML = '<p class="no-requests">Carregando solicitações...</p>';
+        adminUserListContainer.innerHTML = '<p class="no-requests">Carregando usuários...</p>';
+        showAdminTab('requests');
         adminOverlay.classList.add('visible');
         
         fetch('/api/admin/get-requests')
@@ -859,6 +876,17 @@ fetch('/api/hub/check-session')
                 renderAdminRequests(data.requests);
             } else {
                 adminListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+            }
+        });
+
+        // 2. Busca Lista de Usuários
+        fetch('/api/admin/get-users')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                renderAdminUsers(data.users);
+            } else {
+                adminUserListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
             }
         });
     }
@@ -1011,5 +1039,231 @@ function handleAdminReject(e) {
     adminCloseBtn.addEventListener('click', () => adminOverlay.classList.remove('visible'));
     adminOverlay.addEventListener('click', (e) => {
         if (e.target === adminOverlay) adminOverlay.classList.remove('visible');
+    });  
+
+// --- NOVA LÓGICA: ADMIN - GERENCIAR USUÁRIOS ---
+    
+    // Função para trocar as abas do modal de Admin
+    function showAdminTab(tabName) {
+        if (tabName === 'requests') {
+            tabAdminRequests.classList.add('active');
+            tabAdminUsers.classList.remove('active');
+            adminRequestsTab.classList.remove('hidden');
+            adminUsersTab.classList.add('hidden');
+        } else {
+            tabAdminRequests.classList.remove('active');
+            tabAdminUsers.classList.add('active');
+            adminRequestsTab.classList.add('hidden');
+            adminUsersTab.classList.remove('hidden');
+        }
+    }
+    
+    // Listeners das Abas de Admin
+    tabAdminRequests.addEventListener('click', () => showAdminTab('requests'));
+    tabAdminUsers.addEventListener('click', () => showAdminTab('users'));
+
+
+    // Renderiza a lista de usuários gerenciáveis
+    function renderAdminUsers(users) {
+        adminUserListContainer.innerHTML = '';
+        if (users.length === 0) {
+            adminUserListContainer.innerHTML = '<p class="no-requests">Nenhum usuário (além do admin) encontrado.</p>';
+            return;
+        }
+
+        users.forEach(user => {
+            const item = document.createElement('div');
+            item.className = 'admin-user-card';
+            item.dataset.username = user.username;
+            
+            // Opções para os <select>
+            const areaOptions = ['Logística', 'Comercial', 'Financeiro', 'Jurídico', 'Vendas']
+                .map(a => `<option value="${a}" ${user.area === a ? 'selected' : ''}>${a}</option>`).join('');
+            const roleOptions = ['Analista', 'Executor']
+                .map(r => `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('');
+
+            item.innerHTML = `
+                <div class="admin-user-main">
+                    <div class="admin-user-info">
+                        <div class="username">${user.username.toUpperCase()}</div>
+                        <div class="details">
+                            <strong>Área:</strong> ${user.area} | <strong>Função:</strong> ${user.role}
+                        </div>
+                    </div>
+                    <div class="admin-user-actions">
+                        <button class="button btn-warning admin-user-edit-btn">Editar</button>
+                        <button class="button btn-danger admin-user-delete-btn">Excluir</button>
+                    </div>
+                </div>
+                
+                <div class="admin-user-edit-form hidden">
+                    <div class="modal-input-group">
+                        <label>Senha:</label>
+                        <div class="password-toggle-wrapper">
+                        <input type="password" class="hub-modal-input edit-password-input" value="${user.password || ''}">
+                        <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
+                        </div>
+                    </div>
+                    <div class="scheduler-datetime-group" style="gap: 15px;">
+                        <div class="modal-input-group">
+                            <label>Área</label>
+                            <select class="hub-modal-input edit-area-select">${areaOptions}</select>
+                        </div>
+                        <div class="modal-input-group">
+                            <label>Função</label>
+                            <select class="hub-modal-input edit-role-select">${roleOptions}</select>
+                        </div>
+                    </div>
+                    <div class="admin-user-edit-actions">
+                        <button class="button btn-cancel admin-user-cancel-btn">Cancelar</button>
+                        <button class="button btn-success admin-user-save-btn">Salvar</button>
+                    </div>
+                </div>
+            `;
+            adminUserListContainer.appendChild(item);
+        });
+
+        // Adiciona listeners aos novos botões
+        adminUserListContainer.querySelectorAll('.admin-user-edit-btn').forEach(btn => {
+            btn.addEventListener('click', showUserEditForm);
+        });
+        adminUserListContainer.querySelectorAll('.admin-user-delete-btn').forEach(btn => {
+            btn.addEventListener('click', handleAdminDeleteUser);
+        });
+        adminUserListContainer.querySelectorAll('.admin-user-save-btn').forEach(btn => {
+            btn.addEventListener('click', handleAdminUpdateUser);
+        });
+        adminUserListContainer.querySelectorAll('.admin-user-cancel-btn').forEach(btn => {
+            btn.addEventListener('click', hideUserEditForm);
+        });
+
+        // --- ADICIONA NOVO LISTENER (Req 3) ---
+        adminUserListContainer.querySelectorAll('.admin-password-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', handlePasswordToggle);
+        });
+    }
+    
+    // --- NOVA FUNÇÃO (Req 3): Alterna a visibilidade da senha ---
+    function handlePasswordToggle(e) {
+        const btn = e.target;
+        const wrapper = btn.closest('.password-toggle-wrapper');
+        const input = wrapper.querySelector('.edit-password-input');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.classList.remove('fa-eye');
+            btn.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            btn.classList.remove('fa-eye-slash');
+            btn.classList.add('fa-eye');
+        }
+    }
+
+    function showUserEditForm(e) {
+        const itemClicked = e.target.closest('.admin-user-card');
+        
+        // --- CORREÇÃO (Req 1): Fecha outros cards abertos ---
+        const allCards = adminUserListContainer.querySelectorAll('.admin-user-card');
+        allCards.forEach(card => {
+            if (card !== itemClicked) {
+                const editForm = card.querySelector('.admin-user-edit-form');
+                if (!editForm.classList.contains('hidden')) {
+                    card.querySelector('.admin-user-main').classList.remove('hidden');
+                    editForm.classList.add('hidden');
+                    
+                    // --- CORREÇÃO (Req 3): Reseta o ícone e tipo ---
+                    const input = editForm.querySelector('.edit-password-input');
+                    const icon = editForm.querySelector('.admin-password-toggle-btn');
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        });
+        // ---------------------------------------------------
+        
+        // Abre o card clicado
+        itemClicked.querySelector('.admin-user-main').classList.add('hidden');
+        itemClicked.querySelector('.admin-user-edit-form').classList.remove('hidden');
+    }
+
+    function hideUserEditForm(e) {
+        const item = e.target.closest('.admin-user-card');
+        item.querySelector('.admin-user-main').classList.remove('hidden');
+        item.querySelector('.admin-user-edit-form').classList.add('hidden');
+        
+        // --- CORREÇÃO (Req 2): A senha NÃO é limpa ao cancelar ---
+        // item.querySelector('.edit-password-input').value = ''; // (Linha removida)
+        
+        // --- CORREÇÃO (Req 3): Reseta o ícone e o tipo de input ---
+        const input = item.querySelector('.edit-password-input');
+        const icon = item.querySelector('.admin-password-toggle-btn');
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+
+    function handleAdminUpdateUser(e) {
+        const item = e.target.closest('.admin-user-card');
+        const username = item.dataset.username;
+        const btn = e.target;
+        
+        const payload = {
+            username: username,
+            password: item.querySelector('.edit-password-input').value, // Envia vazio ou preenchido
+            area: item.querySelector('.edit-area-select').value,
+            role: item.querySelector('.edit-role-select').value
+        };
+
+        btn.disabled = true;
+
+        fetch('/api/admin/update-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                // Atualiza a UI localmente
+                item.querySelector('.admin-user-info .details').innerHTML = `
+                    <strong>Área:</strong> ${payload.area} | <strong>Função:</strong> ${payload.role}
+                `;
+                hideUserEditForm(e); // Volta para a tela de info
+            } else {
+                alert(`Erro: ${data.mensagem}`);
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
+    }
+
+    function handleAdminDeleteUser(e) {
+        const item = e.target.closest('.admin-user-card');
+        const username = item.dataset.username;
+        
+        e.target.disabled = true;
+
+        fetch('/api/admin/delete-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                item.remove(); // Remove o card da UI
+                // Verifica se a lista ficou vazia
+                if (adminUserListContainer.children.length === 0) {
+                    adminUserListContainer.innerHTML = '<p class="no-requests">Nenhum usuário (além do admin) encontrado.</p>';
+                }
+            } else {
+                alert(`Erro: ${data.mensagem}`);
+                e.target.disabled = false;
+            }
+        });
+    }
+
     });
-});    

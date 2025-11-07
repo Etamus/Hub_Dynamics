@@ -21,9 +21,9 @@ body {
 /* Botão de Logout (Ícone mais à esquerda) */
 .logout-button {
     position: absolute;
-    top: 45px; /* Padrão */
-    /* Posição: 40px (padding) + 30px (ícone fullscreen) + 30px (gap) + 30px (ícone scheduler) + 30px (gap) = 160px */
-    right: 160px; 
+    top: 45px;
+    /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) + 30px (ícone) + 30px (gap) = 220px */
+    right: 215px; 
     z-index: 10;
     background: none;
     border: none;
@@ -41,9 +41,9 @@ body {
 /* Botão Agendador (Ícone do meio) */
 .scheduler-button {
     position: absolute;
-    top: 45px; /* Padrão */
-    /* Posição: 40px (padding) + 30px (ícone fullscreen) + 30px (gap) = 100px */
-    right: 100px; 
+    top: 45px;
+    /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) = 160px */
+    right: 155px; 
     z-index: 10;
     background: none;
     border: none;
@@ -207,7 +207,7 @@ body {
 /* Status Box - Posição Atualizada */
 .status-box {
     position: fixed; 
-    top: 80px; 
+    top: 90px; 
     right: 20px; 
     z-index: 1000;
     padding: 15px 20px; border-radius: 8px; font-weight: 500;
@@ -376,21 +376,48 @@ body {
     box-shadow: none !important; 
 }
 
-/* Ajustes Finais no Modal de Confirmação */
-#confirm-modal-overlay .modal-content {
-    max-width: 300px; 
-    padding: 20px 20px 15px 20px; 
-}
-#confirm-modal-overlay h2 {
-    font-size: 1.4rem;
-    color: var(--text-primary-color);
-    margin-top: 0;
-    margin-bottom: 45px; /* <--- AUMENTADO de 20px para 35px */
-}
-#confirm-modal-overlay .modal-button-container {
-    margin-top: -20px; 
+/* 1. Define o conteúdo do modal */
+#confirm-modal-overlay .modal-content.modal-confirm {
+    max-width: 320px; /* Um pouco mais de espaço */
+    padding: 30px; /* Padding simétrico */
+    text-align: center; /* Garante que tudo esteja centralizado */
 }
 
+/* 2. Estilo do Ícone (fa-exclamation-triangle) */
+.modal-confirm-icon {
+    font-size: 3rem; /* Ícone grande */
+    color: #dc3545; /* Cor de perigo (vermelho) */
+    margin-bottom: 20px;
+    display: block; /* Garante que a margem funcione */
+}
+
+/* 3. Estilo do Título (H2) */
+#confirm-modal-overlay h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary-color);
+    margin-top: 0;
+    margin-bottom: 55px; /* Espaçamento limpo (sem margens negativas) */
+}
+
+/* 4. Contêiner dos Botões */
+#confirm-modal-overlay .modal-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Aumenta o espaço entre os botões */
+    /* margin-top: -20px; (REMOVIDO) */
+}
+
+/* 5. Os Botões (Sim/Não) */
+#confirm-modal-overlay .modal-button-container .button {
+    flex: 1; /* Faz os botões ocuparem o espaço igualmente */
+    max-width: 130px; /* Define uma largura máxima */
+    padding: 10px 15px; /* Padding um pouco menor */
+    margin: 0;
+}
+#confirm-modal-overlay .modal-button-container .button.btn-danger:hover {
+    background-color: #8a1823; /* Vermelho escuro */
+    border-color: #8a1823;
+}
 /* --- NOVO: Estilos do Modal Agendador (Redesign) --- */
 .modal-content.scheduler-modal {
     max-width: 750px; /* <-- AJUSTE AQUI: Aumentado de 650px para 750px */

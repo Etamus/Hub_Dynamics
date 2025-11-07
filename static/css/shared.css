@@ -284,3 +284,27 @@ body.theme-dark {
     color: var(--accent-color);
     transform: scale(1.1); /* Mesmo efeito do hub */
 }
+/* --- NOVO: Botão de Alternar Tema (Páginas Internas) --- */
+.theme-toggle-button {
+    position: absolute;
+    top: 45px; /* Alinhado com o fullscreen-btn */
+    right: 95px; /* Posição à esquerda do botão de tela cheia */
+    z-index: 10;
+    
+    background: none;
+    border: none;
+    font-size: 1.8rem; /* Tamanho do ícone */
+    color: var(--text-tertiary-color); /* Cor padrão */
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle-button:hover {
+    color: var(--accent-color); /* Cor ao passar o mouse */
+    transform: scale(1.1);
+}
+.theme-toggle-button .fa-moon {
+    position: relative;
+    left: -4px; 
+}

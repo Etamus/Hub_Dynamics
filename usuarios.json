@@ -7,7 +7,9 @@
       "sap": null,
       "bw": null
     },
-    "profile_image": "admin.jpg"
+    "profile_image": "admin.jpg",
+    "login_attempts": 0,
+    "lockout_until": null
   },
   "lopesm21": {
     "password": "1234",

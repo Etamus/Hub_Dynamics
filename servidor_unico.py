@@ -17,6 +17,8 @@ app = Flask(__name__)
 # NOVO: Chave secreta para gerenciar sessões de usuário do Hub
 app.secret_key = 'sua_chave_secreta_aqui_mude_isso'
 BRASILIA_TZ = timezone(timedelta(hours=-3)) # <-- ADICIONE ESTA LINHA
+LOGIN_ATTEMPT_LIMIT = 5 # <-- ADICIONE
+LOCKOUT_DURATION = 300  # (5 segundos = 300) <-- ADICIONE
 
 # --- Variáveis de Estado Globais ---
 is_sap_logged_in = False
@@ -311,23 +313,50 @@ def hub_login():
     
     user_data = users.get(username)
     
-    if user_data and user_data['password'] == password:
-        session['username'] = username
+    # --- NOVA LÓGICA DE BLOQUEIO (Req 1) ---
+    if user_data:
+        # 1. Verifica se o usuário está bloqueado
+        lockout_until = user_data.get('lockout_until')
+        if lockout_until and datetime.datetime.now(BRASILIA_TZ) < datetime.datetime.fromisoformat(lockout_until):
+            remaining_seconds = int((datetime.datetime.fromisoformat(lockout_until) - datetime.datetime.now(BRASILIA_TZ)).total_seconds())
+            return jsonify({"status": "erro", "mensagem": f"Usuário bloqueado. Tente novamente em {remaining_seconds} segundos."}), 429
         
-        # Puxa a imagem do perfil para retornar na sessão
-        image_filename = user_data.get('profile_image')
+        # 2. Se a senha estiver errada
+        if user_data['password'] != password:
+            attempts = user_data.get('login_attempts', 0) + 1
+            user_data['login_attempts'] = attempts
+            
+            if attempts >= LOGIN_ATTEMPT_LIMIT:
+                # Bloqueia o usuário
+                user_data['lockout_until'] = (datetime.datetime.now(BRASILIA_TZ) + timedelta(seconds=LOCKOUT_DURATION)).isoformat()
+                user_data['login_attempts'] = 0 # Reseta a contagem
+                save_users(users)
+                return jsonify({"status": "erro", "mensagem": f"Muitas tentativas falhas. Usuário bloqueado por 5 minutos."}), 429
+            
+            save_users(users)
+            return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
+            
+        # 3. Se a senha estiver correta
+        # Reseta o bloqueio e tentativas no login bem-sucedido
+        user_data['login_attempts'] = 0
+        user_data['lockout_until'] = None
+        save_users(users)
         
-        # --- CORREÇÃO APLICADA AQUI ---
-        image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+    elif not user_data:
+         return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
+    # --- FIM DA LÓGICA DE BLOQUEIO ---
 
-        # --- ADICIONADO: Enviar a Área do usuário ---
-        area = user_data.get('area', 'N/A') # 'N/A' como fallback
-
-        role = user_data.get('role', 'Analista') # De 'Visualizador' para 'Analista'
-        
-        return jsonify({"status": "sucesso", "username": username, "profile_image": image_url, "area": area, "role": role})
+    # (Código existente para login bem-sucedido)
+    session['username'] = username
     
-    return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
+    image_filename = user_data.get('profile_image')
+    image_url = f'/cache/{image_filename}?t={int(time.time())}' if image_filename else "/static/icones/default_profile.png"
+    area = user_data.get('area', 'N/A')
+    role = user_data.get('role', 'Analista')
+    if username.lower() == 'admin':
+        role = 'Executor'
+        
+    return jsonify({"status": "sucesso", "username": username, "profile_image": image_url, "area": area, "role": role})
 
 @app.route('/api/hub/logout', methods=['POST'])
 def hub_logout():
@@ -531,7 +560,7 @@ def hub_complete_registration():
 
 def is_admin():
     """Verifica se o usuário logado é 'admin'."""
-    return session.get('username') == 'admin'
+    return session.get('username', '').lower() == 'admin'
 
 @app.route('/api/admin/get-requests')
 def admin_get_requests():
@@ -580,6 +609,87 @@ def admin_reject():
         return jsonify({"status": "sucesso"})
     
     return jsonify({"status": "erro", "mensagem": "Solicitação não encontrada ou já processada."}), 404
+
+@app.route('/api/admin/get-users')
+def admin_get_users():
+    """Retorna todos os usuários, exceto o próprio admin."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    users = load_users()
+    user_list = []
+    
+    for username, data in users.items():
+        # O admin não pode editar a si mesmo nesta interface
+        if username.lower() == 'admin':
+            continue
+            
+        user_list.append({
+            "username": username,
+            "area": data.get('area', 'N/A'),
+            "role": data.get('role', 'Analista'), # Padrão para Analista se não definido
+            "password": data.get('password', '') # <-- ADICIONE ESTA LINHA (Req 1)
+        })
+        
+    return jsonify({"status": "sucesso", "users": user_list})
+
+@app.route('/api/admin/update-user', methods=['POST'])
+def admin_update_user():
+    """Atualiza a senha (opcional), area ou role de um usuário."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+        
+    data = request.json
+    username = data.get('username')
+    new_password = data.get('password') # Pode ser vazio
+    new_area = data.get('area')
+    new_role = data.get('role')
+
+    if not username or not new_area or not new_role:
+        return jsonify({"status": "erro", "mensagem": "Campos obrigatórios (usuário, área, função) ausentes."}), 400
+    
+    if username.lower() == 'admin':
+        return jsonify({"status": "erro", "mensagem": "Não é permitido editar o usuário 'admin' por esta interface."}), 403
+
+    users = load_users()
+    if username not in users:
+        return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+
+    # Atualiza os dados
+    users[username]['area'] = new_area
+    users[username]['role'] = new_role
+    if new_password: # Só atualiza a senha se uma nova foi enviada
+        users[username]['password'] = new_password
+    
+    save_users(users)
+    return jsonify({"status": "sucesso", "mensagem": f"Usuário {username} atualizado."})
+
+@app.route('/api/admin/delete-user', methods=['POST'])
+def admin_delete_user():
+    """Exclui um usuário do sistema."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+
+    username = request.json.get('username')
+    
+    if not username or username.lower() == 'admin':
+        return jsonify({"status": "erro", "mensagem": "Usuário inválido ou não permitido."}), 400
+    
+    users = load_users()
+    if username in users:
+        # Remove o usuário do 'usuarios.json'
+        del users[username]
+        save_users(users)
+        
+        # Opcional: Remove o agendamento do usuário (se existir)
+        schedules = load_schedules()
+        if username in schedules:
+            del schedules[username]
+            save_schedules(schedules)
+            
+        return jsonify({"status": "sucesso", "mensagem": f"Usuário {username} excluído."})
+    
+    return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
 
 # --- ROTAS DE API (AUTOMAÇÃO) ---
 @app.route('/executar-macro', methods=['POST'])
