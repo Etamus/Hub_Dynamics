@@ -6,7 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 120px; 
+    padding-top: 150px; /* <--- VALOR AUMENTADO (de 120px) */
     min-height: 100vh;
     margin: 0;
     color: var(--text-primary-color); /* MODIFICADO */
@@ -25,6 +25,7 @@ body {
     align-items: center;
     padding: 30px 40px;
     z-index: 10;
+    border-bottom: 2px solid var(--border-color); /* <-- ADICIONE ESTA LINHA */
 }
 
 .logo-title {
@@ -94,6 +95,7 @@ body.theme-dark .logo-dark {
 
 .hub-subtitle {
     margin-bottom: 50px;
+    margin-top: 50px; /* <-- ADICIONE ESTA LINHA (Ajuste 30px se precisar de mais) */
 }
 .hub-subtitle p {
     font-size: 1.2rem;
@@ -106,12 +108,13 @@ body.theme-dark .logo-dark {
 }
 
 .search-container {
-    margin-bottom: 25px; 
-    position: relative;
-    width: 60%;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente no header */
+    left: 50%; /* Posiciona no centro da tela */
+    transform: translate(-50%, -50%); /* Ajusta o centro do elemento */
+    
+    width: 40%; 
+    max-width: 500px
 }
 .search-icon {
     position: absolute;

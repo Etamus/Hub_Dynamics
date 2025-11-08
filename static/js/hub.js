@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.hub-card');
     const quickLinksSection = document.getElementById('quick-links-section');
     const quickLinksContainer = document.getElementById('quick-links-container');
+    const hubSubtitle = document.querySelector('.hub-subtitle'); // <-- ADICIONE ESTA LINHA
     
     // --- Seletores do Header e Acesso ---
     const accessBtn = document.getElementById('access-btn');
@@ -223,17 +224,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     renderQuickLinks();
 
-    // --- 3. LÓGICA DA BARRA DE PESQUISA ---
+    // --- 3. LÓGICA DA BARRA DE PESQUISA (Atualizada) ---
     
     searchBar.addEventListener('keyup', (e) => {
         const searchTerm = e.target.value.toLowerCase();
+        let cardVisible = false; // Flag para verificar se algum card principal está visível
         
+        // 1. Filtra os cards principais
         cards.forEach(card => {
             const title = card.querySelector('h2').textContent.toLowerCase();
             const description = card.querySelector('p').textContent.toLowerCase();
-            card.style.display = (title.includes(searchTerm) || description.includes(searchTerm)) ? 'flex' : 'none';
+            
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                card.style.display = 'flex';
+                cardVisible = true; // Encontrou um card principal
+            } else {
+                card.style.display = 'none';
+            }
         });
 
+        // 2. Filtra os links rápidos
         const quickLinks = quickLinksContainer.querySelectorAll('.quick-link');
         let quickLinkVisible = false;
         quickLinks.forEach(link => {
@@ -246,6 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // 3. Lógica de visibilidade (Ajustada)
+        const noResults = !cardVisible && !quickLinkVisible;
+        const quickLinksOnly = !cardVisible && quickLinkVisible;
+
+        // Se a barra de pesquisa estiver vazia OU se houver cards principais visíveis:
+        if (searchTerm === "" || cardVisible) {
+            hubSubtitle.style.display = 'block'; // Mostra o subtítulo
+        } else {
+            // Esconde se (Sem resultados) OU (Apenas links rápidos)
+            hubSubtitle.style.display = 'none'; 
+        }
+
+        // Lógica de visibilidade da seção de Acesso Rápido
         if (searchTerm === "") {
             quickLinksSection.style.display = 'block';
         } else {

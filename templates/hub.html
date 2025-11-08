@@ -48,6 +48,12 @@
             <img src="/static/icones/hub_logo_branco.png" alt="" class="logo-dark">
             <span>Hub Spare Parts</span>
         </div>
+
+        <div class="search-container">
+            <label for="search-bar" class="visually-hidden">Pesquisar ferramenta</label>
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-bar" placeholder="Pesquisar ferramenta...">
+        </div>
         <div class="header-tools">
             
             <div class="access-container">
@@ -64,12 +70,6 @@
     </div>
     
     <div class="hub-container">
-        
-        <div class="search-container">
-            <label for="search-bar" class="visually-hidden">Pesquisar ferramenta</label>
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="search-bar" placeholder="Pesquisar ferramenta...">
-        </div>
 
         <div class="hub-subtitle">
             <p><i class="fas fa-info-circle"></i> <span>Selecione a ferramenta que deseja utilizar</span></p>
@@ -203,7 +203,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v2.9</p>
+                    <p><strong>Versão Atual:</strong> v2.9.2</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -214,6 +214,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v2.9.2:</strong> Melhoria de layout da página incial e lógica da barra de pesquisa</li>
                         <li><strong>v2.9:</strong> Novo Chatbot com integração de inteligência artificial</li>
                         <li><strong>v2.6:</strong> Melhorias no Agendador de Tarefas</li>
                         <li><strong>v2.4:</strong> Novo layout, funcionalidades e correções gerais</li>
@@ -338,7 +339,7 @@
             <div id="register-form">
                 <div id="register-fields">
                     <div class="modal-input-group" style="margin-bottom: 15px;">
-                        <label for="register-user">Nº de Funcionário:</label>
+                        <label for="register-user">Login de Funcionário:</label>
                         <input type="text" id="register-user" class="hub-modal-input" placeholder="Ex: LOPESM21" maxlength="10">
                     </div>
                     
