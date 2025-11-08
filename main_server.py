@@ -28,7 +28,7 @@ last_bw_creds = {}
 # --- Caminhos e Configurações ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DRIVE_ROOT = os.path.join(BASE_DIR, "drive") 
-USUARIOS_DB = os.path.join(BASE_DIR, "usuarios.json")
+USUARIOS_DB = os.path.join(BASE_DIR, "users.json")
 SCHEDULER_DB = os.path.join(BASE_DIR, "scheduler_db.json") # <-- ADICIONE ESTA LINHA
 REQUESTS_DB = os.path.join(BASE_DIR, "requests_db.json") # <-- ADICIONE ESTA LINHA
 

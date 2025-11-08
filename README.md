@@ -112,13 +112,13 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 ## Execução
 
 1. Inicie o servidor Flask:  
-   python servidor_unico.py  
+   python main_server.py  
 
 2. Acesse no navegador:  
    http://localhost:5000  
 
 3. Para executar toda a automação de uma vez (Windows):  
-   INICIAR_TUDO.bat  
+   initialize.bat  
 
 ---
 
@@ -126,7 +126,7 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 
 | Script | Função |
 |--------|--------|
-| servidor_unico.py | Servidor Flask principal que gerencia todas as rotas e a lógica de API. |
+| main_server.py | Servidor Flask principal que gerencia todas as rotas e a lógica de API. |
 | runner.ps1 | Script (PowerShell) genérico que abre um Excel e executa uma macro específica. |
 | cleanup_processes.ps1 | Script (PowerShell) que força o encerramento de processos (SAP, Excel, Navegadores). |
 | sap_login_runner.ps1 | Script (PowerShell) que insere credenciais no Excel e inicia o login SAP. |
@@ -139,7 +139,7 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 
 | Arquivo | Função |
 |--------|--------|
-| usuarios.json | Armazena os perfis de usuários, senhas, roles, áreas e conexões salvas. |
+| users.json | Armazena os perfis de usuários, senhas, roles, áreas e conexões salvas. |
 | scheduler_db.json | Armazena a fila e o histórico (globais) do Agendador de Tarefas. |
 | requests_db.json | Armazena as solicitações de acesso (pendentes, aprovadas, reprovadas). |
 
