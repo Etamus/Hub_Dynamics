@@ -13,6 +13,14 @@ import secrets  # <-- ADICIONE
 import datetime # <-- ADICIONE
 from datetime import timezone, timedelta # <-- ADICIONE timezone, timedelta
 
+import google.generativeai as genai
+try:
+    genai.configure(api_key="CHAVE_AQUI") 
+    gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+except Exception as e:
+    print(f"ERRO: Falha ao configurar a API do Gemini. Verifique sua chave. {e}")
+    gemini_model = None
+
 app = Flask(__name__)
 # NOVO: Chave secreta para gerenciar sessões de usuário do Hub
 app.secret_key = 'sua_chave_secreta_aqui_mude_isso'
@@ -31,6 +39,7 @@ DRIVE_ROOT = os.path.join(BASE_DIR, "drive")
 USUARIOS_DB = os.path.join(BASE_DIR, "users.json")
 SCHEDULER_DB = os.path.join(BASE_DIR, "scheduler_db.json") # <-- ADICIONE ESTA LINHA
 REQUESTS_DB = os.path.join(BASE_DIR, "requests_db.json") # <-- ADICIONE ESTA LINHA
+GEMINI_CONTEXT_FILE = os.path.join(BASE_DIR, "prompt.json") # <-- ALTERADO
 
 # NOVO: Diretório para cache de imagens
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
@@ -845,6 +854,59 @@ def executar_comando_externo(comando, contexto_tarefa="Tarefa genérica", timeou
         return {"status": "erro", "mensagem": f"Erro crítico durante a {contexto_tarefa}: {erro_msg.strip()}"}
     except Exception as e:
         return {"status": "erro", "mensagem": f"Erro inesperado no Python: {str(e)}"}
+
+# --- NOVA ROTA DE API: CHATBOT GEMINI ---
+@app.route('/api/chatbot/query', methods=['POST'])
+def chatbot_query():
+    if not gemini_model:
+        return jsonify({"status": "erro", "text": "A API do Gemini não está configurada no servidor."}), 500
+
+    user_message = request.json.get('message')
+    if not user_message:
+        return jsonify({"status": "erro", "text": "Mensagem vazia."}), 400
+
+    # --- NOVA LÓGICA DE MONTAGEM DE PROMPT ---
+    try:
+        with open(GEMINI_CONTEXT_FILE, 'r', encoding='utf-8') as f:
+            context_data = json.load(f)
+        
+        # Monta o prompt do sistema a partir do JSON
+        system_prompt = context_data.get("system_prompt_introduction", "") + "\n\n"
+        system_prompt += "## FERRAMENTAS DO HUB:\n" + "\n".join(context_data.get("tools", [])) + "\n\n"
+        system_prompt += "## AUTOMATIZAÇÕES DISPONÍVEIS (RPA):\n" + "\n".join(context_data.get("automations", [])) + "\n\n"
+        system_prompt += "## DASHBOARDS DISPONÍVEIS (BI):\n" + "\n".join(context_data.get("dashboards", [])) + "\n\n"
+        system_prompt += "## REGRAS DE RESPOSTA:\n" + "\n".join(context_data.get("response_rules", []))
+
+        full_prompt = system_prompt + "\n\nUsuário: " + user_message + "\nAssistente: "
+    
+    except Exception as e:
+        print(f"ERRO: Falha ao ler ou montar o gemini_context.json: {e}")
+        return jsonify({"status": "erro", "text": "Desculpe, estou com problemas para acessar meu contexto interno."}), 500
+    # --- FIM DA NOVA LÓGICA ---
+
+    try:
+        response = gemini_model.generate_content(full_prompt)
+        bot_response_text = response.text
+        
+        form_trigger = None
+        
+        # Verifica se a IA acionou um formulário
+        if "[FORM:DEMANDA]" in bot_response_text:
+            bot_response_text = bot_response_text.replace("[FORM:DEMANDA]", "").strip()
+            form_trigger = "demanda"
+        elif "[FORM:SUGESTAO]" in bot_response_text:
+            bot_response_text = bot_response_text.replace("[FORM:SUGESTAO]", "").strip()
+            form_trigger = "sugestao"
+            
+        return jsonify({
+            "status": "sucesso", 
+            "text": bot_response_text,
+            "form_trigger": form_trigger
+        })
+
+    except Exception as e:
+        print(f"Erro na API do Gemini: {e}")
+        return jsonify({"status": "erro", "text": "Desculpe, não consegui processar sua solicitação no momento."}), 500
 
 # --- Início do Servidor ---
 

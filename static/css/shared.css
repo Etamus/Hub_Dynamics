@@ -308,3 +308,16 @@ body.theme-dark {
     position: relative;
     left: -4px; 
 }
+/* Estilo do indicador "Digitando..." */
+.bot-message.typing {
+    color: var(--text-secondary-color);
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Estilo para mensagens de erro do bot */
+.bot-message.error {
+    background-color: #f8d7da; /* Vermelho claro (fundo) */
+    color: #721c24; /* Vermelho escuro (texto) */
+    border-color: #f5c6cb;
+}
