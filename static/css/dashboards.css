@@ -33,7 +33,7 @@ body {
     padding-bottom: 30px; width: 100%; max-width: 500px;
     
     /* --- ADICIONADO: Desloca o ponto central para a direita --- */
-    padding-left: 30px; 
+    padding-left: 60px; 
     box-sizing: border-box; /* Garante que o padding não estoure o max-width */
 }
 .system-selector label { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; }
