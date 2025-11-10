@@ -235,7 +235,30 @@ def api_browse():
         for item in items:
             item_path = os.path.join(current_path, item)
             is_dir = os.path.isdir(item_path)
-            content.append({"name": item, "is_dir": is_dir})
+            
+            # --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            try:
+                # Pega as estatísticas do arquivo/pasta
+                stats = os.stat(item_path)
+                mod_time_stamp = stats.st_mtime
+                # Converte o timestamp para formato ISO (JS consegue ler)
+                mod_date = datetime.datetime.fromtimestamp(mod_time_stamp).isoformat()
+                
+                # Pega o tamanho (se não for diretório)
+                size = stats.st_size if not is_dir else 0
+                
+            except (FileNotFoundError, PermissionError):
+                # Caso o arquivo seja bloqueado ou excluído durante a leitura
+                mod_date = None
+                size = 0
+            # --- FIM DA MODIFICAÇÃO ---
+
+            content.append({
+                "name": item, 
+                "is_dir": is_dir,
+                "mod_date": mod_date, # Adicionado
+                "size": size        # Adicionado
+            })
     
         content.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
         
@@ -662,7 +685,11 @@ def admin_get_users():
             "username": username,
             "area": data.get('area', 'N/A'),
             "role": data.get('role', 'Analista'), # Padrão para Analista se não definido
-            "password": data.get('password', '') # <-- ADICIONE ESTA LINHA (Req 1)
+            "password": data.get('password', ''),
+            
+            # --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            "lockout_until": data.get('lockout_until', None) # Adiciona este campo
+            # --- FIM DA MODIFICAÇÃO ---
         })
         
     return jsonify({"status": "sucesso", "users": user_list})
@@ -724,6 +751,27 @@ def admin_delete_user():
         return jsonify({"status": "sucesso", "mensagem": f"Usuário {username} excluído."})
     
     return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+
+@app.route('/api/admin/unlock-user', methods=['POST'])
+def admin_unlock_user():
+    """Define 'lockout_until' como None para um usuário."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+        
+    username = request.json.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Nome de usuário ausente."}), 400
+
+    users = load_users()
+    if username not in users:
+        return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+    
+    # Define lockout_until como None e reseta as tentativas
+    users[username]['lockout_until'] = None
+    users[username]['login_attempts'] = 0
+    
+    save_users(users)
+    return jsonify({"status": "sucesso", "mensagem": f"Usuário {username} desbloqueado."})
 
 # --- ROTAS DE API (AUTOMAÇÃO) ---
 @app.route('/executar-macro', methods=['POST'])

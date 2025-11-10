@@ -1820,3 +1820,30 @@ body.theme-dark .logo-dark {
 .admin-search-container.users-active #admin-add-user-btn {
     display: block;
 }
+/* Estilo para o status "(Bloqueado)" */
+.admin-user-info .username .user-status-locked {
+    color: #dc3545; /* Vermelho */
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-style: italic;
+    margin-left: 8px;
+}
+
+/* Estilo para o botão "Desbloquear" */
+.admin-user-actions .btn-unlock {
+    /* Cor azul (padrão) */
+    background-color: var(--accent-color); 
+    color: white;
+    border: 1px solid var(--accent-color);
+}
+
+.admin-user-actions .btn-unlock:hover {
+    background-color: var(--accent-color-hover);
+    border-color: var(--accent-color-hover);
+}
+
+/* Ajuste de gap para caber os botões */
+.admin-user-actions {
+    gap: 8px; 
+    flex-wrap: nowrap; /* Impede que os botões quebrem a linha */
+}

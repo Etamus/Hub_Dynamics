@@ -1393,10 +1393,18 @@ function handleAdminReject(e) {
             `;
         } else {
             // Formulário de [EDITAR] usuário existente
+            
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1: Status e Botão de Bloqueio) ---
+            // Verifica se está bloqueado (se a data existe E é no futuro)
+            const isLocked = user.lockout_until && (new Date(user.lockout_until) > new Date());
+            const statusHtml = isLocked ? '<span class="user-status-locked">(Bloqueado)</span>' : '';
+            const unlockBtnHtml = isLocked ? '<button class="button btn-unlock admin-user-unlock-btn">Desbloquear</button>' : '';
+            // --- FIM DA MODIFICAÇÃO ---
+            
             mainHtml = `
                 <div class="admin-user-main">
                     <div class="admin-user-info">
-                        <div class="username">${user.username.toUpperCase()}</div>
+                        <div class="username">${user.username.toUpperCase()} ${statusHtml}</div>
                         <div class="details">
                             <strong>Área:</strong> ${user.area} | <strong>Função:</strong> ${user.role}
                         </div>
@@ -1404,14 +1412,15 @@ function handleAdminReject(e) {
                     <div class="admin-user-actions">
                         <button class="button btn-warning admin-user-edit-btn">Editar</button>
                         <button class="button btn-danger admin-user-delete-btn">Excluir</button>
+                        ${unlockBtnHtml}
                     </div>
                 </div>
             `;
-            // (Req 1) O input de senha em "Editar" não mostra a senha existente
+
             editHtml = `
                 <div class="admin-user-edit-form hidden">
                     <div class="modal-input-group">
-                        <label>Senha (deixe em branco para não alterar):</label>
+                        <label>Senha:</label>
                         <div class="password-toggle-wrapper">
                             <input type="password" class="hub-modal-input edit-password-input" value="">
                             <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
@@ -1450,6 +1459,12 @@ function handleAdminReject(e) {
             item.querySelector('.admin-user-edit-btn').addEventListener('click', showUserEditForm);
             item.querySelector('.admin-user-delete-btn').addEventListener('click', handleAdminDeleteUser);
             item.querySelector('.admin-user-save-btn').addEventListener('click', handleAdminUpdateUser);
+            
+            // (Req 1) Adiciona listener para o botão de desbloquear
+            const unlockBtn = item.querySelector('.admin-user-unlock-btn');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', handleAdminUnlockUser);
+            }
         }
         item.querySelector('.admin-user-cancel-btn').addEventListener('click', hideUserEditForm);
         item.querySelector('.admin-password-toggle-btn').addEventListener('click', handlePasswordToggle);
@@ -1673,6 +1688,45 @@ function handleAdminReject(e) {
         })
         .finally(() => {
             btn.disabled = false;
+        });
+    }
+
+    function handleAdminUnlockUser(e) {
+        const item = e.target.closest('.admin-user-card');
+        const username = item.dataset.username;
+        const btn = e.target;
+        
+        btn.disabled = true;
+        btn.textContent = '...'; // Feedback visual
+
+        fetch('/api/admin/unlock-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                // 1. Remove o status e o botão da UI
+                const statusSpan = item.querySelector('.user-status-locked');
+                if (statusSpan) statusSpan.remove();
+                btn.remove(); // Remove o botão de desbloqueio
+                
+                // 2. Atualiza o estado global
+                const userInGlobal = globalCmsUsers.find(u => u.username === username);
+                if (userInGlobal) {
+                    userInGlobal.lockout_until = null;
+                }
+            } else {
+                alert(`Erro: ${data.mensagem || 'Falha ao desbloquear usuário'}`);
+                btn.disabled = false;
+                btn.textContent = 'Desbloquear'; // Restaura o texto
+            }
+        })
+        .catch((err) => {
+             alert('Erro de comunicação. O usuário não foi desbloqueado.');
+             btn.disabled = false;
+             btn.textContent = 'Desbloquear'; // Restaura o texto
         });
     }
 
