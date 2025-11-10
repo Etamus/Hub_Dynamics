@@ -11,23 +11,21 @@
 </head>
 <body>
     <script>
-      // Script de carregamento instantâneo do tema (para evitar flicker)
-      // (Este script DEVE permanecer inline aqui)
+      // (Script de carregamento de tema mantido)
       (function() {
         try {
           const savedTheme = localStorage.getItem('hubTheme') || 'light';
           if (savedTheme === 'dark') {
             document.body.classList.add('theme-dark');
           } else if (savedTheme === 'light') {
-            // Nenhuma classe necessária para o padrão 'light'
+            // Nenhuma classe necessária
           } else {
-            // Checa o tema do sistema
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
               document.body.classList.add('theme-dark');
             }
           }
         } catch (e) {
-          // Ignora erros (ex: localStorage desativado)
+          // Ignora erros
         }
       })();
     </script>
@@ -35,9 +33,7 @@
     <button id="theme-toggle-btn" class="theme-toggle-button" aria-label="Alternar Tema" title="Alternar Tema">
         <i class="fas fa-sun"></i> 
     </button>
-
     <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
-
     <a href="/" id="back-btn" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
     
     <div id="selection-screen">
@@ -45,275 +41,62 @@
             <h1 class="main-title">Dashboards</h1>
             <p class="subtitle"><i class="fas fa-info-circle"></i> <span>Selecione a plataforma para visualizar o relatório</span></p>
         </div>
+        
         <div class="system-selector">
-            <label> <input type="radio" name="dashboard_system" value="looker" checked> <img src="/static/icones/looker_logo.png" alt="Logo Looker Studio"> </label>
-            <label> <input type="radio" name="dashboard_system" value="tableau"> <img src="/static/icones/tableau_logo.png" alt="Logo Tableau"> </label>
-            <label> <input type="radio" name="dashboard_system" value="library"> <img src="/static/icones/library_logo.png" alt="Logo Library"> </label>     
+            {% for system_key, system_data in dashboards_data.items() %}
+                <label>
+                    <input type="radio" name="dashboard_system" value="{{ system_key }}" {{ 'checked' if loop.first }}>
+                    <img src="{{ system_data.icon }}" alt="Logo {{ system_data.system_name }}">
+                </label>
+            {% endfor %}
         </div>
         
-        <div id="looker-options" class="dashboard-options">
-            <div id="area-selection" class="dashboard-options area-selection-container">
-                <button class="area-button" data-area="order">Order</button>
-                <button class="area-button" data-area="recebimento">Recebimento</button>
-                <button class="area-button" data-area="qualidade">Qualidade</button>
-                <button class="area-button" data-area="inventario">Inventário</button>
-                <button class="area-button" data-area="faturamento">Faturamento</button>
-                <button class="area-button" data-area="reversa">Reversa</button>
-                <button class="area-button" data-area="custos">Custos</button>
-                <button class="area-button" data-area="safety">Safety</button>
-            </div>
-            <div id="looker-pagination" class="pagination-controls">
-                <button id="looker-prev-page" class="page-button" title="Anterior">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <span id="looker-page-info" class="page-info">
-                    Página 1 de 2
-                </span>
-                <button id="looker-next-page" class="page-button" title="Próxima">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-            <div id="dashboards-order" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="daily_block" data-url="https://lookerstudio.google.com/embed/reporting/4b061ef2-9ddf-4120-b3e1-aaa692bd10c3/page/p_lvyh6guavd"
-                    data-preview-gif="/static/gifs/daily_block_preview.gif"
-                    data-preview-text="Consulte o resultado atual do impacto em bloqueio de carteira das ordens para faturamento. Ideal para acompanhamento rápido."
-                    data-preview-tags="Daily,GCP,Revenue,Bloqueio de carteira">
-                    Daily Block
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-recebimento" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="receipt_management" data-url="https://lookerstudio.google.com/embed/u/0/reporting/021f1eef-b3b6-4d5d-b67e-429e49e84398/page/p_elobwkgqtd"
-                    data-preview-gif="/static/gifs/receipt_management_preview.gif"
-                    data-preview-text="Acompanhe a ocupação da grade de recebimento, resultados do nível de serviço de embalagem, bem como previsões de chegada para otimizar o fluxo de entrada de materiais."
-                    data-preview-tags="Daily,Sheets,Efficiency,Nível de serviço,Grade recebimento,Previsão de volume">
-                    Receipt Management
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-qualidade" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="analise_cdp" data-url="https://lookerstudio.google.com/embed/reporting/a1f6638b-027c-4e02-a67d-304a1260f1e8/page/0KYcF"
-                    data-preview-gif="/static/gifs/analise_cdp_preview.gif"
-                    data-preview-text="Resultados do impacto financeiro e de estoque (peças) referente as análises do time CDP voltado a constatações e solicitações no Portal de devolução."
-                    data-preview-tags="Daily,Sheets,Efficiency,Devolução logística">
-                    Análise de CDP
-                </button>
-                <button class="view-button"
-                    data-id="sugestao_embalagem" data-url="https://lookerstudio.google.com/embed/reporting/656ee1d4-8c20-495c-bc87-462b52ef6312/page/p_b0khf57fxd"
-                    data-preview-gif="/static/gifs/sugestao_embalagem_preview.gif"
-                    data-preview-text="Monitore a ocupação volumétrica das cargas expedidas. Visualize materiais com maior variação de ocupação, embalagens com menos aproveitamento e entenda o desvio padrão de cada item."
-                    data-preview-tags="Daily,Gardem,Management,Ocupação de embalagem">
-                    Sugestão de Embalagens CSI
-                </button>
-                <button class="view-button"
-                    data-id="auditoria_packing" data-url="https://lookerstudio.google.com/embed/reporting/70df29c8-389c-485a-aee4-fcad9fef2377/page/j6xcF"
-                    data-preview-gif="/static/gifs/audotira_packing_preview.gif"
-                    data-preview-text="Acompanhe o resultado diário das auditorias pós-packing, visualize o cust avoid por tipo de mercado (B2B,D2C), maiores impactos por material e desvios, e retire insights baseado em sazonalidades."
-                    data-preview-tags="Daily,Gardem,Management,Auditoria pós packing">
-                    Auditoria Pós Packing CSI
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-inventario" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="stock_control" data-url="https://lookerstudio.google.com/embed/reporting/2d1dde98-6bc5-476c-937a-0b09d78e04e6/page/8NWNF"
-                    data-preview-gif="/static/gifs/stock_control_preview.gif"
-                    data-preview-text="Monitore a acurácia do inventário, níveis de estoque (Gross & Net) e identifique discrepâncias para uma gestão precisa."
-                    data-preview-tags="Daily,Sheets,Accuracy,Acurácia,Gross & NET,Pacotes movimentados">
-                    Stock Control
-                </button>
-                <button class="view-button"
-                    data-id="linhas_nao_atendidas" data-url="https://lookerstudio.google.com/embed/reporting/76dfa2d9-291a-43ca-9857-edd408f13483/page/pDDrE"
-                    data-preview-gif="/static/gifs/linhas_atendidas_preview.gif"
-                    data-preview-text="Acompanhe o resultado das linhas não atendidas e seus motivos de pendência online, diretamente do controle operacional."
-                    data-preview-tags="Daily,Sheets,Accuracy,Linhas não atendidas">
-                    Linhas Não Atendidas
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-reversa" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="returns_control" data-url="https://lookerstudio.google.com/embed/reporting/83d4b36a-da22-4712-8199-abe2f436df52/page/cCPMF"
-                    data-preview-gif="/static/gifs/returns_control_preview.gif"
-                    data-preview-text="Análise do status financeiro das devoluções e o envelhecimento (aging) de ordens de retorno em aberto na logística reversa."
-                    data-preview-tags="Daily,Sheets,Management,Aging de OI,Pareto de status">
-                    Returns Control
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-faturamento" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="boletim_d2c" data-url="https://lookerstudio.google.com/embed/u/0/reporting/5b61e471-c338-4887-bd57-fe1f4a28fffb/page/p_8m74juigsd"
-                    data-preview-gif="/static/gifs/boletim_d2c_preview.gif"
-                    data-preview-text="Acompanhamento diário do faturamento direto ao consumidor (D2C), com detalhamento por canal e região."
-                    data-preview-tags="Daily,GCP,Revenue,Boletim de faturamento (D2C)">
-                    Boletim de Faturamento (D2C)
-                </button>
-                <button class="view-button"
-                    data-id="transporte_b2b" data-url="https://lookerstudio.google.com/embed/u/0/reporting/29875f95-7c9c-447c-9d7a-6076f1f4d966/page/6CGCE"
-                    data-preview-gif="/static/gifs/transporte_b2b_preview.gif"
-                    data-preview-text="Visão detalhada da gestão de transporte (B2B), incluindo custos, performance de transportadoras e prazos."
-                    data-preview-tags="Daily,GCP,Performance">
-                    Gestão de Transporte (B2B)
-                </button>
-                <button class="view-button"
-                    data-id="new_calendar" data-url="https://lookerstudio.google.com/embed/reporting/cc6a31a8-aa2a-49af-982f-7c7d170103be/page/p_az16g8cxtd"
-                    data-preview-gif="/static/gifs/new_calendar_preview.gif"
-                    data-preview-text="Tabela ontime com progresso do faturamento de transportes, desde packing até saída em doca."
-                    data-preview-tags="Daily,Sheets,Planning,Calendário expedição">
-                    New Calendar
-                </button>
-                <button class="view-button"
-                    data-id="visao_gerencial" data-url="https://lookerstudio.google.com/embed/reporting/4589a8ca-81a5-4233-915e-0d1c00fdda20/page/p_0zwhymauid"
-                    data-preview-gif="/static/gifs/visao_gerencial_preview.gif"
-                    data-preview-text="Dashboard consolidado com os principais indicadores gerenciais da operação de Spare Parts, incluindo ocupação de carga na expedição."
-                    data-preview-tags="Daily,GCP,Management,Ageing Remessa,Expansão Malhas,Ocupação da grade">
-                    Visão Gerencial Peças
-                </button>
-                <button class="view-button"
-                    data-id="farol_monitoramento" data-url="https://lookerstudio.google.com/embed/reporting/c451deb6-a994-4f67-8ca4-5ee92b4c0cb9/page/dHrbF"
-                    data-preview-gif="/static/gifs/monitoramento_preview.gif"
-                    data-preview-text="Dashboard com informações concentradas relacionadas as notas fiscais em aberto (pendente de entrega) e seus respectivos prazos e custos."
-                    data-preview-tags="Daily,GCP,Management,Farol de monitoramento">
-                    Farol - Monitoramento
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-custos" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="sla_csi" data-url="https://lookerstudio.google.com/embed/reporting/51b05d28-dee8-4577-aa5e-2d86eaba9f62/page/W3haF"
-                    data-preview-gif="/static/gifs/sla_csi_preview.gif"
-                    data-preview-text="Relatório mensal de performance de Nível de Serviço (SLA) baseado nos indicadores operacionais (CSI)."
-                    data-preview-tags="Daily,Sheets,SLA">
-                    SLA Monthly CSI
-                </button>
-                <button class="view-button"
-                    data-id="projects" data-url="https://lookerstudio.google.com/embed/reporting/818af536-436e-48a3-a441-049036815083/page/GTEPF"
-                    data-preview-gif="/static/gifs/projects_preview.gif"
-                    data-preview-text="Acompanhamento do status e progresso dos projetos estratégicos da área de Spare Parts."
-                    data-preview-tags="Weekly,Sheets,Tracking">
-                    Projects
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-safety" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="heinrich_triangle" data-url="https://lookerstudio.google.com/embed/reporting/ec62c048-7747-4f1d-917e-1a99a76fc58d/page/y4haF"
-                    data-preview-gif="/static/gifs/heinrich_triangle_preview.gif"
-                    data-preview-text="Análise de incidentes de segurança baseada na pirâmide de Heinrich, correlacionando eventos para ações preventivas."
-                    data-preview-tags="Monthly,Sheets,Safety">
-                    Heinrich Triangle
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-        </div>
         
-        <div id="tableau-options" class="dashboard-options hidden">
-            <div id="tableau-area-selection" class="dashboard-options area-selection-container">
-                <button class="area-button" data-area="tableau-custos">Custos</button>
-                <button class="area-button" data-area="tableau-monitoramento">Monitoramento</button>
+        {% for system_key, system_data in dashboards_data.items() %}
+        
+            <div id="{{ system_key }}-options" class="dashboard-options hidden">
+                
+                <div id="{{ system_key }}-area-selection" class="dashboard-options area-selection-container">
+                    {% for area_key, area_data in system_data.areas.items() %}
+                        <button class="area-button" data-area="{{ area_key }}">{{ area_data.name }}</button>
+                    {% endfor %}
+                </div>
+                
+                {% if system_key == 'looker' %}
+                <div id="looker-pagination" class="pagination-controls">
+                    <button id="looker-prev-page" class="page-button" title="Anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="looker-page-info" class="page-info">Página 1 de X</span>
+                    <button id="looker-next-page" class="page-button" title="Próxima">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% for area_key, area_data in system_data.areas.items() %}
+                    <div id="dashboards-{{ area_key }}" class="dashboard-options hidden">
+                        
+                        {% for item in area_data['items'] %}
+                            <button class="view-button"
+                                data-id="{{ item.id }}"
+                                data-url="{{ item.url }}"
+                                {% if item.width %}data-width="{{ item.width }}"{% endif %}
+                                data-preview-gif="{{ item.gif }}"
+                                data-preview-text="{{ item.text }}"
+                                data-preview-tags="{{ item.tags }}">
+                                {{ item.name }}
+                            </button>
+                        {% endfor %}
+                        
+                        <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
+                    </div>
+                {% endfor %}
+                
             </div>
-            <div id="dashboards-tableau-custos" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="nave_frete" data-url="https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no"
-                    data-preview-gif="/static/gifs/nave_frete_preview.gif"
-                    data-preview-text="Análise detalhada dos custos e eficiência do frete em todas as localidades expedidas, permitindo a identificação de oportunidades de otimização."
-                    data-preview-tags="Daily,GCP,Costs,Acompanhamento de frete">
-                    Nave do Frete
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div id="dashboards-tableau-monitoramento" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="on_time" data-url="https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1"
-                    data-preview-gif="/static/gifs/on_time_preview.gif"
-                    data-preview-text="Monitoramento da performance de entregas no prazo (On Time), essencial para a satisfação do cliente e eficiência logística."
-                    data-preview-tags="Daily,GCP,Performance,On time">
-                    ON TIME
-                </button>
-                <button class="view-button"
-                    data-id="ltp_monitoramento" data-url="https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1"
-                    data-preview-gif="/static/gifs/LTP_preview.gif"
-                    data-preview-text="Monitoramento da performance de entregas XXXXXXX."
-                    data-preview-tags="Daily,GCP,Tracking,Conversão de faturamento">
-                    Monitoramento
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-        </div>
-
-        <div id="library-options" class="dashboard-options hidden">
-             <div id="library-area-selection" class="dashboard-options area-selection-container">
-                <button class="area-button" data-area="consultas">Consultas</button>
-                <button class="area-button" data-area="database">Database</button>
-                <button class="area-button" data-area="projetos">Projetos</button>
-            </div>
-
-            <div id="dashboards-consultas" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="caminhos_bq" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS68Md5HpqIY3WNbEEQkiE3TyvMwclcui0qdt86tWzO1SsE0M0mD2Mn1-KSUYaJxI00vHGVeS6h4BDk/pubhtml?gid=0&single=true"
-                    data-preview-gif="/static/gifs/caminhos_bq_preview.gif"
-                    data-preview-text="Repositório central com os caminhos e consultas principais para os datasets armazenados no Google BigQuery."
-                    data-preview-tags="Consultation,Sheets,Data,Database">
-                    Caminhos - Bigquery
-                </button>
-                <button class="view-button"
-                    data-id="sgi_spareparts" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vS6UWpl3jYRqh8j-utys3E8J0i2e7AApq-uZltkix1IB8_u3yp84mJIHiOnYLPjD0QmAV1v7hY46d_8/pubhtml?gid=1759939591&amp;single=true&amp;widget=true&amp;headers=false" data-width="900px"
-                    data-preview-gif="/static/gifs/sgi_spareparts_preview.gif"
-                    data-preview-text="Painel de Gestão Integrada (SGI) focado nos indicadores e processos de Spare Parts."
-                    data-preview-tags="Consultation,Sheets,Management">
-                    SGI - SpareParts
-                </button>
-                <button class="view-button"
-                    data-id="folheto_devolucao" data-url="https://www.canva.com/design/DAG18zB3J78/q9UbvDCmVSWraIRE0rAdpg/view?embed" data-width="600px"
-                    data-preview-gif="/static/gifs/manual_devolucao_preview.gif"
-                    data-preview-text="Manual explicativo contemplando o passo a passo para execução de devolução das peças entregues durante e após a entrega, contendo conteúdos orientativos relacionado aos motivos de devolução."
-                    data-preview-tags="Consultation,Presentation,Data">
-                    Folheto de Devolução
-                </button>
-                <button class="view-button"
-                    data-id="processo_devolucao" data-url="https://www.canva.com/design/DAG2nXTQFbg/FbYgIULnsNyHk7MFmbJRmg/view?embed"
-                    data-preview-gif="/static/gifs/processo_solicitacao_preview.gif"
-                    data-preview-text="Detalhamento passo a passo do processo correto instrutivo voltado ao consumidor referente a abertura de solicitação para devoluções de materiais."
-                    data-preview-tags="Consultation,Presentation,Data">
-                    Processo de Devolução
-                </button>
-                <button class="view-button"
-                    data-id="glossario_logistica" data-url="https://docs.google.com/presentation/d/e/2PACX-1vRU-jSs6GrVHXXcsF9i2ddNRc0Vcp1oF4ANmqN1F180rQkmff84vgpA_8Ss5vjNrITGLAaFinZ0mBuR/pubembed?start=false&loop=true&delayms=5000"
-                    data-preview-gif="/static/gifs/glossario_logistica_preview.gif"
-                    data-preview-text="Glossário contendo palavras chaves utilizadas no dia a dia no time de logística, bem como suas explicações e definições."
-                    data-preview-tags="Consultation,Presentation,Data">
-                    Glossário Logística
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-
-            <div id="dashboards-database" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="sheets_tree" data-url="https://docs.google.com/spreadsheets/d/e/2PACX-1vQJdUDPNO0meQZs_zPWAIpCnCczOYojfk3zInZcR04mhdNAeDgYbwGGbok19fkAgtskt2sqdFO7yG_3/pubhtml" data-width="600px"
-                    data-preview-gif="/static/gifs/sheets_tree_preview.gif"
-                    
-                    data-preview-text="Árvore de planilhas: um centralizador para encontrar e acessar os principais arquivos do Google Sheets utilizados pela equipe."
-                    data-preview-tags="Database,Sheets,Data">
-                    Sheets Tree
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            
-            <div id="dashboards-projetos" class="dashboard-options hidden">
-                <button class="view-button"
-                    data-id="jira_ongoing" data-url="https://lookerstudio.google.com/embed/reporting/c6349993-65f6-4ef9-9a1d-b80e229df0ad/page/page_12345"
-                    data-preview-gif="/static/gifs/jira_ongoing_preview.gif"
-                    data-preview-text="Dashboard visual com o status e andamento dos projetos de melhoria contínua e automação gerenciados no Jira."
-                    data-preview-tags="Dashboard,Sheets,Tracking">
-                    Jira - Ongoing projects
-                </button>
-                <button class="back-to-areas-button" title="Voltar para Áreas"><i class="fas fa-arrow-left"></i></button>
-            </div>
-        </div>
+        
+        {% endfor %}
+        
     </div>
 
     <div id="dashboard-view" class="dashboard-container"></div>

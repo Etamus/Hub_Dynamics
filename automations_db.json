@@ -1,0 +1,22 @@
+{
+  "Base M\u00e3e": {
+    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Input di\u00e1rio P\u00c7's.xlsm",
+    "macro": "Org_relatorio_diario",
+    "type": "sap"
+  },
+  "Cancelamento Aging": {
+    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Cria\u00e7\u00e3o Aging.xlsm",
+    "macro": "cancelar_fora_prazo",
+    "type": "sap"
+  },
+  "Outlook": {
+    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm",
+    "macro": "EnviarEmails",
+    "type": "sap"
+  },
+  "Relat\u00f3rio Pe\u00e7as": {
+    "arquivo": null,
+    "macro": null,
+    "type": "bw"
+  }
+}

@@ -77,12 +77,12 @@
         
         <div class="hub-cards" id="hub-cards-container">
             {% if role == 'Executor' %}
-            <a href="/automacao" class="hub-card" aria-label="Automatizações. Execute robôs para tarefas de SAP, BW e extração de relatórios.">
+            <a href="/automacao" class="hub-card" aria-label="Automações. Execute robôs para tarefas de SAP, BW e extração de relatórios.">
                 <div class="card-media-area">
                     <div class="card-preview"> <img src="/static/gifs/automacao.gif" alt="Preview Automações"> </div>
                     <div class="card-content">
                         <div class="card-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
-                        <h2>Automatizações</h2>
+                        <h2>Automações</h2>
                     </div>
                 </div>
                 <p>Execute robôs para tarefas de SAP, BW e extração de relatórios.</p>
@@ -92,7 +92,7 @@
                     <div class="card-media-area">
                         <div class="card-content">
                             <div class="card-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
-                            <h2>Automatizações</h2>
+                            <h2>Automações</h2>
                         </div>
                     </div>
                     
@@ -203,7 +203,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v2.9.2</p>
+                    <p><strong>Versão Atual:</strong> v3.0</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -214,6 +214,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v3.0:</strong> Janela de administração aprimorada e correções de problemas</li>
                         <li><strong>v2.9.2:</strong> Melhoria de layout da página incial e lógica da barra de pesquisa</li>
                         <li><strong>v2.9:</strong> Novo Chatbot com integração de inteligência artificial</li>
                         <li><strong>v2.6:</strong> Melhorias no Agendador de Tarefas</li>
@@ -415,8 +416,10 @@
             </div>
             
             <div class="scheduler-queue-tabs" style="padding-left: 20px;">
-                <span id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">Solicitações Pendentes</span>
-                <span id="tab-admin-users" class="scheduler-tab" data-tab="users">Gerenciar Usuários</span>
+                <span id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">Solicitações</span>
+                <span id="tab-admin-users" class="scheduler-tab" data-tab="users">Usuários</span>
+                <span id="tab-admin-dashboards" class="scheduler-tab" data-tab="dashboards">Dashboards</span>
+                <span id="tab-admin-automations" class="scheduler-tab" data-tab="automations">Automações</span>
             </div>
 
             <div id="admin-requests-tab" class="settings-body" style="padding: 20px 30px 30px;">
@@ -426,6 +429,22 @@
             
             <div id="admin-users-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
                 <div id="admin-user-list-container">
+                    </div>
+            </div>
+
+            <div id="admin-dashboards-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
+                <button class="button btn-success" id="admin-add-dashboard-btn" style="width: 130px; margin-bottom: 20px;">
+                    Adicionar
+                </button>
+                <div id="admin-dashboards-list" class="admin-cms-list">
+                    </div>
+            </div>
+            
+            <div id="admin-automations-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
+                <button class="button btn-success" id="admin-add-automation-btn" style="width: 130px; margin-bottom: 20px;">
+                    Adicionar
+                </button>
+                <div id="admin-automations-list" class="admin-cms-list">
                     </div>
             </div>
         </div>

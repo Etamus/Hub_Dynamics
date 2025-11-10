@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lookerPrevPage = document.getElementById('looker-prev-page');
     const lookerNextPage = document.getElementById('looker-next-page');
     const lookerPageInfo = document.getElementById('looker-page-info');
-    const lookerAreaButtons = document.querySelectorAll('#area-selection .area-button');
+    const lookerAreaButtons = document.querySelectorAll('#looker-area-selection .area-button');
     
     const LOOKER_PAGE_SIZE = 4;
     let lookerCurrentPage = 1;
@@ -351,6 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const area = button.dataset.area;
             const targetDashboardGroup = document.getElementById(`dashboards-${area}`);
             const parentAreaContainer = button.closest('.area-selection-container');
+
+            // --- INÍCIO DA CORREÇÃO ---
+            // Verifica se o botão clicado está dentro das opções do Looker
+            if (button.closest('#looker-options')) {
+                if (lookerPaginationControls) { // Garante que o elemento existe
+                    lookerPaginationControls.classList.add('hidden');
+                }
+            }
+            // --- FIM DA CORREÇÃO ---
             
             // --- ADICIONAR ESTAS 2 LINHAS ---
             if (parentAreaContainer && parentAreaContainer.id === 'area-selection') {

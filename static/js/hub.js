@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentHubArea = null; // <-- ADICIONE ESTA LINHA 
     let currentHubRole = null; // <-- ADICIONE ESTA LINHA
     let currentProfileUrl = defaultProfileUrl; // URL da imagem atual
+    let globalCmsDashboards = {}; // Armazena o JSON de dashboards
+    let globalCmsAutomations = {}; // Armazena o JSON de automações
     let cropper = null; // Instância do Cropper.js
     let selectedFile = null; // Arquivo original selecionado
     let currentUploadExtension = null; // Extensão do arquivo original
@@ -45,26 +47,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const connectionsCloseBtn = document.getElementById('connections-close-btn');
     const connectionsListContainer = document.getElementById('connections-list-container');
     
-    // Novo Modal de Perfil
+    // Modal de Perfil
     const profileOverlay = document.getElementById('profile-overlay');
     const profileCloseBtn = document.getElementById('profile-close-btn');
     const profilePreviewImg = document.getElementById('profile-preview-img');
     const profileUploadForm = document.getElementById('profile-upload-form');
     const profileFileInput = document.getElementById('profile-file-input');
-    // const profileSaveBtn = document.getElementById('profile-save-btn'); // Botão 'Salvar Perfil'
-    const profileRemoveBtn = document.getElementById('profile-remove-btn'); // NOVO: Botão de Remover
+    const profileRemoveBtn = document.getElementById('profile-remove-btn');
     const profileUsernameDisplay = document.querySelector('.profile-username-display');
     const profileAreaDisplay = document.getElementById('profile-area-display');
     const profileRoleDisplay = document.getElementById('profile-role-display');
     const profileUploadStatus = document.getElementById('profile-upload-status');
     
-    // Novo Modal de Recorte
+    // Modal de Recorte
     const cropperOverlay = document.getElementById('cropper-overlay');
     const cropperCloseBtn = document.getElementById('cropper-close-btn');
     const cropperImage = document.getElementById('cropper-image');
     const cropperSaveBtn = document.getElementById('cropper-save-btn');
     
-    // NOVO: Modal de Registro
+    // Modal de Registro
     const registerOverlay = document.getElementById('register-overlay');
     const registerCloseBtn = document.getElementById('register-close-btn');
     const tabRegister = document.getElementById('tab-register');
@@ -85,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form de Consulta
     const consultToken = document.getElementById('consult-token');
     const consultTokenBtn = document.getElementById('consult-token-btn');
-    const consultStatusError = document.getElementById('consult-status-error'); // <-- ADICIONE ESTA LINHA
+    const consultStatusError = document.getElementById('consult-status-error');
     const consultStatusWrapper = document.getElementById('consult-status-wrapper');
     const consultStatusResult = document.getElementById('consult-status-result');
     const consultJustification = document.getElementById('consult-justification');
@@ -94,17 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const consultNewPassword = document.getElementById('consult-new-password');
     const consultSavePasswordBtn = document.getElementById('consult-save-password-btn');
 
-    // NOVO: Modal de Admin
+    // Modal de Admin
     const adminOverlay = document.getElementById('admin-overlay');
     const adminCloseBtn = document.getElementById('admin-close-btn');
-    const adminListContainer = document.getElementById('admin-list-container');
-
-    // --- ADICIONE ESTAS 4 LINHAS ---
+    
+    // Abas e Painéis Admin
     const tabAdminRequests = document.getElementById('tab-admin-requests');
     const tabAdminUsers = document.getElementById('tab-admin-users');
+    const tabAdminDashboards = document.getElementById('tab-admin-dashboards');
+    const tabAdminAutomations = document.getElementById('tab-admin-automations');
+    
     const adminRequestsTab = document.getElementById('admin-requests-tab');
     const adminUsersTab = document.getElementById('admin-users-tab');
+    const adminDashboardsTab = document.getElementById('admin-dashboards-tab');
+    const adminAutomationsTab = document.getElementById('admin-automations-tab');
+
+    // Contêineres de Lista Admin
+    const adminListContainer = document.getElementById('admin-list-container');
     const adminUserListContainer = document.getElementById('admin-user-list-container');
+    const adminDashboardsList = document.getElementById('admin-dashboards-list');
+    const adminAutomationsList = document.getElementById('admin-automations-list');
+    
+    // Botões de Adicionar Admin
+    const adminAddAutomationBtn = document.getElementById('admin-add-automation-btn');
+    const adminAddDashboardBtn = document.getElementById('admin-add-dashboard-btn');
 
     // --- 1. LÓGICA DO SELETOR DE TEMA ---
     
@@ -130,6 +144,24 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem(getStorageKey('pinnedDashboards'));
         renderQuickLinks();
     }
+
+    function updateAreaDropdown(systemSelect, areaSelect) {
+    const selectedSystem = systemSelect.value;
+    areaSelect.innerHTML = ''; // Limpa opções antigas
+
+    // Busca as áreas do sistema selecionado no objeto global
+    if (globalCmsDashboards[selectedSystem] && globalCmsDashboards[selectedSystem].areas) {
+        const areas = globalCmsDashboards[selectedSystem].areas;
+        
+        // Cria as novas <option> para as áreas
+        Object.keys(areas).forEach(areaKey => {
+            const option = document.createElement('option');
+            option.value = areaKey;
+            option.textContent = areas[areaKey].name;
+            areaSelect.appendChild(option);
+        });
+    }
+}
     
     const savedTheme = localStorage.getItem('hubTheme') || 'light';
     themeOptions.forEach(opt => {
@@ -577,6 +609,12 @@ profileRemoveBtn.addEventListener('click', () => {
     }
 
     function handleHubLogout() {
+        // --- INÍCIO DA MODIFICAÇÃO (Limpar Ordem) ---
+        if (currentHubUser) {
+            sessionStorage.removeItem(`sortedAutomations_${currentHubUser}`);
+            sessionStorage.removeItem(`sortedDashboards_${currentHubUser}`);
+        }
+        // --- FIM DA MODIFICAÇÃO ---
         fetch('/api/hub/logout', { method: 'POST' })
         .then(() => {
             window.location.href = '/';
@@ -704,6 +742,24 @@ fetch('/api/hub/check-session')
         currentHubRole = data.role; // Salva a role
         localStorage.setItem('hubUsername', data.username); // Sincroniza o localStorage
         updateAccessDropdown(data.username, data.profile_image, data.area, data.role);
+
+        // --- INÍCIO DA MODIFICAÇÃO (Persistir Ordem) ---
+        // Tenta carregar a ordem salva da sessão PARA ESTE USUÁRIO
+        try {
+            const savedAutomations = sessionStorage.getItem(`sortedAutomations_${data.username}`);
+            if (savedAutomations) {
+                globalCmsAutomations = JSON.parse(savedAutomations);
+            }
+            const savedDashboards = sessionStorage.getItem(`sortedDashboards_${data.username}`);
+            if (savedDashboards) {
+                globalCmsDashboards = JSON.parse(savedDashboards);
+            }
+        } catch (e) {
+            console.error("Falha ao carregar CMS do sessionStorage", e);
+            sessionStorage.removeItem(`sortedAutomations_${data.username}`);
+            sessionStorage.removeItem(`sortedDashboards_${data.username}`);
+        }
+        // --- FIM DA MODIFICAÇÃO ---
     } else {
         currentHubUser = null;
         currentHubArea = null;
@@ -887,11 +943,39 @@ fetch('/api/hub/check-session')
 
     function openAdminModal() {
         accessDropdown.classList.remove('visible');
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 2: Adicionar Wrapper) ---
+        // 1. Verifica se a barra de pesquisa já foi injetada
+        if (!document.getElementById('admin-search-container')) {
+            const tabsContainer = adminOverlay.querySelector('.scheduler-queue-tabs');
+            if (tabsContainer) {
+                const searchHtml = `
+                    <div id="admin-search-container" class="admin-search-container hidden">
+                        <div id="admin-search-input-wrapper" class="admin-search-input-wrapper">
+                            <i class="fas fa-search admin-search-icon"></i>
+                            <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Pesquisar nome...">
+                        </div>
+                        </div>
+                `;
+                // Insere o HTML logo após o contêiner das abas
+                tabsContainer.insertAdjacentHTML('afterend', searchHtml);
+
+                // Adiciona o listener de keyup
+                document.getElementById('admin-search-input').addEventListener('keyup', handleAdminSearch);
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
         adminListContainer.innerHTML = '<p class="no-requests">Carregando solicitações...</p>';
         adminUserListContainer.innerHTML = '<p class="no-requests">Carregando usuários...</p>';
-        showAdminTab('requests');
+        adminDashboardsList.innerHTML = '<p class="no-requests">Carregando dashboards...</p>';
+        adminAutomationsList.innerHTML = '<p class="no-requests">Carregando automações...</p>';
+        
+        // Reseta para a primeira aba (Solicitações)
+        showAdminTab('requests'); // Isso vai (corretamente) esconder a barra de pesquisa
         adminOverlay.classList.add('visible');
         
+        // 1. Busca Solicitações Pendentes (Sempre busca)
         fetch('/api/admin/get-requests')
         .then(response => response.json())
         .then(data => {
@@ -901,8 +985,8 @@ fetch('/api/hub/check-session')
                 adminListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
             }
         });
-
-        // 2. Busca Lista de Usuários
+        
+        // 2. Busca Lista de Usuários (Sempre busca)
         fetch('/api/admin/get-users')
         .then(response => response.json())
         .then(data => {
@@ -912,6 +996,33 @@ fetch('/api/hub/check-session')
                 adminUserListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
             }
         });
+        
+        // 3. Busca Dados do CMS (SÓ SE ESTIVER VAZIO)
+        const automationsLoaded = Object.keys(globalCmsAutomations).length > 0;
+        const dashboardsLoaded = Object.keys(globalCmsDashboards).length > 0;
+
+        if (automationsLoaded && dashboardsLoaded) {
+            renderAdminDashboards();
+            renderAdminAutomations();
+        } else {
+            fetch('/api/admin/get-cms-data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    if (!dashboardsLoaded) {
+                        globalCmsDashboards = data.dashboards;
+                    }
+                    if (!automationsLoaded) {
+                        globalCmsAutomations = data.automations;
+                    }
+                    renderAdminDashboards();
+                    renderAdminAutomations();
+                } else {
+                    adminDashboardsList.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+                    adminAutomationsList.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+                }
+            });
+        }
     }
 
     // SUBSTITUA a função renderAdminRequests por esta:
@@ -1068,17 +1179,79 @@ function handleAdminReject(e) {
     
     // Função para trocar as abas do modal de Admin
     function showAdminTab(tabName) {
+        // Esconde todos os painéis
+        adminRequestsTab.classList.add('hidden');
+        adminUsersTab.classList.add('hidden');
+        adminDashboardsTab.classList.add('hidden');
+        adminAutomationsTab.classList.add('hidden');
+        
+        // Remove 'active' de todas as abas
+        tabAdminRequests.classList.remove('active');
+        tabAdminUsers.classList.remove('active');
+        tabAdminDashboards.classList.remove('active');
+        tabAdminAutomations.classList.remove('active');
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 2: Mover Botões) ---
+        const searchContainer = document.getElementById('admin-search-container');
+        const searchInput = document.getElementById('admin-search-input');
+
+        // 1. Reseta os botões (move de volta para suas abas e esconde)
+        // (Usamos .prepend() para garantir que fiquem no topo de suas abas)
+        if (adminAddDashboardBtn) {
+            adminDashboardsTab.prepend(adminAddDashboardBtn);
+            adminAddDashboardBtn.style.display = 'none';
+        }
+        if (adminAddAutomationBtn) {
+            adminAutomationsTab.prepend(adminAddAutomationBtn);
+            adminAddAutomationBtn.style.display = 'none';
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
+        const searchableTabs = ['users', 'dashboards', 'automations'];
+        
+        if (searchContainer) { 
+            if (searchableTabs.includes(tabName)) {
+                searchContainer.classList.remove('hidden');
+            } else {
+                searchContainer.classList.add('hidden');
+            }
+        }
+        
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        // Mostra a aba e painel corretos E move o botão correto
         if (tabName === 'requests') {
             tabAdminRequests.classList.add('active');
-            tabAdminUsers.classList.remove('active');
             adminRequestsTab.classList.remove('hidden');
-            adminUsersTab.classList.add('hidden');
-        } else {
-            tabAdminRequests.classList.remove('active');
+        
+        } else if (tabName === 'users') {
             tabAdminUsers.classList.add('active');
-            adminRequestsTab.classList.add('hidden');
             adminUsersTab.classList.remove('hidden');
+        
+        } else if (tabName === 'dashboards') {
+            tabAdminDashboards.classList.add('active');
+            adminDashboardsTab.classList.remove('hidden');
+            
+            // (Req 2) Move o botão de Dashboards para o container de pesquisa
+            if (adminAddDashboardBtn && searchContainer) {
+                searchContainer.appendChild(adminAddDashboardBtn);
+                adminAddDashboardBtn.style.display = 'block';
+            }
+
+        } else if (tabName === 'automations') {
+            tabAdminAutomations.classList.add('active');
+            adminAutomationsTab.classList.remove('hidden');
+            
+            // (Req 2) Move o botão de Automações para o container de pesquisa
+            if (adminAddAutomationBtn && searchContainer) {
+                searchContainer.appendChild(adminAddAutomationBtn);
+                adminAddAutomationBtn.style.display = 'block';
+            }
         }
+        
+        handleAdminSearch();
     }
     
     // Listeners das Abas de Admin
@@ -1166,6 +1339,66 @@ function handleAdminReject(e) {
         });
     }
     
+    // NOVO: Função para filtrar as listas do admin
+    function handleAdminSearch() {
+        const searchInput = document.getElementById('admin-search-input');
+        // Se o input não existir (ex: modal fechado), não faz nada
+        if (!searchInput) return;
+        
+        const searchTerm = searchInput.value.toLowerCase();
+
+        // 1. Descobre qual painel de aba está ativo
+        let activePanel = null;
+        if (!adminUsersTab.classList.contains('hidden')) {
+            activePanel = adminUsersTab;
+        } else if (!adminDashboardsTab.classList.contains('hidden')) {
+            activePanel = adminDashboardsTab;
+        } else if (!adminAutomationsTab.classList.contains('hidden')) {
+            activePanel = adminAutomationsTab;
+        }
+
+        // Se nenhum painel pesquisável estiver ativo, não faz nada
+        if (!activePanel) return;
+
+        // 2. Encontra o contêiner da lista dentro do painel ativo
+        const listContainer = activePanel.querySelector('#admin-user-list-container, #admin-dashboards-list, #admin-automations-list');
+        if (!listContainer) return;
+
+        const allCards = listContainer.querySelectorAll('.admin-user-card, .admin-cms-card');
+        let itemsFound = 0;
+
+        // 3. Itera sobre os cards e aplica o filtro
+        allCards.forEach(card => {
+            // Seleciona o elemento que contém o nome (usuário ou nome do CMS)
+            const nameElement = card.querySelector('.username, .admin-cms-info .name');
+            if (nameElement) {
+                const name = nameElement.textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    card.style.display = 'flex'; // 'flex' é o padrão de display do card
+                    itemsFound++;
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+
+        // 4. Gerencia a mensagem de "Nenhum resultado"
+        let noResultsMsg = listContainer.querySelector('.no-results-message');
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('p');
+            noResultsMsg.className = 'no-requests no-results-message'; // Reutiliza o estilo
+            noResultsMsg.style.display = 'none'; // Começa oculto
+            listContainer.appendChild(noResultsMsg);
+        }
+
+        if (itemsFound === 0 && searchTerm !== '') {
+            noResultsMsg.textContent = 'Nenhum item encontrado para "' + searchInput.value + '".';
+            noResultsMsg.style.display = 'block';
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
     // --- NOVA FUNÇÃO (Req 3): Alterna a visibilidade da senha ---
     function handlePasswordToggle(e) {
         const btn = e.target;
@@ -1288,5 +1521,599 @@ function handleAdminReject(e) {
             }
         });
     }
+    
+    // Listeners das Abas
+    tabAdminDashboards.addEventListener('click', () => showAdminTab('dashboards'));
+    tabAdminAutomations.addEventListener('click', () => showAdminTab('automations'));
 
+    // --- Gerenciamento de Automações ---
+    
+    function renderAdminAutomations() {
+        adminAutomationsList.innerHTML = '';
+        
+        // (Req 2) Pega as chaves na ordem atual
+        const keys = Object.keys(globalCmsAutomations);
+        
+        if (keys.length === 0) {
+            adminAutomationsList.innerHTML = '<p class="no-requests">Nenhuma automação cadastrada.</p>';
+            return;
+        }
+
+        // (Req 2) Itera usando a chave e o índice
+        keys.forEach((key, index) => {
+            const auto = globalCmsAutomations[key];
+            const item = document.createElement('div');
+            item.className = 'admin-cms-card';
+            item.dataset.key = key; // Usa a Chave (Nome) como ID
+
+            // (Req 1) Se for novo, o campo de nome deve estar vazio
+            const keyNameValue = auto.isNew ? '' : key;
+            
+            // (Req 2) Desabilita os botões de mover no início/fim da lista
+            const upDisabled = (index === 0) ? 'disabled' : '';
+            const downDisabled = (index === keys.length - 1) ? 'disabled' : '';
+
+            item.innerHTML = `
+                <div class="admin-cms-main">
+                    <div class="admin-cms-info">
+                        <div class="name">${key}</div>
+                        <div class="details"><strong>Sistema:</strong> ${auto.type.toUpperCase()} | <strong>Macro:</strong> ${auto.macro || 'N/A'}</div>
+                    </div>
+                    <div class="admin-cms-actions">
+                        
+                        <div class="admin-reorder-controls">
+                            <button class="button admin-move-btn admin-move-up-btn" title="Mover para Cima" ${upDisabled} data-key="${key}">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="button admin-move-btn admin-move-down-btn" title="Mover para Baixo" ${downDisabled} data-key="${key}">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                        </div>
+
+                        <button class="button btn-warning admin-auto-edit-btn">Editar</button>
+                        <button class="button btn-danger admin-auto-delete-btn">Excluir</button>
+                    </div>
+                </div>
+                <div class="admin-cms-edit-form hidden">
+                    <div class="modal-input-group">
+                        <label>Nome de Exibição:</label>
+                        <input type="text" class="hub-modal-input edit-auto-name" value="${keyNameValue}">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Tipo:</label>
+                        <select class="hub-modal-input edit-auto-type">
+                            <option value="sap" ${auto.type === 'sap' ? 'selected' : ''}>SAP</option>
+                            <option value="bw" ${auto.type === 'bw' ? 'selected' : ''}>BW</option>
+                        </select>
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Nome da Macro:</label>
+                        <input type="text" class="hub-modal-input edit-auto-macro" value="${auto.macro || ''}">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Caminho do Arquivo:</label>
+                        <input type="text" class="hub-modal-input edit-auto-file" value="${auto.arquivo || ''}">
+                    </div>
+                    <div class="admin-cms-edit-actions">
+                        <button class="button btn-cancel admin-auto-cancel-btn">Cancelar</button>
+                        <button class="button btn-success admin-auto-save-btn">Salvar</button>
+                    </div>
+                </div>
+            `;
+            adminAutomationsList.appendChild(item);
+        });
+
+        // Adiciona Listeners
+        adminAutomationsList.querySelectorAll('.admin-move-up-btn').forEach(b => b.addEventListener('click', handleAutomationMove));
+        adminAutomationsList.querySelectorAll('.admin-move-down-btn').forEach(b => b.addEventListener('click', handleAutomationMove));
+        adminAutomationsList.querySelectorAll('.admin-auto-edit-btn').forEach(b => b.addEventListener('click', showCmsEditForm));
+        adminAutomationsList.querySelectorAll('.admin-auto-cancel-btn').forEach(b => b.addEventListener('click', hideCmsEditForm));
+        adminAutomationsList.querySelectorAll('.admin-auto-save-btn').forEach(b => b.addEventListener('click', handleAutomationSave));
+        adminAutomationsList.querySelectorAll('.admin-auto-delete-btn').forEach(b => b.addEventListener('click', handleAutomationDelete));
+    }
+
+    // Botão Adicionar (Automação) - CORRIGIDO
+    adminAddAutomationBtn.addEventListener('click', () => {
+        // (Req 3: Evitar Auto-Save) - Fecha qualquer outro formulário
+        closeAllEditForms(adminAutomationsList); 
+
+        const newKey = `Nova Automação ${Date.now()}`; // Garante chave única
+        
+        // (Req 1: Campos Vazios)
+        const newAutomation = {
+            [newKey]: {
+                arquivo: "", // Vazio
+                macro: "", // Vazio
+                type: "sap",
+                isNew: true // Flag para o "Cancelar"
+            }
+        };
+
+        // Coloca o novo item no início do objeto global
+        globalCmsAutomations = { ...newAutomation, ...globalCmsAutomations };
+        
+        renderAdminAutomations();
+        
+        const newCard = adminAutomationsList.querySelector(`[data-key="${newKey}"]`);
+        if (newCard) {
+            newCard.querySelector('.admin-cms-main').classList.add('hidden');
+            newCard.querySelector('.admin-cms-edit-form').classList.remove('hidden');
+
+            // --- INÍCIO DA MODIFICAÇÃO (Rolar para o Topo) ---
+            // Muda de 'center' para 'start'
+            adminAutomationsList.scrollTop = 0;
+            // --- FIM DA MODIFICAÇÃO ---
+        }
     });
+
+    function handleAutomationMove(e) {
+        const btn = e.currentTarget;
+        const keyToMove = btn.dataset.key;
+        // -1 para "Cima", 1 para "Baixo"
+        const direction = btn.classList.contains('admin-move-up-btn') ? -1 : 1; 
+
+        let keys = Object.keys(globalCmsAutomations);
+        const index = keys.indexOf(keyToMove);
+
+        if (index === -1) return; // Chave não encontrada
+
+        const newIndex = index + direction;
+
+        // Verifica os limites (não deve mover o primeiro para cima, nem o último para baixo)
+        if (newIndex < 0 || newIndex >= keys.length) {
+            return;
+        }
+
+        // Realiza a troca no array de chaves
+        [keys[index], keys[newIndex]] = [keys[newIndex], keys[index]];
+
+        // Reconstrói o objeto global com a nova ordem
+        const newGlobalCms = {};
+        for (const key of keys) {
+            newGlobalCms[key] = globalCmsAutomations[key];
+        }
+        globalCmsAutomations = newGlobalCms;
+
+        // Salva a nova ordem no servidor e re-renderiza a lista
+        saveCmsData('automations');
+        renderAdminAutomations();
+    }
+
+    function handleAutomationSave(e) {
+        const item = e.target.closest('.admin-cms-card');
+        const oldKey = item.dataset.key;
+        
+        const form = item.querySelector('.admin-cms-edit-form');
+        const newKey = form.querySelector('.edit-auto-name').value;
+        const newType = form.querySelector('.edit-auto-type').value;
+        const newMacro = form.querySelector('.edit-auto-macro').value;
+        const newFile = form.querySelector('.edit-auto-file').value;
+
+        if (!newKey) {
+            alert("O Nome (Chave) é obrigatório.");
+            return;
+        }
+
+        const newData = {
+            type: newType,
+            macro: newMacro || null,
+            arquivo: newFile || null
+            // A flag 'isNew' é omitida, removendo-a
+        };
+
+        // Atualiza a chave global
+        delete globalCmsAutomations[oldKey];
+        globalCmsAutomations[newKey] = newData;
+
+        // Salva no servidor
+        saveCmsData('automations');
+        // Re-renderiza a lista
+        renderAdminAutomations();
+    }
+    
+    function handleAutomationDelete(e) {
+        const item = e.target.closest('.admin-cms-card');
+        const key = item.dataset.key;
+        
+        delete globalCmsAutomations[key];
+        saveCmsData('automations');
+        renderAdminAutomations();
+    }
+
+
+    // --- Gerenciamento de Dashboards ---
+    
+    function renderAdminDashboards() {
+        adminDashboardsList.innerHTML = '';
+        
+        // (Req 1) Ordem Fixa
+        const systemOrder = ['looker', 'tableau', 'library'];
+
+        // (Req 1) Gera as <options> para o seletor de Sistema
+        const systemOptionsHtml = systemOrder.map(sysKey => {
+            if (!globalCmsDashboards[sysKey]) return '';
+            return `<option value="${sysKey}">${globalCmsDashboards[sysKey].system_name}</option>`;
+        }).join('');
+
+        systemOrder.forEach(systemKey => {
+            const systemData = globalCmsDashboards[systemKey];
+            if (!systemData) return; 
+
+            for (const [areaKey, areaData] of Object.entries(systemData.areas)) {
+                areaData.items.forEach((item, index) => {
+                    
+                    // (Req 1) Gera as <options> de Área para este item específico
+                    const areaOptionsHtml = Object.keys(systemData.areas).map(aKey => {
+                        const selected = (aKey === areaKey) ? 'selected' : '';
+                        return `<option value="${aKey}" ${selected}>${systemData.areas[aKey].name}</option>`;
+                    }).join('');
+
+                    // (Req 1) Atualiza o seletor de Sistema para este item
+                    const itemSystemOptionsHtml = systemOrder.map(sysKey => {
+                        if (!globalCmsDashboards[sysKey]) return '';
+                        const selected = (sysKey === systemKey) ? 'selected' : '';
+                        return `<option value="${sysKey}" ${selected}>${globalCmsDashboards[sysKey].system_name}</option>`;
+                    }).join('');
+
+                    const card = document.createElement('div');
+                    card.className = 'admin-cms-card';
+                    card.dataset.systemKey = systemKey;
+                    card.dataset.areaKey = areaKey;
+                    card.dataset.index = index; 
+
+                    // --- INÍCIO DA MODIFICAÇÃO (Req 2) ---
+                    card.innerHTML = `
+                        <div class="admin-cms-main">
+                            <div class="admin-cms-info">
+                                <div class="name">${item.name}</div>
+                                <div class="details">
+                                    <strong>Plataforma:</strong> ${systemData.system_name} | <strong>Área:</strong> ${areaData.name}
+                                </div>
+                            </div>
+                            <div class="admin-cms-actions">
+                                <button class="button btn-warning admin-dash-edit-btn">Editar</button>
+                                <button class="button btn-danger admin-dash-delete-btn">Excluir</button>
+                            </div>
+                        </div>
+                        <div class="admin-cms-edit-form hidden">
+                            
+                            <div class="scheduler-datetime-group" style="gap: 15px;">
+                                <div class="modal-input-group">
+                                    <label>Plataforma:</label>
+                                    <select class="hub-modal-input edit-dash-systemKey">${itemSystemOptionsHtml}</select>
+                                </div>
+                                <div class="modal-input-group">
+                                    <label>Área:</label>
+                                    <select class="hub-modal-input edit-dash-areaKey">${areaOptionsHtml}</select>
+                                </div>
+                            </div>
+
+                            <div class="modal-input-group">
+                                <label>ID:</label>
+                                <input type="text" class="hub-modal-input edit-dash-id" value="${item.id}">
+                            </div>
+                            <div class="modal-input-group">
+                                <label>Nome de Exibição:</label>
+                                <input type="text" class="hub-modal-input edit-dash-name" value="${item.name}">
+                            </div>
+                            <div class="modal-input-group">
+                                <label>URL:</label>
+                                <input type="text" class="hub-modal-input edit-dash-url" value="${item.url}">
+                            </div>
+                            <div class="modal-input-group">
+                                <label>Caminho do Preview (Ex: /static/gifs/preview.gif):</label>
+                                <input type="text" class="hub-modal-input edit-dash-gif" value="${item.gif || ''}">
+                            </div>
+                            <div class="modal-input-group">
+                                <label>Descrição do Preview:</label>
+                                <textarea class="hub-modal-input edit-dash-text">${item.text || ''}</textarea>
+                            </div>
+                            <div class="modal-input-group">
+                                <label>Tags do Preview:</label>
+                                <input type="text" class="hub-modal-input edit-dash-tags" value="${item.tags || ''}">
+                            </div>
+                            
+                            <div class="modal-input-group">
+                                <label>Largura do Preview (Opcional):</label>
+                                <input type="text" class="hub-modal-input edit-dash-width" value="${item.width || ''}">
+                            </div>
+                            
+                            <div class="admin-cms-edit-actions">
+                                <button class="button btn-cancel admin-dash-cancel-btn">Cancelar</button>
+                                <button class="button btn-success admin-dash-save-btn">Salvar</button>
+                            </div>
+                        </div>
+                    `;
+                    adminDashboardsList.appendChild(card);
+
+                    // (Req 1) Adiciona o listener para atualizar as Áreas dinamicamente
+                    const systemSelect = card.querySelector('.edit-dash-systemKey');
+                    const areaSelect = card.querySelector('.edit-dash-areaKey');
+                    systemSelect.addEventListener('change', () => updateAreaDropdown(systemSelect, areaSelect));
+                });
+            }
+        }); 
+        
+        // Listeners (movidos para fora do loop)
+        adminDashboardsList.querySelectorAll('.admin-dash-edit-btn').forEach(b => b.addEventListener('click', showCmsEditForm));
+        adminDashboardsList.querySelectorAll('.admin-dash-cancel-btn').forEach(b => b.addEventListener('click', hideCmsEditForm));
+        adminDashboardsList.querySelectorAll('.admin-dash-save-btn').forEach(b => b.addEventListener('click', handleDashboardSave));
+        adminDashboardsList.querySelectorAll('.admin-dash-delete-btn').forEach(b => b.addEventListener('click', handleDashboardDelete));
+    }
+    
+    // NOVO: Botão Adicionar Dashboard (Req 2)
+    if (adminAddDashboardBtn) { 
+        adminAddDashboardBtn.addEventListener('click', () => {
+            
+            // (Req 3: Evitar Auto-Save) - Fecha qualquer outro formulário
+            closeAllEditForms(adminDashboardsList);
+
+            const defaultSystemKey = 'looker';
+            if (!globalCmsDashboards[defaultSystemKey] || !globalCmsDashboards[defaultSystemKey].areas) {
+                alert("Erro: Sistema 'looker' não encontrado. Não é possível adicionar dashboard.");
+                return;
+            }
+            const defaultAreaKey = Object.keys(globalCmsDashboards[defaultSystemKey].areas)[0];
+            if (!defaultAreaKey) {
+                alert("Erro: Sistema 'looker' não possui áreas. Não é possível adicionar dashboard.");
+                return;
+            }
+            
+            // (Req 1: Campos Vazios)
+            const newItem = {
+                id: "", // Vazio
+                name: "", // Vazio
+                url: "", // Vazio
+                gif: "", // Vazio
+                text: "", // Vazio
+                tags: "", // Vazio
+                width: null,
+                isNew: true // Flag para o "Cancelar"
+            };
+
+            // Adiciona o novo item ao INÍCIO da área padrão
+            globalCmsDashboards[defaultSystemKey].areas[defaultAreaKey].items.unshift(newItem);
+            
+            renderAdminDashboards();
+            
+            const newCard = adminDashboardsList.firstChild; 
+            if (newCard) {
+                newCard.querySelector('.admin-cms-main').classList.add('hidden');
+                newCard.querySelector('.admin-cms-edit-form').classList.remove('hidden');
+                
+                // --- INÍCIO DA MODIFICAÇÃO (Rolar para o Topo) ---
+                // Muda de 'center' para 'start'
+                adminDashboardsList.scrollTop = 0;
+                // --- FIM DA MODIFICAÇÃO ---
+            }
+        });
+    } // <-- FECHA A VERIFICAÇÃO
+
+    function handleDashboardSave(e) {
+        const item = e.target.closest('.admin-cms-card');
+        // Localização ANTIGA (de onde o item VEIO)
+        const { systemKey: oldSystemKey, areaKey: oldAreaKey, index: oldIndex } = item.dataset;
+        
+        const form = item.querySelector('.admin-cms-edit-form');
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Localização NOVA (para onde o item VAI)
+        const newSystemKey = form.querySelector('.edit-dash-systemKey').value;
+        const newAreaKey = form.querySelector('.edit-dash-areaKey').value;
+
+        // Pega o item original (do local antigo)
+        const dashboardItem = globalCmsDashboards[oldSystemKey].areas[oldAreaKey].items[oldIndex];
+        
+        // Atualiza o objeto com os dados do formulário
+        dashboardItem.id = form.querySelector('.edit-dash-id').value;
+        dashboardItem.name = form.querySelector('.edit-dash-name').value;
+        dashboardItem.url = form.querySelector('.edit-dash-url').value;
+        dashboardItem.gif = form.querySelector('.edit-dash-gif').value;
+        dashboardItem.text = form.querySelector('.edit-dash-text').value;
+        dashboardItem.tags = form.querySelector('.edit-dash-tags').value;
+        dashboardItem.width = form.querySelector('.edit-dash-width').value || null;
+        dashboardItem.isNew = false; // (Garante que a flag de "novo" seja removida)
+
+        // (Req 1) Lógica de MOVER o item se o sistema ou área mudou
+        if (oldSystemKey !== newSystemKey || oldAreaKey !== newAreaKey) {
+            
+            // 1. Verifica se a nova área existe (segurança)
+            if (!globalCmsDashboards[newSystemKey] || !globalCmsDashboards[newSystemKey].areas[newAreaKey]) {
+                alert(`Erro: A área '${newAreaKey}' não existe no sistema '${newSystemKey}'.`);
+                return;
+            }
+
+            // 2. Remove do local antigo
+            globalCmsDashboards[oldSystemKey].areas[oldAreaKey].items.splice(oldIndex, 1);
+            // 3. Adiciona ao novo local (no final da lista)
+            globalCmsDashboards[newSystemKey].areas[newAreaKey].items.push(dashboardItem);
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+        
+        // Salva no servidor
+        saveCmsData('dashboards');
+        // Re-renderiza a UI inteira com a nova estrutura
+        renderAdminDashboards();
+    }
+    
+    function handleDashboardDelete(e) {
+        const item = e.target.closest('.admin-cms-card');
+        const { systemKey, areaKey, index } = item.dataset;
+        const itemData = globalCmsDashboards[systemKey].areas[areaKey].items[index];
+        
+        // Remove o item do array
+        globalCmsDashboards[systemKey].areas[areaKey].items.splice(index, 1);
+        
+        saveCmsData('dashboards');
+        renderAdminDashboards();
+    }
+
+
+    // --- Funções Genéricas do CMS ---
+    
+    // NOVO: Fecha todos os formulários de edição abertos em um contêiner
+    function closeAllEditForms(container) {
+        if (!container) return;
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Req 3: Evitar Auto-Save) ---
+        let itemRemoved = false; // Flag para ver se precisamos re-renderizar
+
+        container.querySelectorAll('.admin-cms-card, .admin-user-card').forEach(card => {
+            const editForm = card.querySelector('.admin-cms-edit-form') || card.querySelector('.admin-user-edit-form');
+            const mainView = card.querySelector('.admin-cms-main') || card.querySelector('.admin-user-main');
+            
+            if (editForm && !editForm.classList.contains('hidden')) {
+                
+                // --- NOVA LÓGICA: VERIFICA SE ESTÁ FECHANDO UM ITEM NOVO ---
+                const autoKey = card.dataset.key;
+                if (autoKey && globalCmsAutomations[autoKey]?.isNew) {
+                    delete globalCmsAutomations[autoKey];
+                    itemRemoved = true; // Marca para re-renderizar
+                    return; // Sai do loop deste card, pois ele será removido
+                }
+
+                const dashIndex = card.dataset.index;
+                if (dashIndex) {
+                    const { systemKey, areaKey } = card.dataset;
+                    // Verifica se o item existe (pode ter sido removido por outra ação)
+                    if (globalCmsDashboards[systemKey]?.areas[areaKey]?.items[dashIndex]?.isNew) {
+                        globalCmsDashboards[systemKey].areas[areaKey].items.splice(dashIndex, 1);
+                        itemRemoved = true; // Marca para re-renderizar
+                        return; // Sai do loop deste card
+                    }
+                }
+                // --- FIM DA NOVA LÓGICA ---
+
+                // Se não for um item novo, apenas esconde o form
+                editForm.classList.add('hidden');
+                if (mainView) mainView.classList.remove('hidden');
+                
+                // Reseta a senha se for um card de usuário
+                const passInput = editForm.querySelector('.edit-password-input');
+                if (passInput) passInput.type = 'password';
+                const passIcon = editForm.querySelector('.admin-password-toggle-btn');
+                if (passIcon) {
+                    passIcon.classList.remove('fa-eye-slash');
+                    passIcon.classList.add('fa-eye');
+                }
+            }
+        });
+
+        // Se removemos um item, re-renderiza a lista correta
+        if (itemRemoved) {
+            if (container.id === 'admin-automations-list') {
+                renderAdminAutomations();
+            } else if (container.id === 'admin-dashboards-list') {
+                renderAdminDashboards();
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+    }
+
+    function showCmsEditForm(e) {
+        const item = e.target.closest('.admin-cms-card');
+        // REQ 3: Fecha outros forms abertos
+        closeAllEditForms(item.parentElement); 
+        
+        item.querySelector('.admin-cms-main').classList.add('hidden');
+        item.querySelector('.admin-cms-edit-form').classList.remove('hidden');
+    }
+    
+    function hideCmsEditForm(e) {
+        const item = e.target.closest('.admin-cms-card');
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 3: Cancelar "Adicionar") ---
+        const autoKey = item.dataset.key;
+        if (autoKey && globalCmsAutomations[autoKey]?.isNew) {
+            delete globalCmsAutomations[autoKey];
+            renderAdminAutomations(); // Re-renderiza para remover
+            return;
+        }
+
+        const dashIndex = item.dataset.index;
+        if (dashIndex) {
+            const { systemKey, areaKey } = item.dataset;
+             if (globalCmsDashboards[systemKey]?.areas[areaKey]?.items[dashIndex]?.isNew) {
+                globalCmsDashboards[systemKey].areas[areaKey].items.splice(dashIndex, 1);
+                renderAdminDashboards(); // Re-renderiza para remover
+                return;
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
+        // Comportamento normal (se não for um item novo)
+        item.querySelector('.admin-cms-main').classList.remove('hidden');
+        item.querySelector('.admin-cms-edit-form').classList.add('hidden');
+    }
+    
+    // Função para salvar os dados globais no backend
+    function saveCmsData(type, feedbackElement) {
+        let endpoint = '';
+        let payload = {};
+        
+        if (type === 'dashboards') {
+            endpoint = '/api/admin/save-dashboards';
+
+            // Reconstrói o payload na ordem correta para salvar o JSON
+            payload = {
+                "looker": globalCmsDashboards.looker,
+                "tableau": globalCmsDashboards.tableau,
+                "library": globalCmsDashboards.library
+            };
+            Object.keys(payload).forEach(key => {
+                if (payload[key] === undefined) {
+                    delete payload[key];
+                }
+            });
+            
+            // --- INÍCIO DA MODIFICAÇÃO (Persistir Ordem) ---
+            if (currentHubUser) { // Só salva se o usuário estiver logado
+                try {
+                    sessionStorage.setItem(`sortedDashboards_${currentHubUser}`, JSON.stringify(payload));
+                } catch (e) {
+                    console.error("Falha ao salvar dashboards no sessionStorage", e);
+                }
+            }
+            // --- FIM DA MODIFICAÇÃO ---
+
+        } else if (type === 'automations') {
+            endpoint = '/api/admin/save-automations';
+            
+            // (Req 2: Forçar Ordem de Save)
+            payload = {}; // Começa com um objeto vazio
+            const automationKeys = Object.keys(globalCmsAutomations);
+            automationKeys.forEach(key => {
+                payload[key] = globalCmsAutomations[key];
+            });
+            
+            // --- INÍCIO DA MODIFICAÇÃO (Persistir Ordem) ---
+            if (currentHubUser) { // Só salva se o usuário estiver logado
+                try {
+                    sessionStorage.setItem(`sortedAutomations_${currentHubUser}`, JSON.stringify(payload));
+                } catch (e) {
+                    console.error("Falha ao salvar automações no sessionStorage", e);
+                }
+            }
+            // --- FIM DA MODIFICAÇÃO ---
+
+        } else {
+            return;
+        }
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'sucesso') {
+                alert(`Falha ao salvar: ${data.mensagem}`);
+            }
+        })
+        .catch(err => {
+            alert(`Erro de rede ao salvar: ${err}`);
+        });
+    }
+
+});

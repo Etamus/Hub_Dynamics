@@ -15,7 +15,7 @@ from datetime import timezone, timedelta # <-- ADICIONE timezone, timedelta
 
 import google.generativeai as genai
 try:
-    genai.configure(api_key="CHAVE_AQUI") 
+    genai.configure(api_key="") 
     gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 except Exception as e:
     print(f"ERRO: Falha ao configurar a API do Gemini. Verifique sua chave. {e}")
@@ -43,6 +43,8 @@ GEMINI_CONTEXT_FILE = os.path.join(BASE_DIR, "prompt.json") # <-- ALTERADO
 
 # NOVO: Diretório para cache de imagens
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
+DASHBOARDS_DB = os.path.join(BASE_DIR, "dashboards_db.json")
+AUTOMATIONS_DB = os.path.join(BASE_DIR, "automations_db.json")
 os.makedirs(CACHE_DIR, exist_ok=True) # Garante que a pasta 'cache' exista
 
 SCRIPT_RUNNER_SIMPLES = os.path.join(BASE_DIR, "runner.ps1")
@@ -50,12 +52,6 @@ SCRIPT_RUNNER_SAP_LOGIN = os.path.join(BASE_DIR, "sap_login_runner.ps1")
 SCRIPT_CLEANUP = os.path.join(BASE_DIR, "cleanup_process.ps1")
 SCRIPT_BW_HANA = os.path.join(BASE_DIR, "bw_hana_extractor.py")
 DOWNLOAD_DIR = "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros"
-
-macros_disponiveis = {
-    "Base Mãe": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Input diário PÇ's.xlsm", "macro": "Org_relatorio_diario" },
-    "Outlook": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm", "macro": "EnviarEmails" },
-    "Cancelamento Aging": { "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Criação Aging.xlsm", "macro": "cancelar_fora_prazo" }
-}
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'} # REMOVIDO 'gif'
 
@@ -116,7 +112,27 @@ def save_requests(requests_data):
         with open(REQUESTS_DB, 'w', encoding='utf-8') as f:
             json.dump(requests_data, f, indent=2)
     except Exception as e:
-        print(f"Erro ao salvar pedidos de acesso: {e}")        
+        print(f"Erro ao salvar pedidos de acesso: {e}")
+        
+def load_dashboards():
+    """Carrega todos os dashboards do arquivo JSON."""
+    if not os.path.exists(DASHBOARDS_DB):
+        return {}
+    try:
+        with open(DASHBOARDS_DB, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def load_automations():
+    """Carrega todas as automações do arquivo JSON."""
+    if not os.path.exists(AUTOMATIONS_DB):
+        return {}
+    try:
+        with open(AUTOMATIONS_DB, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}                
 
 def get_user_profile_data():
     """Retorna dados de perfil necessários para renderização do Hub."""
@@ -177,17 +193,26 @@ def automacao():
     
     initial_zv62n_file = find_file_by_prefix(DOWNLOAD_DIR, "ZV62N")
     
-    # Passa o status de login do Hub para o template
+    # --- ALTERADO: Carrega automações do JSON ---
+    automations = load_automations()
+    
     return render_template(
         'automacao.html', 
-        macros=macros_disponiveis, 
+        macros=automations, # Passa o dicionário de automações
         initial_zv62n_file=initial_zv62n_file,
         is_hub_logged_in=session.get('username')
     )
 
 @app.route('/dashboards')
 def dashboards():
-    return render_template('dashboards.html', is_hub_logged_in=session.get('username')) 
+    # --- ALTERADO: Carrega dashboards do JSON ---
+    dashboards_data = load_dashboards()
+    
+    return render_template(
+        'dashboards.html', 
+        is_hub_logged_in=session.get('username'),
+        dashboards_data=dashboards_data # Passa os dados para o Jinja2
+    ) 
 
 @app.route('/drive')
 def drive():
@@ -706,10 +731,14 @@ def executar_macro():
     if not is_sap_logged_in: 
         return jsonify({"status": "erro", "mensagem": "Acesso negado. Por favor, faça o login no SAP primeiro."}), 403
         
+    # --- ALTERADO: Carrega automações do JSON ---
+    automations = load_automations()
     nome_macro_selecionada = request.form['macro']
-    config = macros_disponiveis.get(nome_macro_selecionada)
-    if not config: 
-        return jsonify({"status": "erro", "mensagem": "Macro não encontrada!"}), 400
+    config = automations.get(nome_macro_selecionada)
+    # --------------------------------------------
+    
+    if not config or config.get("type") != "sap": # Garante que é uma macro SAP
+        return jsonify({"status": "erro", "mensagem": "Macro não encontrada ou inválida!"}), 400
         
     comando = [ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_RUNNER_SIMPLES, "-CaminhoArquivo", config['arquivo'], "-NomeMacro", config['macro'] ]
     contexto = f"tarefa '{nome_macro_selecionada}'"
@@ -873,7 +902,7 @@ def chatbot_query():
         # Monta o prompt do sistema a partir do JSON
         system_prompt = context_data.get("system_prompt_introduction", "") + "\n\n"
         system_prompt += "## FERRAMENTAS DO HUB:\n" + "\n".join(context_data.get("tools", [])) + "\n\n"
-        system_prompt += "## AUTOMATIZAÇÕES DISPONÍVEIS (RPA):\n" + "\n".join(context_data.get("automations", [])) + "\n\n"
+        system_prompt += "## AUTOMAÇÕES DISPONÍVEIS (RPA):\n" + "\n".join(context_data.get("automations", [])) + "\n\n"
         system_prompt += "## DASHBOARDS DISPONÍVEIS (BI):\n" + "\n".join(context_data.get("dashboards", [])) + "\n\n"
         system_prompt += "## REGRAS DE RESPOSTA:\n" + "\n".join(context_data.get("response_rules", []))
 
@@ -907,6 +936,53 @@ def chatbot_query():
     except Exception as e:
         print(f"Erro na API do Gemini: {e}")
         return jsonify({"status": "erro", "text": "Desculpe, não consegui processar sua solicitação no momento."}), 500
+    
+ # --- NOVAS ROTAS DE API (CMS ADMIN) ---
+
+@app.route('/api/admin/get-cms-data')
+def admin_get_cms_data():
+    """Retorna os dados completos dos JSONs de automação e dashboards."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    automations = load_automations()
+    dashboards = load_dashboards()
+    
+    return jsonify({
+        "status": "sucesso", 
+        "automations": automations, 
+        "dashboards": dashboards
+    })
+
+@app.route('/api/admin/save-automations', methods=['POST'])
+def admin_save_automations():
+    """Salva o JSON de automações."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    try:
+        data = request.json
+        # Escreve o JSON exatamente como recebido (assume que o frontend envia o formato correto)
+        with open(AUTOMATIONS_DB, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        return jsonify({"status": "sucesso", "mensagem": "Automações atualizadas."})
+    except Exception as e:
+        return jsonify({"status": "erro", "mensagem": f"Falha ao salvar automações: {str(e)}"}), 500
+
+@app.route('/api/admin/save-dashboards', methods=['POST'])
+def admin_save_dashboards():
+    """Salva o JSON de dashboards."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+    
+    try:
+        data = request.json
+        # Escreve o JSON exatamente como recebido
+        with open(DASHBOARDS_DB, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        return jsonify({"status": "sucesso", "mensagem": "Dashboards atualizados."})
+    except Exception as e:
+        return jsonify({"status": "erro", "mensagem": f"Falha ao salvar dashboards: {str(e)}"}), 500   
 
 # --- Início do Servidor ---
 

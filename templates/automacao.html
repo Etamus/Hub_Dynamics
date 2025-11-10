@@ -45,7 +45,7 @@
     <div id="status" class="status-box" aria-live="polite"></div>
     
     <div class="container">
-        <h1 class="main-title">Automatizações</h1>
+        <h1 class="main-title">Automações</h1>
         <p class="subtitle" id="main-subtitle"><i class="fas fa-info-circle"></i> <span id="subtitle-text">Selecione uma tarefa para executar</span></p>
         
         <div class="system-selector">
@@ -55,26 +55,27 @@
 
         <div id="sap-tasks-section" class="tasks-section">
             <div class="button-container">
-                {% for nome in macros %}
-                    {% if nome == "Base Mãe" %}
-                        <div class="task-button-group">
+                {% for nome, config in macros.items() %}
+                    {% if config.type == 'sap' %} {% if nome == "Base Mãe" %}
+                            <div class="task-button-group">
+                                <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
+                                    <div class="button-text">{{ nome }}</div>
+                                </div>
+                                {% if initial_zv62n_file %}
+                                    <a href="/download/{{ initial_zv62n_file }}" class="task-button-download" title="Baixar {{ initial_zv62n_file }}">
+                                        <i class="fas fa-file-arrow-down"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="#" class="task-button-download inactive" title="Arquivo não encontrado.">
+                                        <i class="fas fa-file-arrow-down"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% else %}
                             <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
                                 <div class="button-text">{{ nome }}</div>
                             </div>
-                            {% if initial_zv62n_file %}
-                                <a href="/download/{{ initial_zv62n_file }}" class="task-button-download" title="Baixar {{ initial_zv62n_file }}">
-                                    <i class="fas fa-file-arrow-down"></i>
-                                </a>
-                            {% else %}
-                                <a href="#" class="task-button-download inactive" title="Arquivo não encontrado.">
-                                    <i class="fas fa-file-arrow-down"></i>
-                                </a>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
-                            <div class="button-text">{{ nome }}</div>
-                        </div>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </div>
@@ -82,9 +83,13 @@
         
         <div id="bw-tasks-section" class="tasks-section hidden">
             <div class="button-container">
-                <div id="bw-extract-btn" class="task-button" data-task-type="bw">
-                    <div class="button-text">Relatório Peças</div>
-                </div>
+                {% for nome, config in macros.items() %}
+                    {% if config.type == 'bw' %} 
+                        <div id="bw-extract-btn" class="task-button" data-task-name="{{ nome }}" data-task-type="bw">
+                            <div class="button-text">{{ nome }}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
