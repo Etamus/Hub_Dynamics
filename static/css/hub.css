@@ -1786,6 +1786,7 @@ body.theme-dark .logo-dark {
     flex-shrink: 0; /* Impede que o botão encolha */
     margin: 0; /* Remove a margem padrão */
     display: none; /* Oculto por padrão (JS controla a exibição) */
+    width: 130px;
     margin-top: 20px;
 }
 
@@ -1798,4 +1799,24 @@ body.theme-dark .logo-dark {
     padding: 40px 20px;
     background-color: var(--card-bg-color);
     border-radius: 10px;
+}
+/* --- Estilo para o botão "Adicionar Usuário" (Req 1) --- */
+/* (Garante que ele fique oculto por padrão, como os outros) */
+#admin-add-user-btn {
+    display: none;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+/* (Req 1) Quando a aba Usuários estiver ativa, o wrapper de input encolhe */
+.admin-search-container.users-active #admin-search-input-wrapper {
+    max-width: 500px;
+    width: 100%;
+    flex-grow: 1; /* Permite crescer */
+    flex-shrink: 1; /* Permite encolher */
+}
+
+/* (Req 1) Quando a aba Usuários estiver ativa, o botão Adicionar aparece */
+.admin-search-container.users-active #admin-add-user-btn {
+    display: block;
 }

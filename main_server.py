@@ -984,6 +984,42 @@ def admin_save_dashboards():
     except Exception as e:
         return jsonify({"status": "erro", "mensagem": f"Falha ao salvar dashboards: {str(e)}"}), 500   
 
+@app.route('/api/admin/add-user', methods=['POST'])
+def admin_add_user():
+    """Cria um novo usuário (via Admin)."""
+    if not is_admin():
+        return jsonify({"status": "erro", "mensagem": "Acesso negado."}), 403
+        
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    area = data.get('area')
+    role = data.get('role')
+
+    if not username or not password or not area or not role:
+        return jsonify({"status": "erro", "mensagem": "Todos os campos são obrigatórios (usuário, senha, área, função)."}), 400
+
+    users = load_users()
+    if username in users:
+        return jsonify({"status": "erro", "mensagem": "Este usuário já existe."}), 400
+    
+    # Cria a nova entrada de usuário
+    users[username] = {
+        "password": password,
+        "role": role,
+        "area": area,
+        "profile_image": None,
+        "connections": {
+            "sap": None,
+            "bw": None
+        },
+        "login_attempts": 0,
+        "lockout_until": None
+    }
+    
+    save_users(users)
+    return jsonify({"status": "sucesso", "mensagem": f"Usuário {username} criado."})
+
 # --- Início do Servidor ---
 
 if __name__ == '__main__':

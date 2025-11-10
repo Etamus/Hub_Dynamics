@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentProfileUrl = defaultProfileUrl; // URL da imagem atual
     let globalCmsDashboards = {}; // Armazena o JSON de dashboards
     let globalCmsAutomations = {}; // Armazena o JSON de automações
+    let globalCmsUsers = []; // <-- ADICIONE ESTA LINHA
     let cropper = null; // Instância do Cropper.js
     let selectedFile = null; // Arquivo original selecionado
     let currentUploadExtension = null; // Extensão do arquivo original
@@ -944,8 +945,52 @@ fetch('/api/hub/check-session')
     function openAdminModal() {
         accessDropdown.classList.remove('visible');
 
-        // --- INÍCIO DA MODIFICAÇÃO (Req 2: Adicionar Wrapper) ---
-        // 1. Verifica se a barra de pesquisa já foi injetada
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Adicionar Botão de Usuário) ---
+        if (!document.getElementById('admin-add-user-btn')) {
+            const userTabPanel = document.getElementById('admin-users-tab');
+            if (userTabPanel) {
+                const buttonHtml = `
+                    <button class="button btn-success" id="admin-add-user-btn">
+                        Adicionar
+                    </button>
+                `;
+                // Insere o botão (ele será movido pelo showAdminTab)
+                userTabPanel.insertAdjacentHTML('afterbegin', buttonHtml);
+                
+                // --- (LÓGICA DO LISTENER ATUALIZADA) ---
+                document.getElementById('admin-add-user-btn').addEventListener('click', () => {
+                    // 1. Fecha outros forms
+                    closeAllEditForms(adminUserListContainer);
+
+                    // 2. Cria um objeto de usuário temporário
+                    const newUser = {
+                        username: 'temp_user_' + Date.now(), // ID Temporário
+                        password: '',
+                        area: 'Logística', // Padrão
+                        role: 'Analista',  // Padrão
+                        isNew: true
+                    };
+                    
+                    // 3. Adiciona o novo usuário ao TOPO da lista global
+                    globalCmsUsers.unshift(newUser);
+                    
+                    // 4. Re-renderiza a lista inteira (que agora inclui o novo)
+                    renderAdminUsers(); 
+
+                    // 5. Encontra o card que acabou de ser renderizado
+                    const newCard = adminUserListContainer.querySelector(`[data-temp-id="${newUser.username}"]`);
+                    
+                    if (newCard) {
+                        // 6. Abre o formulário de edição (ele já está visível por padrão)
+                        
+                        // 7. Rola o container (a lista) para o topo
+                        adminUserListContainer.scrollTop = 0;
+                    }
+                });
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
         if (!document.getElementById('admin-search-container')) {
             const tabsContainer = adminOverlay.querySelector('.scheduler-queue-tabs');
             if (tabsContainer) {
@@ -955,27 +1000,22 @@ fetch('/api/hub/check-session')
                             <i class="fas fa-search admin-search-icon"></i>
                             <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Pesquisar nome...">
                         </div>
-                        </div>
+                    </div>
                 `;
-                // Insere o HTML logo após o contêiner das abas
                 tabsContainer.insertAdjacentHTML('afterend', searchHtml);
-
-                // Adiciona o listener de keyup
                 document.getElementById('admin-search-input').addEventListener('keyup', handleAdminSearch);
             }
         }
-        // --- FIM DA MODIFICAÇÃO ---
 
         adminListContainer.innerHTML = '<p class="no-requests">Carregando solicitações...</p>';
         adminUserListContainer.innerHTML = '<p class="no-requests">Carregando usuários...</p>';
         adminDashboardsList.innerHTML = '<p class="no-requests">Carregando dashboards...</p>';
         adminAutomationsList.innerHTML = '<p class="no-requests">Carregando automações...</p>';
         
-        // Reseta para a primeira aba (Solicitações)
-        showAdminTab('requests'); // Isso vai (corretamente) esconder a barra de pesquisa
+        showAdminTab('requests'); 
         adminOverlay.classList.add('visible');
         
-        // 1. Busca Solicitações Pendentes (Sempre busca)
+        // 1. Busca Solicitações Pendentes
         fetch('/api/admin/get-requests')
         .then(response => response.json())
         .then(data => {
@@ -986,16 +1026,22 @@ fetch('/api/hub/check-session')
             }
         });
         
-        // 2. Busca Lista de Usuários (Sempre busca)
-        fetch('/api/admin/get-users')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'sucesso') {
-                renderAdminUsers(data.users);
-            } else {
-                adminUserListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
-            }
-        });
+        // 2. Busca Lista de Usuários (e salva globalmente)
+        // (SÓ BUSCA SE A LISTA ESTIVER VAZIA)
+        if (!globalCmsUsers || globalCmsUsers.length === 0) {
+            fetch('/api/admin/get-users')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    globalCmsUsers = data.users; // Salva na variável global
+                    renderAdminUsers(); // Renderiza da global
+                } else {
+                    adminUserListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+                }
+            });
+        } else {
+            renderAdminUsers(); // Renderiza a lista local
+        }
         
         // 3. Busca Dados do CMS (SÓ SE ESTIVER VAZIO)
         const automationsLoaded = Object.keys(globalCmsAutomations).length > 0;
@@ -1191,12 +1237,13 @@ function handleAdminReject(e) {
         tabAdminDashboards.classList.remove('active');
         tabAdminAutomations.classList.remove('active');
 
-        // --- INÍCIO DA MODIFICAÇÃO (Req 2: Mover Botões) ---
         const searchContainer = document.getElementById('admin-search-container');
         const searchInput = document.getElementById('admin-search-input');
+        
+        // (Req 1) Referencia o novo botão de usuário
+        const adminAddUserBtn = document.getElementById('admin-add-user-btn');
 
         // 1. Reseta os botões (move de volta para suas abas e esconde)
-        // (Usamos .prepend() para garantir que fiquem no topo de suas abas)
         if (adminAddDashboardBtn) {
             adminDashboardsTab.prepend(adminAddDashboardBtn);
             adminAddDashboardBtn.style.display = 'none';
@@ -1205,7 +1252,12 @@ function handleAdminReject(e) {
             adminAutomationsTab.prepend(adminAddAutomationBtn);
             adminAddAutomationBtn.style.display = 'none';
         }
-        // --- FIM DA MODIFICAÇÃO ---
+        // (Req 1) Reseta o botão de usuário
+        if (adminAddUserBtn) {
+            adminUsersTab.prepend(adminAddUserBtn);
+            adminAddUserBtn.style.display = 'none';
+            searchContainer.classList.remove('users-active'); // Remove a classe CSS
+        }
 
         const searchableTabs = ['users', 'dashboards', 'automations'];
         
@@ -1229,12 +1281,18 @@ function handleAdminReject(e) {
         } else if (tabName === 'users') {
             tabAdminUsers.classList.add('active');
             adminUsersTab.classList.remove('hidden');
-        
+            
+            // (Req 1) Move o botão de Usuário e adiciona classe
+            if (adminAddUserBtn && searchContainer) {
+                searchContainer.appendChild(adminAddUserBtn);
+                adminAddUserBtn.style.display = 'block';
+                searchContainer.classList.add('users-active'); // Adiciona classe CSS
+            }
+
         } else if (tabName === 'dashboards') {
             tabAdminDashboards.classList.add('active');
             adminDashboardsTab.classList.remove('hidden');
             
-            // (Req 2) Move o botão de Dashboards para o container de pesquisa
             if (adminAddDashboardBtn && searchContainer) {
                 searchContainer.appendChild(adminAddDashboardBtn);
                 adminAddDashboardBtn.style.display = 'block';
@@ -1244,7 +1302,6 @@ function handleAdminReject(e) {
             tabAdminAutomations.classList.add('active');
             adminAutomationsTab.classList.remove('hidden');
             
-            // (Req 2) Move o botão de Automações para o container de pesquisa
             if (adminAddAutomationBtn && searchContainer) {
                 searchContainer.appendChild(adminAddAutomationBtn);
                 adminAddAutomationBtn.style.display = 'block';
@@ -1260,25 +1317,83 @@ function handleAdminReject(e) {
 
 
     // Renderiza a lista de usuários gerenciáveis
-    function renderAdminUsers(users) {
-        adminUserListContainer.innerHTML = '';
-        if (users.length === 0) {
+    function renderAdminUsers() {
+        adminUserListContainer.innerHTML = ''; // Limpa a lista
+        
+        // 1. Verifica a variável global (que será preenchida pelo openAdminModal)
+        if (!globalCmsUsers || globalCmsUsers.length === 0) {
             adminUserListContainer.innerHTML = '<p class="no-requests">Nenhum usuário (além do admin) encontrado.</p>';
             return;
         }
 
-        users.forEach(user => {
-            const item = document.createElement('div');
-            item.className = 'admin-user-card';
+        // 2. Chama o "helper" (renderAdminUserCard) para cada usuário na lista
+        globalCmsUsers.forEach(user => {
+            // false = não colocar no início (append)
+            renderAdminUserCard(user, adminUserListContainer, false); 
+        });
+    }
+    
+    // (Req 1) NOVO: Helper para renderizar um card de usuário (novo ou existente)
+    function renderAdminUserCard(user, container, prepend = false) {
+        const item = document.createElement('div');
+        item.className = 'admin-user-card';
+        
+        const isNew = user.isNew || false;
+        if (isNew) {
+            item.dataset.isNew = 'true';
+            // Usamos um ID temporário para o caso de "Cancelar"
+            item.dataset.tempId = user.username; 
+        } else {
             item.dataset.username = user.username;
-            
-            // Opções para os <select>
-            const areaOptions = ['Logística', 'Comercial', 'Financeiro', 'Jurídico', 'Vendas']
-                .map(a => `<option value="${a}" ${user.area === a ? 'selected' : ''}>${a}</option>`).join('');
-            const roleOptions = ['Analista', 'Executor']
-                .map(r => `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('');
+        }
 
-            item.innerHTML = `
+        // Opções para os <select>
+        const areaOptions = ['Logística', 'Comercial', 'Financeiro', 'Jurídico', 'Vendas']
+            .map(a => `<option value="${a}" ${user.area === a ? 'selected' : ''}>${a}</option>`).join('');
+        const roleOptions = ['Analista', 'Executor']
+            .map(r => `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('');
+
+        // (Req 1) Define o HTML baseado se é [NOVO] ou [EXISTENTE]
+        let mainHtml, editHtml;
+
+        if (isNew) {
+            // Formulário de [NOVO] usuário
+            mainHtml = `
+                <div class="admin-user-main hidden">
+                </div>
+            `;
+            editHtml = `
+                <div class="admin-user-edit-form">
+                    <div class="modal-input-group">
+                        <label>Login de Funcionário:</label>
+                        <input type="text" class="hub-modal-input edit-username-input" value="">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Senha:</label>
+                        <div class="password-toggle-wrapper">
+                            <input type="password" class="hub-modal-input edit-password-input" value="">
+                            <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
+                        </div>
+                    </div>
+                    <div class="scheduler-datetime-group" style="gap: 15px;">
+                        <div class="modal-input-group">
+                            <label>Área</label>
+                            <select class="hub-modal-input edit-area-select">${areaOptions}</select>
+                        </div>
+                        <div class="modal-input-group">
+                            <label>Função</label>
+                            <select class="hub-modal-input edit-role-select">${roleOptions}</select>
+                        </div>
+                    </div>
+                    <div class="admin-user-edit-actions">
+                        <button class="button btn-cancel admin-user-cancel-btn">Cancelar</button>
+                        <button class="button btn-success admin-user-savenew-btn">Salvar</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Formulário de [EDITAR] usuário existente
+            mainHtml = `
                 <div class="admin-user-main">
                     <div class="admin-user-info">
                         <div class="username">${user.username.toUpperCase()}</div>
@@ -1291,13 +1406,15 @@ function handleAdminReject(e) {
                         <button class="button btn-danger admin-user-delete-btn">Excluir</button>
                     </div>
                 </div>
-                
+            `;
+            // (Req 1) O input de senha em "Editar" não mostra a senha existente
+            editHtml = `
                 <div class="admin-user-edit-form hidden">
                     <div class="modal-input-group">
-                        <label>Senha:</label>
+                        <label>Senha (deixe em branco para não alterar):</label>
                         <div class="password-toggle-wrapper">
-                        <input type="password" class="hub-modal-input edit-password-input" value="${user.password || ''}">
-                        <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
+                            <input type="password" class="hub-modal-input edit-password-input" value="">
+                            <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
                         </div>
                     </div>
                     <div class="scheduler-datetime-group" style="gap: 15px;">
@@ -1316,29 +1433,96 @@ function handleAdminReject(e) {
                     </div>
                 </div>
             `;
-            adminUserListContainer.appendChild(item);
-        });
+        }
+        
+        item.innerHTML = mainHtml + editHtml;
 
-        // Adiciona listeners aos novos botões
-        adminUserListContainer.querySelectorAll('.admin-user-edit-btn').forEach(btn => {
-            btn.addEventListener('click', showUserEditForm);
-        });
-        adminUserListContainer.querySelectorAll('.admin-user-delete-btn').forEach(btn => {
-            btn.addEventListener('click', handleAdminDeleteUser);
-        });
-        adminUserListContainer.querySelectorAll('.admin-user-save-btn').forEach(btn => {
-            btn.addEventListener('click', handleAdminUpdateUser);
-        });
-        adminUserListContainer.querySelectorAll('.admin-user-cancel-btn').forEach(btn => {
-            btn.addEventListener('click', hideUserEditForm);
-        });
+        if (prepend) {
+            container.prepend(item);
+        } else {
+            container.appendChild(item);
+        }
 
-        // --- ADICIONA NOVO LISTENER (Req 3) ---
-        adminUserListContainer.querySelectorAll('.admin-password-toggle-btn').forEach(btn => {
-            btn.addEventListener('click', handlePasswordToggle);
+        // Adiciona listeners para os botões do card
+        if (isNew) {
+            item.querySelector('.admin-user-savenew-btn').addEventListener('click', handleAdminSaveNewUser);
+        } else {
+            item.querySelector('.admin-user-edit-btn').addEventListener('click', showUserEditForm);
+            item.querySelector('.admin-user-delete-btn').addEventListener('click', handleAdminDeleteUser);
+            item.querySelector('.admin-user-save-btn').addEventListener('click', handleAdminUpdateUser);
+        }
+        item.querySelector('.admin-user-cancel-btn').addEventListener('click', hideUserEditForm);
+        item.querySelector('.admin-password-toggle-btn').addEventListener('click', handlePasswordToggle);
+    }
+
+    // (Req 1) NOVO: Handler para o botão "Salvar Novo"
+    function handleAdminSaveNewUser(e) {
+        const item = e.target.closest('.admin-user-card');
+        const btn = e.target;
+        
+        const newUsername = item.querySelector('.edit-username-input').value.trim();
+        const newPassword = item.querySelector('.edit-password-input').value;
+        const newArea = item.querySelector('.edit-area-select').value;
+        const newRole = item.querySelector('.edit-role-select').value;
+
+        if (!newUsername || !newPassword) {
+            alert("Login de funcionário e Senha são obrigatórios para criar um novo usuário.");
+            return;
+        }
+
+        const payload = {
+            username: newUsername,
+            password: newPassword,
+            area: newArea,
+            role: newRole
+        };
+
+        btn.disabled = true;
+
+        // Chama o NOVO endpoint de API que você precisará adicionar ao backend
+        fetch('/api/admin/add-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                
+                // --- INÍCIO DA MODIFICAÇÃO (Remover o "Novo" e Adicionar o "Salvo") ---
+                
+                // 1. Remove o card temporário (com isNew: true) da lista global
+                globalCmsUsers = globalCmsUsers.filter(user => !user.isNew);
+
+                // 2. Cria o objeto de usuário salvo
+                const savedUser = {
+                    username: newUsername,
+                    // (Oculto na UI de edição, mas precisamos dele na global para o caso de o admin editar de novo)
+                    password: newPassword, 
+                    area: newArea,
+                    role: newRole,
+                    isNew: false 
+                };
+                
+                // 3. Adiciona o usuário salvo ao topo da lista global
+                globalCmsUsers.unshift(savedUser);
+                
+                // 4. Re-renderiza a lista inteira (agora correta)
+                renderAdminUsers(); 
+                
+                // --- FIM DA MODIFICAÇÃO ---
+
+            } else {
+                alert(`Erro: ${data.mensagem || 'Falha ao criar usuário'}`);
+                btn.disabled = false;
+            }
+        })
+        .catch((err) => {
+             alert('Erro de comunicação. O usuário não foi criado.');
+             btn.disabled = false;
         });
     }
-    
+
     // NOVO: Função para filtrar as listas do admin
     function handleAdminSearch() {
         const searchInput = document.getElementById('admin-search-input');
@@ -1419,25 +1603,10 @@ function handleAdminReject(e) {
     function showUserEditForm(e) {
         const itemClicked = e.target.closest('.admin-user-card');
         
-        // --- CORREÇÃO (Req 1): Fecha outros cards abertos ---
-        const allCards = adminUserListContainer.querySelectorAll('.admin-user-card');
-        allCards.forEach(card => {
-            if (card !== itemClicked) {
-                const editForm = card.querySelector('.admin-user-edit-form');
-                if (!editForm.classList.contains('hidden')) {
-                    card.querySelector('.admin-user-main').classList.remove('hidden');
-                    editForm.classList.add('hidden');
-                    
-                    // --- CORREÇÃO (Req 3): Reseta o ícone e tipo ---
-                    const input = editForm.querySelector('.edit-password-input');
-                    const icon = editForm.querySelector('.admin-password-toggle-btn');
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            }
-        });
-        // ---------------------------------------------------
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Fechar "Adicionar") ---
+        // Fecha outros cards abertos (incluindo o card "Adicionar")
+        closeAllEditForms(adminUserListContainer);
+        // --- FIM DA MODIFICAÇÃO ---
         
         // Abre o card clicado
         itemClicked.querySelector('.admin-user-main').classList.add('hidden');
@@ -1446,13 +1615,24 @@ function handleAdminReject(e) {
 
     function hideUserEditForm(e) {
         const item = e.target.closest('.admin-user-card');
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Cancelar "Adicionar") ---
+        if (item.dataset.isNew === 'true') {
+            const tempId = item.dataset.tempId;
+            globalCmsUsers = globalCmsUsers.filter(u => u.username !== tempId); // Remove da global
+            item.remove(); // Remove o card
+            
+            if (adminUserListContainer.children.length === 0) {
+                 adminUserListContainer.innerHTML = '<p class="no-requests">Nenhum usuário (além do admin) encontrado.</p>';
+            }
+            return;
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+        
         item.querySelector('.admin-user-main').classList.remove('hidden');
         item.querySelector('.admin-user-edit-form').classList.add('hidden');
         
-        // --- CORREÇÃO (Req 2): A senha NÃO é limpa ao cancelar ---
-        // item.querySelector('.edit-password-input').value = ''; // (Linha removida)
-        
-        // --- CORREÇÃO (Req 3): Reseta o ícone e o tipo de input ---
+        // Reseta o ícone e o tipo de input
         const input = item.querySelector('.edit-password-input');
         const icon = item.querySelector('.admin-password-toggle-btn');
         input.type = 'password';
@@ -1500,6 +1680,12 @@ function handleAdminReject(e) {
         const item = e.target.closest('.admin-user-card');
         const username = item.dataset.username;
         
+        // (Prevenção) Não deixa excluir o card de "novo usuário"
+        if (item.dataset.isNew === 'true') {
+            item.remove();
+            return;
+        }
+
         e.target.disabled = true;
 
         fetch('/api/admin/delete-user', {
@@ -1511,7 +1697,13 @@ function handleAdminReject(e) {
         .then(data => {
             if (data.status === 'sucesso') {
                 item.remove(); // Remove o card da UI
-                // Verifica se a lista ficou vazia
+                
+                // --- INÍCIO DA MODIFICAÇÃO (Remover da Global) ---
+                // Remove o usuário da lista local para evitar que ele reapareça
+                globalCmsUsers = globalCmsUsers.filter(user => user.username !== username);
+                // --- FIM DA MODIFICAÇÃO ---
+
+                // Verifica se a lista (agora vazia no DOM) precisa da mensagem
                 if (adminUserListContainer.children.length === 0) {
                     adminUserListContainer.innerHTML = '<p class="no-requests">Nenhum usuário (além do admin) encontrado.</p>';
                 }
@@ -1814,7 +2006,7 @@ function handleAdminReject(e) {
                             </div>
                             
                             <div class="modal-input-group">
-                                <label>Largura do Preview (Opcional):</label>
+                                <label>Largura do Preview:</label>
                                 <input type="text" class="hub-modal-input edit-dash-width" value="${item.width || ''}">
                             </div>
                             
@@ -1955,7 +2147,6 @@ function handleAdminReject(e) {
     function closeAllEditForms(container) {
         if (!container) return;
         
-        // --- INÍCIO DA MODIFICAÇÃO (Req 3: Evitar Auto-Save) ---
         let itemRemoved = false; // Flag para ver se precisamos re-renderizar
 
         container.querySelectorAll('.admin-cms-card, .admin-user-card').forEach(card => {
@@ -1964,25 +2155,32 @@ function handleAdminReject(e) {
             
             if (editForm && !editForm.classList.contains('hidden')) {
                 
-                // --- NOVA LÓGICA: VERIFICA SE ESTÁ FECHANDO UM ITEM NOVO ---
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1: Adicionar checagem de Usuário) ---
+                const isNewUser = card.dataset.isNew === 'true';
+                if (isNewUser) {
+                    const tempId = card.dataset.tempId;
+                    globalCmsUsers = globalCmsUsers.filter(u => u.username !== tempId); // Remove da global
+                    itemRemoved = true; // Marca para re-renderizar
+                    return; // Sai do loop deste card, pois ele será removido
+                }
+                // --- FIM DA MODIFICAÇÃO ---
+
                 const autoKey = card.dataset.key;
                 if (autoKey && globalCmsAutomations[autoKey]?.isNew) {
                     delete globalCmsAutomations[autoKey];
-                    itemRemoved = true; // Marca para re-renderizar
-                    return; // Sai do loop deste card, pois ele será removido
+                    itemRemoved = true; 
+                    return; 
                 }
 
                 const dashIndex = card.dataset.index;
                 if (dashIndex) {
                     const { systemKey, areaKey } = card.dataset;
-                    // Verifica se o item existe (pode ter sido removido por outra ação)
                     if (globalCmsDashboards[systemKey]?.areas[areaKey]?.items[dashIndex]?.isNew) {
                         globalCmsDashboards[systemKey].areas[areaKey].items.splice(dashIndex, 1);
-                        itemRemoved = true; // Marca para re-renderizar
-                        return; // Sai do loop deste card
+                        itemRemoved = true; 
+                        return; 
                     }
                 }
-                // --- FIM DA NOVA LÓGICA ---
 
                 // Se não for um item novo, apenas esconde o form
                 editForm.classList.add('hidden');
@@ -2005,9 +2203,11 @@ function handleAdminReject(e) {
                 renderAdminAutomations();
             } else if (container.id === 'admin-dashboards-list') {
                 renderAdminDashboards();
+            } else if (container.id === 'admin-user-list-container') {
+                // (Req 1) Adiciona o re-render para usuários
+                renderAdminUsers();
             }
         }
-        // --- FIM DA MODIFICAÇÃO ---
     }
 
     function showCmsEditForm(e) {

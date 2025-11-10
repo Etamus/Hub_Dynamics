@@ -15,10 +15,12 @@
           {
             "gif": "/static/gifs/projects_preview.gif",
             "id": "projects",
+            "isNew": false,
             "name": "Projects",
             "tags": "Weekly,Sheets,Tracking",
             "text": "Acompanhamento do status e progresso dos projetos estrat\u00e9gicos da \u00e1rea de Spare Parts.",
-            "url": "https://lookerstudio.google.com/embed/reporting/818af536-436e-48a3-a441-049036815083/page/GTEPF"
+            "url": "https://lookerstudio.google.com/embed/reporting/818af536-436e-48a3-a441-049036815083/page/GTEPF",
+            "width": null
           }
         ],
         "name": "Custos"
