@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickLinksContainer = document.getElementById('quick-links-container');
     const hubSubtitle = document.querySelector('.hub-subtitle'); // <-- ADICIONE ESTA LINHA
     
+    // --- CÓDIGO ALTERADO: Seletores da Busca Universal ---
+    const hubCardsContainer = document.getElementById('hub-cards-container');
+    const searchDropdown = document.getElementById('search-dropdown-results')
+
     // --- Seletores do Header e Acesso ---
     const accessBtn = document.getElementById('access-btn');
     const profileImgThumb = document.getElementById('profile-img'); // Imagem no header
@@ -23,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let cropper = null; // Instância do Cropper.js
     let selectedFile = null; // Arquivo original selecionado
     let currentUploadExtension = null; // Extensão do arquivo original
+
+     // --- CÓDIGO ADICIONADO: Índice de Busca Universal ---
+    let searchableIndex = [];
 
     // --- Seletores dos Modais ---
     const settingsBtn = document.getElementById('settings-btn');
@@ -121,6 +128,89 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminAddAutomationBtn = document.getElementById('admin-add-automation-btn');
     const adminAddDashboardBtn = document.getElementById('admin-add-dashboard-btn');
 
+    // --- CÓDIGO ADICIONADO: Função para construir o Índice de Busca ---
+    function buildSearchIndex() {
+        searchableIndex = []; // Reseta o índice
+
+
+        // 1. Adiciona os Cards Principais
+        cards.forEach(card => {
+            if (!card.classList.contains('disabled')) { // Só adiciona cards clicáveis
+                searchableIndex.push({
+                    type: 'card',
+                    name: card.querySelector('h2').textContent,
+                    description: card.querySelector('p').textContent,
+                    href: card.href,
+                    icon: card.querySelector('i.fas').className
+                });
+            }
+        });
+
+
+        // 2. Adiciona os Dashboards do JSON
+        for (const systemKey in globalCmsDashboards) {
+            const system = globalCmsDashboards[systemKey];
+            for (const areaKey in system.areas) {
+                const area = system.areas[areaKey];
+                area.items.forEach(item => {
+                    searchableIndex.push({
+                        type: 'item',
+                        name: item.name,
+                        description: item.text,
+                        tags: (item.tags || '').replace(/,/g, ' '), // Substitui vírgulas por espaços
+                        href: `/dashboards?open=${item.id}`,
+                        icon: 'fas fa-chart-pie' // Ícone padrão de dashboard
+                    });
+                });
+            }
+        }
+       
+        // 3. Adiciona as Automações do JSON
+        for (const autoName in globalCmsAutomations) {
+            const auto = globalCmsAutomations[autoName];
+            searchableIndex.push({
+                type: 'item',
+                name: autoName,
+                description: `Automação ${auto.type.toUpperCase()}: ${auto.macro || ''}`,
+                tags: `${auto.type} automação`,
+                href: `/automacao?open=${autoName.replace(/\s+/g, '-')}`, // URL amigável
+                icon: 'fas fa-robot' // Ícone de automação
+            });
+        }
+    }
+    // --- FIM DA ADIÇÃO ---
+
+
+    // --- CÓDIGO NOVO: Função para carregar os dados do CMS e construir o índice ---
+    function loadSearchData() {
+        // 1. Verifica se os dados já foram carregados (pelo sessionStorage, por exemplo)
+        const automationsLoaded = Object.keys(globalCmsAutomations).length > 0;
+        const dashboardsLoaded = Object.keys(globalCmsDashboards).length > 0;
+
+
+        if (automationsLoaded && dashboardsLoaded) {
+            // Se os dados já estão aqui (do cache da sessão), apenas construa o índice
+            buildSearchIndex();
+        } else {
+            // Se não, busca os dados do servidor
+            fetch('/api/admin/get-cms-data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    globalCmsDashboards = data.dashboards;
+                    globalCmsAutomations = data.automations;
+                }
+            })
+            .catch(err => {
+                console.error("Erro ao carregar dados de busca do CMS:", err);
+            })
+            .finally(() => {
+                // Concluindo, com ou sem erro, construa o índice com o que tiver
+                buildSearchIndex();
+            });
+        }
+    }
+
     // --- 1. LÓGICA DO SELETOR DE TEMA ---
     
     function applyTheme(theme) {
@@ -174,11 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listeners dos Modais de Configurações e Sobre
     settingsBtn.addEventListener('click', () => { settingsOverlay.classList.add('visible'); });
     settingsCloseBtn.addEventListener('click', () => { settingsOverlay.classList.remove('visible'); });
-    settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) { settingsOverlay.classList.remove('visible'); } });
+    settingsOverlay.addEventListener('mousedown', (e) => { if (e.target === settingsOverlay) { settingsOverlay.classList.remove('visible'); } });
     themeOptions.forEach(option => { option.addEventListener('click', () => { applyTheme(option.dataset.theme); }); });
     aboutBtn.addEventListener('click', () => { aboutOverlay.classList.add('visible'); });
     aboutCloseBtn.addEventListener('click', () => { aboutOverlay.classList.remove('visible'); });
-    aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
+    aboutOverlay.addEventListener('mousedown', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
     countOptions.forEach(option => { option.addEventListener('click', () => { applyCountSetting(option.dataset.count); }); });
     clearRecentsBtn.addEventListener('click', clearRecents);
     
@@ -257,56 +347,56 @@ document.addEventListener('DOMContentLoaded', () => {
     
     renderQuickLinks();
 
-    // --- 3. LÓGICA DA BARRA DE PESQUISA (Atualizada) ---
-    
+    // --- 3. LÓGICA DA BARRA DE PESQUISA (SUBSTITUÍDA PELA VERSÃO DROPDOWN) ---
     searchBar.addEventListener('keyup', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        let cardVisible = false; // Flag para verificar se algum card principal está visível
-        
-        // 1. Filtra os cards principais
-        cards.forEach(card => {
-            const title = card.querySelector('h2').textContent.toLowerCase();
-            const description = card.querySelector('p').textContent.toLowerCase();
-            
-            if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                card.style.display = 'flex';
-                cardVisible = true; // Encontrou um card principal
-            } else {
-                card.style.display = 'none';
-            }
-        });
 
-        // 2. Filtra os links rápidos
-        const quickLinks = quickLinksContainer.querySelectorAll('.quick-link');
-        let quickLinkVisible = false;
-        quickLinks.forEach(link => {
-            const text = link.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                link.style.display = 'flex';
-                quickLinkVisible = true;
-            } else {
-                link.style.display = 'none';
-            }
-        });
+        // Limpa resultados anteriores
+        searchDropdown.innerHTML = '';
 
-        // 3. Lógica de visibilidade (Ajustada)
-        const noResults = !cardVisible && !quickLinkVisible;
-        const quickLinksOnly = !cardVisible && quickLinkVisible;
-
-        // Se a barra de pesquisa estiver vazia OU se houver cards principais visíveis:
-        if (searchTerm === "" || cardVisible) {
-            hubSubtitle.style.display = 'block'; // Mostra o subtítulo
-        } else {
-            // Esconde se (Sem resultados) OU (Apenas links rápidos)
-            hubSubtitle.style.display = 'none'; 
-        }
-
-        // Lógica de visibilidade da seção de Acesso Rápido
+        // Se a barra de pesquisa estiver vazia, esconde o dropdown e sai
         if (searchTerm === "") {
-            quickLinksSection.style.display = 'block';
-        } else {
-            quickLinksSection.style.display = quickLinkVisible ? 'block' : 'none';
+            searchDropdown.classList.remove('visible');
+            return;
         }
+
+        let itemsFound = 0;
+
+        // Filtra o índice de busca universal
+        searchableIndex.forEach(item => {
+            const searchableText = [
+                item.name.toLowerCase(),
+                item.description.toLowerCase(),
+                (item.tags || '').toLowerCase()
+            ].join(' ');
+            
+            if (searchableText.includes(searchTerm)) {
+                itemsFound++;
+                
+                // Cria o link do resultado (com a nova classe)
+                const link = document.createElement('a');
+                link.href = item.href;
+                link.className = 'search-result-item'; // <-- Nova classe de estilo
+                
+                const itemIcon = document.createElement('i');
+                itemIcon.className = item.icon;
+                link.appendChild(itemIcon);
+                
+                const text = document.createElement('span');
+                text.textContent = item.name;
+                link.appendChild(text);
+                
+                searchDropdown.appendChild(link);
+            }
+        });
+
+        // Mostra mensagem se nenhum resultado for encontrado
+        if (itemsFound === 0) {
+            searchDropdown.innerHTML = '<p class="no-results">Nenhum resultado encontrado.</p>';
+        }
+
+        // Mostra o dropdown
+        searchDropdown.classList.add('visible');
     });
 
     // ========================================================
@@ -417,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cropperCloseBtn.addEventListener('click', closeCropperModal);
-    cropperOverlay.addEventListener('click', (e) => {
+    cropperOverlay.addEventListener('mousedown', (e) => {
         if (e.target === cropperOverlay) closeCropperModal();
     });
 
@@ -508,7 +598,7 @@ function uploadCroppedImage(formData) {
 }
     
     profileCloseBtn.addEventListener('click', () => profileOverlay.classList.remove('visible'));
-    profileOverlay.addEventListener('click', (e) => {
+    profileOverlay.addEventListener('mousedown', (e) => {
         if (e.target === profileOverlay) profileOverlay.classList.remove('visible');
     });
 
@@ -720,15 +810,22 @@ profileRemoveBtn.addEventListener('click', () => {
         if (!inAccess && !inProfileModal) {
             accessDropdown.classList.remove('visible');
         }
+
+        // --- CÓDIGO ADICIONADO: Lógica para fechar o dropdown da busca ---
+        const inSearch = searchBar.contains(e.target) || searchDropdown.contains(e.target);
+        if (!inSearch) {
+            searchDropdown.classList.remove('visible');
+        }
+
     });
 
     hubLoginCloseBtn.addEventListener('click', closeHubLoginModal);
-    hubLoginOverlay.addEventListener('click', (e) => { if (e.target === hubLoginOverlay) closeHubLoginModal(); });
+    hubLoginOverlay.addEventListener('mousedown', (e) => { if (e.target === hubLoginOverlay) closeHubLoginModal(); });
     hubPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleHubLogin(); });
     hubLoginSubmitBtn.addEventListener('click', handleHubLogin);
 
     connectionsCloseBtn.addEventListener('click', closeConnectionsModal);
-    connectionsOverlay.addEventListener('click', (e) => { if (e.target === connectionsOverlay) closeConnectionsModal(); });
+    connectionsOverlay.addEventListener('mousedown', (e) => { if (e.target === connectionsOverlay) closeConnectionsModal(); });
 
     // --- Inicialização da Sessão ---
 fetch('/api/hub/check-session')
@@ -770,6 +867,8 @@ fetch('/api/hub/check-session')
     }
 
     renderQuickLinks(); // Renderiza os links rápidos corretos (logado ou guest)
+    // chamamos a função que CARREGA OS DADOS e DEPOIS constrói o índice.
+    loadSearchData();
 });
 
 // --- NOVA LÓGICA: MODAL DE REGISTRO ---
@@ -814,7 +913,7 @@ fetch('/api/hub/check-session')
     tabRegister.addEventListener('click', () => showRegisterTab('register'));
     tabConsult.addEventListener('click', () => showRegisterTab('consult'));
     registerCloseBtn.addEventListener('click', () => registerOverlay.classList.remove('visible'));
-    registerOverlay.addEventListener('click', (e) => {
+    registerOverlay.addEventListener('mousedown', (e) => {
         if (e.target === registerOverlay) registerOverlay.classList.remove('visible');
     });
 
@@ -1216,9 +1315,27 @@ function handleAdminReject(e) {
 }
 
     // Listener de fechamento do Modal de Admin
-    adminCloseBtn.addEventListener('click', () => adminOverlay.classList.remove('visible'));
-    adminOverlay.addEventListener('click', (e) => {
-        if (e.target === adminOverlay) adminOverlay.classList.remove('visible');
+    adminCloseBtn.addEventListener('click', () => {
+        // --- INÍCIO DA MODIFICAÇÃO (Limpar "Novos" não salvos) ---
+        // Limpa os forms abertos (e remove itens "isNew")
+        closeAllEditForms(adminUserListContainer);
+        closeAllEditForms(adminDashboardsList);
+        closeAllEditForms(adminAutomationsList);
+        // --- FIM DA MODIFICAÇÃO ---
+
+        adminOverlay.classList.remove('visible');
+    });
+    adminOverlay.addEventListener('mousedown', (e) => {
+        if (e.target === adminOverlay) {
+            // --- INÍCIO DA MODIFICAÇÃO (Limpar "Novos" não salvos) ---
+            // Limpa os forms abertos (e remove itens "isNew")
+            closeAllEditForms(adminUserListContainer);
+            closeAllEditForms(adminDashboardsList);
+            closeAllEditForms(adminAutomationsList);
+            // --- FIM DA MODIFICAÇÃO ---
+            
+            adminOverlay.classList.remove('visible');
+        }
     });  
 
 // --- NOVA LÓGICA: ADMIN - GERENCIAR USUÁRIOS ---
@@ -1422,7 +1539,7 @@ function handleAdminReject(e) {
                     <div class="modal-input-group">
                         <label>Senha:</label>
                         <div class="password-toggle-wrapper">
-                            <input type="password" class="hub-modal-input edit-password-input" value="">
+                            <input type="password" class="hub-modal-input edit-password-input" value="${user.password || ''}">
                             <i class="fas fa-eye admin-password-toggle-btn" title="Mostrar/Ocultar Senha"></i>
                         </div>
                     </div>
@@ -1777,7 +1894,6 @@ function handleAdminReject(e) {
     function renderAdminAutomations() {
         adminAutomationsList.innerHTML = '';
         
-        // (Req 2) Pega as chaves na ordem atual
         const keys = Object.keys(globalCmsAutomations);
         
         if (keys.length === 0) {
@@ -1785,17 +1901,13 @@ function handleAdminReject(e) {
             return;
         }
 
-        // (Req 2) Itera usando a chave e o índice
         keys.forEach((key, index) => {
             const auto = globalCmsAutomations[key];
             const item = document.createElement('div');
             item.className = 'admin-cms-card';
             item.dataset.key = key; // Usa a Chave (Nome) como ID
 
-            // (Req 1) Se for novo, o campo de nome deve estar vazio
             const keyNameValue = auto.isNew ? '' : key;
-            
-            // (Req 2) Desabilita os botões de mover no início/fim da lista
             const upDisabled = (index === 0) ? 'disabled' : '';
             const downDisabled = (index === keys.length - 1) ? 'disabled' : '';
 
@@ -1840,6 +1952,24 @@ function handleAdminReject(e) {
                         <label>Caminho do Arquivo:</label>
                         <input type="text" class="hub-modal-input edit-auto-file" value="${auto.arquivo || ''}">
                     </div>
+                    
+                    <div class="modal-input-group">
+                        <label>Caminho do Preview (Ex: /static/gifs/preview.gif):</label>
+                        <input type="text" class="hub-modal-input edit-auto-gif" value="${auto.gif || ''}">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Descrição do Preview:</label>
+                        <textarea class="hub-modal-input edit-auto-text">${auto.text || ''}</textarea>
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Tags do Preview:</label>
+                        <input type="text" class="hub-modal-input edit-auto-tags" value="${auto.tags || ''}">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>Largura do Preview:</label>
+                        <input type="text" class="hub-modal-input edit-auto-width" value="${auto.width || ''}">
+                    </div>
+                    
                     <div class="admin-cms-edit-actions">
                         <button class="button btn-cancel admin-auto-cancel-btn">Cancelar</button>
                         <button class="button btn-success admin-auto-save-btn">Salvar</button>
@@ -1865,15 +1995,21 @@ function handleAdminReject(e) {
 
         const newKey = `Nova Automação ${Date.now()}`; // Garante chave única
         
-        // (Req 1: Campos Vazios)
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Adicionar campos de preview) ---
         const newAutomation = {
             [newKey]: {
                 arquivo: "", // Vazio
                 macro: "", // Vazio
                 type: "sap",
-                isNew: true // Flag para o "Cancelar"
+                isNew: true, // Flag para o "Cancelar"
+                // Novos campos de preview
+                gif: "",
+                text: "",
+                tags: "",
+                width: null
             }
         };
+        // --- FIM DA MODIFICAÇÃO ---
 
         // Coloca o novo item no início do objeto global
         globalCmsAutomations = { ...newAutomation, ...globalCmsAutomations };
@@ -1884,11 +2020,7 @@ function handleAdminReject(e) {
         if (newCard) {
             newCard.querySelector('.admin-cms-main').classList.add('hidden');
             newCard.querySelector('.admin-cms-edit-form').classList.remove('hidden');
-
-            // --- INÍCIO DA MODIFICAÇÃO (Rolar para o Topo) ---
-            // Muda de 'center' para 'start'
             adminAutomationsList.scrollTop = 0;
-            // --- FIM DA MODIFICAÇÃO ---
         }
     });
 
@@ -1929,11 +2061,21 @@ function handleAdminReject(e) {
         const item = e.target.closest('.admin-cms-card');
         const oldKey = item.dataset.key;
         
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Check if new) ---
+        // 1. Verifica se era um item "Novo" ANTES de modificar
+        const wasNewItem = globalCmsAutomations[oldKey]?.isNew === true;
+        // --- FIM DA MODIFICAÇÃO ---
+
         const form = item.querySelector('.admin-cms-edit-form');
         const newKey = form.querySelector('.edit-auto-name').value;
         const newType = form.querySelector('.edit-auto-type').value;
         const newMacro = form.querySelector('.edit-auto-macro').value;
         const newFile = form.querySelector('.edit-auto-file').value;
+        
+        const newGif = form.querySelector('.edit-auto-gif').value;
+        const newText = form.querySelector('.edit-auto-text').value;
+        const newTags = form.querySelector('.edit-auto-tags').value;
+        const newWidth = form.querySelector('.edit-auto-width').value;
 
         if (!newKey) {
             alert("O Nome (Chave) é obrigatório.");
@@ -1943,18 +2085,57 @@ function handleAdminReject(e) {
         const newData = {
             type: newType,
             macro: newMacro || null,
-            arquivo: newFile || null
+            arquivo: newFile || null,
+            gif: newGif || null,
+            text: newText || null,
+            tags: newTags || null,
+            width: newWidth || null
             // A flag 'isNew' é omitida, removendo-a
         };
 
-        // Atualiza a chave global
-        delete globalCmsAutomations[oldKey];
-        globalCmsAutomations[newKey] = newData;
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1 & 2: Manter Ordem) ---
 
-        // Salva no servidor
+        // 2. Reconstrói o objeto global na ordem correta (em memória)
+        const newGlobalCms = {};
+        const currentKeys = Object.keys(globalCmsAutomations);
+
+        if (wasNewItem) {
+            // (Item NOVO) Adiciona o novo item salvo ao topo
+            newGlobalCms[newKey] = newData;
+            // Adiciona o restante, pulando a chave temporária ("Nova Automação...")
+            currentKeys.forEach(key => {
+                if (key !== oldKey) {
+                    newGlobalCms[key] = globalCmsAutomations[key];
+                }
+            });
+
+        } else {
+            // (Item EDITADO) Reconstrói na mesma ordem, apenas substituindo a chave/dados
+            currentKeys.forEach(key => {
+                if (key === oldKey) {
+                    // Se a chave mudou (ex: "Nome A" -> "Nome B"), usa a nova chave
+                    newGlobalCms[newKey] = newData;
+                } else {
+                    // Senão, mantém o item antigo
+                    newGlobalCms[key] = globalCmsAutomations[key];
+                }
+            });
+        }
+        
+        // 3. Atualiza a memória global
+        globalCmsAutomations = newGlobalCms;
+
+        // 4. Salva a nova ordem (corrigida) no servidor e no sessionStorage
         saveCmsData('automations');
-        // Re-renderiza a lista
+        
+        // 5. Re-renderiza a lista (agora na ordem correta da memória)
         renderAdminAutomations();
+
+        // 6. Se era um item NOVO, rola a lista para o topo
+        if (wasNewItem) {
+            adminAutomationsList.scrollTop = 0;
+        }
+        // --- FIM DA MODIFICAÇÃO ---
     }
     
     function handleAutomationDelete(e) {

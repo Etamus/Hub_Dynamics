@@ -43,6 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmModalNoBtn = document.getElementById('confirm-modal-no-btn');
 
     const schedulerBtn = document.getElementById('scheduler-btn');
+
+    // --- Seletores do Preview Panel (Req 1) ---
+    const previewPanel = document.getElementById('preview-panel');
+    const previewImage = document.getElementById('preview-image');
+    const previewDescription = document.getElementById('preview-description');
+    const previewTagsContainer = document.getElementById('preview-tags-container');
     
     // --- Funções de Feedback (Status Box) ---
     function showStatus(message, type = 'processing', sticky = false) {
@@ -141,6 +147,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getTagClass(tagText) {
+        const lowerCaseTag = tagText.trim().toLowerCase();
+
+        // --- INÍCIO DA MODIFICAÇÃO (Novas Regras de Cor) ---
+
+        // Grupo 1: Laranja (Finanças/Dados)
+        if (['returns', 'data', 'financial'].includes(lowerCaseTag)) {
+            return 'tag-orange';
+        }
+
+        // Grupo 2: Azul (Processo)
+        if (['monitoring', 'report', 'scheduling', 'delivery', 'routine'].includes(lowerCaseTag)) {
+            return 'tag-blue';
+        }
+        
+        // (Mantendo cores antigas para consistência, se existirem)
+        // Verde (Frequência)
+        if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
+            return 'tag-green';
+        }
+
+        // Cinza (Tecnologia ou fallback)
+        // (Inclui 'sap', 'bw', 'excel', 'rpa' e qualquer outra coisa)
+        return 'tag-gray';
+        
+        // --- FIM DA MODIFICAÇÃO ---
+    }
+
+    /**
+     * Mostra o painel de preview
+     */
+    function showPreview(button) {
+        if (!previewPanel) return; // Sai se o painel não existir
+
+        const gifPath = button.dataset.previewGif;
+        const text = button.dataset.previewText;
+        const tagsString = button.dataset.previewTags;
+
+        // Só mostra o painel se houver GIF e Texto
+        if (gifPath && text) {
+            previewImage.src = gifPath;
+            previewDescription.textContent = text;
+            previewTagsContainer.innerHTML = '';
+
+            if (tagsString) {
+                const tagsArray = tagsString.split(',');
+                tagsArray.forEach(tagText => {
+                    if (!tagText.trim()) return;
+                    
+                    const cleanTagText = tagText.trim();
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'preview-tag';
+                    tagElement.textContent = cleanTagText;
+                    tagElement.classList.add(getTagClass(cleanTagText));
+                    previewTagsContainer.appendChild(tagElement);
+                });
+            }
+            previewPanel.classList.add('visible');
+        }
+    }
+
+    /**
+     * Esconde o painel de preview
+     */
+    function hidePreview() {
+        if (previewPanel) {
+            previewPanel.classList.remove('visible');
+        }
+    }
 
     // --- Funções do Modal de Login ---
 
@@ -1065,6 +1140,16 @@ function processLoadedSchedule(data) {
                 openLoginModal(info);
             }
         });
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Adicionar Listeners de Preview) ---
+        button.addEventListener('mouseover', () => {
+            showPreview(button);
+        });
+
+        button.addEventListener('mouseout', () => {
+            hidePreview();
+        });
+        // --- FIM DA MODIFICAÇÃO ---
     });
 
     // 3. Botões do Modal de Login

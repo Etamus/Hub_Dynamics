@@ -53,6 +53,9 @@
             <label for="search-bar" class="visually-hidden">Pesquisar ferramenta</label>
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="search-bar" placeholder="Pesquisar ferramenta...">
+
+             <div id="search-dropdown-results" class="search-dropdown">
+                </div>
         </div>
         <div class="header-tools">
             
@@ -79,7 +82,7 @@
             {% if role == 'Executor' %}
             <a href="/automacao" class="hub-card" aria-label="Automações. Execute robôs para tarefas de SAP, BW e extração de relatórios.">
                 <div class="card-media-area">
-                    <div class="card-preview"> <img src="/static/gifs/automacao.gif" alt="Preview Automações"> </div>
+                    <div class="card-preview"> <img src="/static/gifs/automacao_preview.gif" alt="Preview Automações"> </div>
                     <div class="card-content">
                         <div class="card-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>
                         <h2>Automações</h2>
@@ -107,7 +110,7 @@
 
             <a href="/dashboards" class="hub-card" aria-label="Dashboards. Acesse o portal com os dashboards do Looker Studio e Tableau.">
                 <div class="card-media-area">
-                    <div class="card-preview"> <img src="/static/gifs/dashboards.gif" alt="Preview Dashboards"> </div>
+                    <div class="card-preview"> <img src="/static/gifs/dashboards_preview.gif" alt="Preview Dashboards"> </div>
                     <div class="card-content">
                         <div class="card-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></div>
                         <h2>Dashboards</h2>
@@ -119,7 +122,7 @@
             {% if role == 'Executor' or role == 'Analista' %}
             <a href="/drive" class="hub-card" aria-label="Drive (F:) Online. Navegue pelas pastas da rede sem necessidade de uso da VPN.">
                 <div class="card-media-area">
-                    <div class="card-preview"> <img src="/static/gifs/drive.gif" alt="Preview Drive"> </div>
+                    <div class="card-preview"> <img src="/static/gifs/drive_preview.gif" alt="Preview Drive"> </div>
                     <div class="card-content">
                         <div class="card-icon"> <i class="fas fa-hdd" aria-hidden="true"></i> </div>
                         <h2>Drive (F:) Online</h2>
@@ -203,7 +206,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v3.0.4</p>
+                    <p><strong>Versão Atual:</strong> v3.0.7</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -214,6 +217,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v3.0.7:</strong> Barra de pesquisa aprimorada e novo preview na página de automações</li>
                         <li><strong>v3.0.4:</strong> Atualização da lógica e prompt do Chatbot</li>
                         <li><strong>v3.0.3:</strong> Melhoria no desbloqueio de usuário e informações do drive F:</li>
                         <li><strong>v3.0.1:</strong> Adicionado botão de criação de usuário na tela de administração</li>

@@ -54,46 +54,68 @@
         </div>
 
         <div id="sap-tasks-section" class="tasks-section">
-            <div class="button-container">
-                {% for nome, config in macros.items() %}
-                    {% if config.type == 'sap' %} {% if nome == "Base Mãe" %}
-                            <div class="task-button-group">
-                                <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
-                                    <div class="button-text">{{ nome }}</div>
-                                </div>
-                                {% if initial_zv62n_file %}
-                                    <a href="/download/{{ initial_zv62n_file }}" class="task-button-download" title="Baixar {{ initial_zv62n_file }}">
-                                        <i class="fas fa-file-arrow-down"></i>
-                                    </a>
-                                {% else %}
-                                    <a href="#" class="task-button-download inactive" title="Arquivo não encontrado.">
-                                        <i class="fas fa-file-arrow-down"></i>
-                                    </a>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <div class="task-button" data-task-name="{{ nome }}" data-task-type="sap">
-                                <div class="button-text">{{ nome }}</div>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div id="bw-tasks-section" class="tasks-section hidden">
-            <div class="button-container">
-                {% for nome, config in macros.items() %}
-                    {% if config.type == 'bw' %} 
-                        <div id="bw-extract-btn" class="task-button" data-task-name="{{ nome }}" data-task-type="bw">
+    <div class="button-container">
+        {% for nome, config in macros.items() %}
+            {% if config.type == 'sap' %} 
+                {% if nome == "Base Mãe" %}
+                    <div class="task-button-group">
+                        <div class="task-button" 
+                             data-task-name="{{ nome }}" 
+                             data-task-type="sap"
+                             data-preview-gif="{{ config.gif | default('', true) }}"
+                             data-preview-text="{{ config.text | default('', true) }}"
+                             data-preview-tags="{{ config.tags | default('', true) }}">
                             <div class="button-text">{{ nome }}</div>
                         </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
+                        {% if initial_zv62n_file %}
+                            <a href="/download/{{ initial_zv62n_file }}" class="task-button-download" title="Baixar {{ initial_zv62n_file }}">
+                                <i class="fas fa-file-arrow-down"></i>
+                            </a>
+                        {% else %}
+                            <a href="#" class="task-button-download inactive" title="Arquivo não encontrado.">
+                                <i class="fas fa-file-arrow-down"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="task-button" 
+                         data-task-name="{{ nome }}" 
+                         data-task-type="sap"
+                         data-preview-gif="{{ config.gif | default('', true) }}"
+                         data-preview-text="{{ config.text | default('', true) }}"
+                         data-preview-tags="{{ config.tags | default('', true) }}">
+                        <div class="button-text">{{ nome }}</div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
     </div>
+</div>
+        
+        <div id="bw-tasks-section" class="tasks-section hidden">
+    <div class="button-container">
+        {% for nome, config in macros.items() %}
+            {% if config.type == 'bw' %} 
+                <div id="bw-extract-btn" 
+                     class="task-button" 
+                     data-task-name="{{ nome }}" 
+                     data-task-type="bw"
+                     data-preview-gif="{{ config.gif | default('', true) }}"
+                     data-preview-text="{{ config.text | default('', true) }}"
+                     data-preview-tags="{{ config.tags | default('', true) }}">
+                    <div class="button-text">{{ nome }}</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
     
+<div id="preview-panel">
+        <img id="preview-image" src="" alt="Preview da Automação">
+        <p id="preview-description"></p>
+        <div id="preview-tags-container"></div>
+    </div>
+
     <div id="login-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <button id="login-modal-close-btn" class="modal-close" title="Fechar">&times;</button>

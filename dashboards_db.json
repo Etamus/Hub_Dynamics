@@ -6,6 +6,7 @@
           {
             "gif": "/static/gifs/sla_csi_preview.gif",
             "id": "sla_csi",
+            "isNew": false,
             "name": "SLA Monthly CSI",
             "tags": "Daily,Sheets,SLA",
             "text": "Relat\u00f3rio mensal de performance de N\u00edvel de Servi\u00e7o (SLA) baseado nos indicadores operacionais (CSI).",
@@ -181,12 +182,14 @@
       "tableau-custos": {
         "items": [
           {
-            "gif": "/static/gifs/nave_frete_preview.gif",
+            "gif": "/static/gifs/freight_preview.gif",
             "id": "nave_frete",
+            "isNew": false,
             "name": "Nave do Frete",
             "tags": "Daily,GCP,Costs,Acompanhamento de frete",
             "text": "An\u00e1lise detalhada dos custos e efici\u00eancia do frete em todas as localidades expedidas, permitindo a identifica\u00e7\u00e3o de oportunidades de otimiza\u00e7\u00e3o.",
-            "url": "https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no"
+            "url": "https://public.tableau.com/views/Navedofretev1_2/Freight_Vision?:embed=y&:display_count=yes&:showVizHome=no",
+            "width": null
           }
         ],
         "name": "Custos"
@@ -194,20 +197,24 @@
       "tableau-monitoramento": {
         "items": [
           {
-            "gif": "/static/gifs/on_time_preview.gif",
+            "gif": "/static/gifs/ontime_preview.gif",
             "id": "on_time",
+            "isNew": false,
             "name": "ON TIME",
             "tags": "Daily,GCP,Performance,On time",
             "text": "Monitoramento da performance de entregas no prazo (On Time), essencial para a satisfa\u00e7\u00e3o do cliente e efici\u00eancia log\u00edstica.",
-            "url": "https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1"
+            "url": "https://lartableau.whirlpool.com/#/views/NFOnTime/ONTIME?:iid=1",
+            "width": null
           },
           {
-            "gif": "/static/gifs/LTP_preview.gif",
+            "gif": "/static/gifs/monitoring_preview.gif",
             "id": "ltp_monitoramento",
+            "isNew": false,
             "name": "Monitoramento",
             "tags": "Daily,GCP,Tracking,Convers\u00e3o de faturamento",
-            "text": "Monitoramento da performance de entregas XXXXXXX.",
-            "url": "https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1"
+            "text": "Monitoramento da performance de entregas.",
+            "url": "https://lartableau.whirlpool.com/#/site/BI_Core/views/DashboardLTPPeas/PainelLTP?:iid=1",
+            "width": null
           }
         ],
         "name": "Monitoramento"
