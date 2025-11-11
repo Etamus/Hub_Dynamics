@@ -6,7 +6,7 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 
 ---
 
-<img width="1918" height="1072" alt="image" src="https://github.com/user-attachments/assets/0be0e500-c5cd-4f23-aaa2-9a68c2e7cdb1" />
+<img width="1918" height="866" alt="image" src="https://github.com/user-attachments/assets/ac86e2f4-6d51-4e9c-9b97-89a68058c22b" />
 
 ---
 
