@@ -97,8 +97,8 @@ body {
 
 /* (NOVO) Data de Modificação */
 .mod-date {
-    width: 130px; 
-    text-align: right;
+    width: 100px; 
+    text-align: center;
     flex-shrink: 0; /* Impede que encolha */
 }
 
@@ -158,7 +158,7 @@ body {
 .file-name-header {
     flex-grow: 1; 
     /* (Icon width + margin-right) = (20px + 15px) */
-    padding-left: 35px; 
+    padding-left: 50px; 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

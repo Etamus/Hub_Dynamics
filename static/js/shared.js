@@ -15,6 +15,7 @@ function applyGlobalTheme(theme) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    let chatHistory = []; // (Req 1) Armazena o histórico da conversa
     
     // Listener para mudança automática de tema do sistema (se o usuário selecionou 'system')
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -134,6 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Não adiciona o indicador "Digitando..." ao histórico
+        if (type !== 'bot-message' || !extraClass.includes('typing')) {
+            // Converte 'user-reply' para 'user' e 'bot-message' para 'model'
+            const role = (type === 'user-reply') ? 'user' : 'model';
+            
+            // Adiciona ao histórico (o backend lidará com a remoção do HTML se houver)
+            chatHistory.push({ role: role, text: text });
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
         return messageDiv; // Retorna o elemento criado
     };
 
@@ -161,12 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
             iframeContainer.style.display = 'none';
             iframe.src = 'about:blank';
             modalTitle.textContent = 'Hub Assistant';
+            
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            chatHistory = []; // Limpa o histórico
+            // --- FIM DA MODIFICAÇÃO ---
         }, 300);
     };
     
     // Inicia a conversa
     const startConversation = () => {
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Garante que o histórico está limpo e adiciona a primeira msg do bot
+        chatHistory = []; 
         addMessage("Olá! Sou o Hub Assistant. Como posso ajudar?", 'bot-message');
+        // --- FIM DA MODIFICAÇÃO ---
     };
 
     const toggleChat = () => {
@@ -195,40 +216,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.status === 'sucesso') {
             
-            // 1. Renderiza a resposta de texto do Gemini
             const formattedText = parseMarkdown(data.text);
+            // (Esta chamada agora também adiciona ao histórico)
             addMessage(formattedText, 'bot-message', true); 
             
-            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-            
-            // 2. Verifica se um formulário foi acionado
             if (data.form_trigger) {
-                const formType = data.form_trigger; // "demanda" ou "sugestao"
-                
-                // 3. Pega o nome do botão (ex: "Solicitação de Demanda")
+                const formType = data.form_trigger; 
                 const buttonText = forms[formType] ? forms[formType].title : "Abrir Formulário"; 
 
-                // 4. Adiciona o botão no chat após um pequeno delay
                 setTimeout(() => {
                     const buttonHtml = `<button class="chat-action-button" data-form-type="${formType}">${buttonText}</button>`;
-                    
-                    // Adiciona o botão em uma "bolha" separada
                     const buttonBubble = addMessage(buttonHtml, 'bot-message', true, 'button-bubble');
                     
-                    // 5. Adiciona o listener de clique ao botão
                     const button = buttonBubble.querySelector('.chat-action-button');
                     if (button) {
                         button.addEventListener('click', () => {
-                            // Desabilita o chat e mostra o formulário
                             chatInput.disabled = true;
                             sendBtn.disabled = true;
                             showForm(formType);
                         });
                     }
-                }, 800); // 800ms de delay para o botão aparecer
+                }, 800); 
             }
-            // --- FIM DA MODIFICAÇÃO ---
-
         } else {
             addMessage(data.text || "Ocorreu um erro. Tente novamente.", 'bot-message', false, 'error');
         }
@@ -239,20 +248,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const userInput = chatInput.value.trim();
         if (!userInput) return;
 
-        addMessage(userInput, 'user-reply');
+        addMessage(userInput, 'user-reply'); // (Isso adiciona ao histórico)
         chatInput.value = '';
         chatInput.disabled = true;
         sendBtn.disabled = true;
 
-        // Adiciona indicador "Digitando..."
         addMessage("Digitando...", 'bot-message', false, 'typing');
 
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Pega as últimas 10 mensagens (incluindo a que o usuário acabou de digitar)
+        const historyToSend = chatHistory.slice(-10);
+        
         // Envia para o backend (Gemini)
         fetch('/api/chatbot/query', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: userInput })
+            // Envia o histórico em vez da mensagem única
+            body: JSON.stringify({ history: historyToSend }) 
         })
+        // --- FIM DA MODIFICAÇÃO ---
         .then(response => response.json())
         .then(data => {
             processBackendResponse(data);

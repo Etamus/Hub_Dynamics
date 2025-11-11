@@ -51,7 +51,7 @@ SCRIPT_RUNNER_SIMPLES = os.path.join(BASE_DIR, "runner.ps1")
 SCRIPT_RUNNER_SAP_LOGIN = os.path.join(BASE_DIR, "sap_login_runner.ps1")
 SCRIPT_CLEANUP = os.path.join(BASE_DIR, "cleanup_process.ps1")
 SCRIPT_BW_HANA = os.path.join(BASE_DIR, "bw_hana_extractor.py")
-DOWNLOAD_DIR = "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros"
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "macros")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'} # REMOVIDO 'gif'
 
@@ -850,8 +850,10 @@ def login_sap():
     senha = request.form['senha']
     
     executar_comando_externo([ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_CLEANUP ], "Limpeza pré-login")
+
+    login_xlsm_path = os.path.join(DOWNLOAD_DIR, "LoginSAP.xlsm")
     
-    comando = [ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_RUNNER_SAP_LOGIN, "-CaminhoArquivo", "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\LoginSAP.xlsm", "-NomeMacro", "funcSAPOpen", "-Usuario", usuario, "-Senha", senha ]
+    comando = [ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_RUNNER_SAP_LOGIN, "-CaminhoArquivo", login_xlsm_path, "-NomeMacro", "funcSAPOpen", "-Usuario", usuario, "-Senha", senha ]
     resultado = executar_comando_externo(comando, contexto_tarefa="Login SAP", timeout_seconds=30)
     
     if resultado['status'] == 'erro' and 'excedeu o tempo limite' in resultado['mensagem']:
@@ -938,31 +940,67 @@ def chatbot_query():
     if not gemini_model:
         return jsonify({"status": "erro", "text": "A API do Gemini não está configurada no servidor."}), 500
 
-    user_message = request.json.get('message')
-    if not user_message:
+    # --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+    # Pega o histórico enviado pelo frontend
+    history = request.json.get('history', [])
+    if not history:
         return jsonify({"status": "erro", "text": "Mensagem vazia."}), 400
+    # --- FIM DA MODIFICAÇÃO ---
 
-    # --- NOVA LÓGICA DE MONTAGEM DE PROMPT ---
+    # --- LÓGICA DE MONTAGEM DE PROMPT ---
     try:
         with open(GEMINI_CONTEXT_FILE, 'r', encoding='utf-8') as f:
             context_data = json.load(f)
         
-        # Monta o prompt do sistema a partir do JSON
+        # Monta o prompt do sistema a partir do JSON (exatamente como antes)
         system_prompt = context_data.get("system_prompt_introduction", "") + "\n\n"
         system_prompt += "## FERRAMENTAS DO HUB:\n" + "\n".join(context_data.get("tools", [])) + "\n\n"
         system_prompt += "## AUTOMAÇÕES DISPONÍVEIS (RPA):\n" + "\n".join(context_data.get("automations", [])) + "\n\n"
         system_prompt += "## DASHBOARDS DISPONÍVEIS (BI):\n" + "\n".join(context_data.get("dashboards", [])) + "\n\n"
         system_prompt += "## REGRAS DE RESPOSTA:\n" + "\n".join(context_data.get("response_rules", []))
-
-        full_prompt = system_prompt + "\n\nUsuário: " + user_message + "\nAssistente: "
     
     except Exception as e:
         print(f"ERRO: Falha ao ler ou montar o gemini_context.json: {e}")
         return jsonify({"status": "erro", "text": "Desculpe, estou com problemas para acessar meu contexto interno."}), 500
-    # --- FIM DA NOVA LÓGICA ---
+    # --- FIM DA LÓGICA DO PROMPT ---
 
     try:
+        # --- INÍCIO DA MODIFICAÇÃO (Req 1: Construir Contexto) ---
+        
+        # Converte o histórico do JS para o formato do Gemini
+        gemini_history = []
+        for msg in history:
+            role = msg.get("role", "user") # 'user' ou 'model'
+            # Remove o HTML (negrito) que o frontend pode ter enviado
+            text = msg.get("text", "").replace("<strong>", "").replace("</strong>", "")
+            
+            gemini_history.append({
+                "role": role,
+                "parts": [text]
+            })
+
+        # Pega a última mensagem (o prompt atual do usuário)
+        last_user_message = gemini_history.pop()
+        
+        # Constrói o histórico como string (para manter seu método original)
+        history_string = ""
+        for msg in gemini_history:
+            if msg["role"] == "user":
+                history_string += "Usuário: " + msg["parts"][0] + "\n"
+            else:
+                history_string += "Assistente: " + msg["parts"][0] + "\n"
+
+        # Monta o prompt final (Sistema + Histórico + Pergunta Atual)
+        full_prompt = (
+            system_prompt + "\n\n" + 
+            history_string + 
+            "Usuário: " + last_user_message["parts"][0] + 
+            "\nAssistente: "
+        )
+        
         response = gemini_model.generate_content(full_prompt)
+        # --- FIM DA MODIFICAÇÃO ---
+
         bot_response_text = response.text
         
         form_trigger = None

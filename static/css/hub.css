@@ -1786,8 +1786,10 @@ body.theme-dark .logo-dark {
     flex-shrink: 0; /* Impede que o botão encolha */
     margin: 0; /* Remove a margem padrão */
     display: none; /* Oculto por padrão (JS controla a exibição) */
-    width: 130px;
+    min-width: 50px;
+    max-width: 110px; 
     margin-top: 20px;
+    justify-content: center; 
 }
 
 /* Mensagem de "Nenhum resultado" (oculta por padrão) */
