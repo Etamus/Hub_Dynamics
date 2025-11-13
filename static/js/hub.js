@@ -733,6 +733,10 @@ profileRemoveBtn.addEventListener('click', () => {
         connectionsListContainer.innerHTML = '';
         const sapConn = connections.sap;
         const bwConn = connections.bw;
+        
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        const tableauConn = connections.tableau; 
+        // --- FIM DA MODIFICAÇÃO ---
 
         connectionsListContainer.appendChild(
             createConnectionItem('sap', '/static/icones/saplong_logo.png', 'SAP', sapConn)
@@ -740,15 +744,34 @@ profileRemoveBtn.addEventListener('click', () => {
         connectionsListContainer.appendChild(
             createConnectionItem('bw', '/static/icones/bwhanashort_logo.png', 'BW HANA', bwConn)
         );
+        
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        // (Assumindo que você tem um logo do tableau em /static/icones/)
+        // (Se o caminho estiver errado, ajuste-o aqui)
+        connectionsListContainer.appendChild(
+            createConnectionItem('tableau', '/static/icones/tableau_logo.png', 'Tableau', tableauConn) 
+        );
+        // --- FIM DA MODIFICAÇÃO ---
 
-        if (!sapConn && !bwConn) {
+        // (Atualiza a verificação de "vazio")
+        if (!sapConn && !bwConn && !tableauConn) {
              connectionsListContainer.innerHTML = '<p class="no-connections">Nenhuma conexão salva.</p>';
         }
     }
 
     function createConnectionItem(system, iconSrc, systemName, connectionData) {
         const item = document.createElement('div');
-        item.className = 'connection-item';
+        
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        // Define a classe base
+        let itemClass = 'connection-item';
+        // Adiciona a classe extra APENAS se for SAP ou BW
+        if (system === 'sap' || system === 'bw') {
+            itemClass += ' connection-item-padded';
+        }
+        item.className = itemClass;
+        // --- FIM DA MODIFICAÇÃO ---
+
         let userDisplay = 'Não conectada';
         let removeBtnHtml = '';
 
@@ -761,8 +784,10 @@ profileRemoveBtn.addEventListener('click', () => {
             `;
         }
 
+        const iconClass = (system === 'tableau') ? 'connection-icon tableau-icon' : 'connection-icon';
+
         item.innerHTML = `
-            <img src="${iconSrc}" alt="${systemName} Logo" class="connection-icon">
+            <img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">
             <div class="connection-details">
                 <strong>${systemName}</strong>
                 <span>${userDisplay}</span>

@@ -484,12 +484,14 @@ def get_connections():
 
 @app.route('/api/hub/remove-connection/<system>', methods=['POST'])
 def remove_connection(system):
-    """Remove uma conexão SAP ou BW salva."""
+    """Remove uma conexão SAP, BW ou Tableau salva.""" # (Texto atualizado)
     username = session.get('username')
     if not username:
         return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
     
-    if system not in ['sap', 'bw']:
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    if system not in ['sap', 'bw', 'tableau']:
+    # --- FIM DA MODIFICAÇÃO ---
         return jsonify({"status": "erro", "mensagem": "Sistema inválido."}), 400
 
     users = load_users()
@@ -871,6 +873,25 @@ def login_sap():
         executar_comando_externo([ "powershell.exe", "-ExecutionPolicy", "Bypass", "-File", SCRIPT_CLEANUP ], "Cleanup Pós-Falha de Login")
         
     return jsonify(resultado)
+
+# (Req 1) NOVO: Rota para salvar a conexão do Tableau
+@app.route('/api/tableau/login', methods=['POST'])
+def login_tableau():
+    global is_sap_logged_in, is_bw_hana_logged_in, last_bw_creds
+    
+    usuario = request.form['usuario']
+    senha = request.form['senha']
+    
+    # Esta rota apenas salva a conexão, não gerencia um "estado de login"
+    # no backend, pois o Tableau é um iframe.
+    save_connection_if_requested('tableau', usuario, senha)
+    
+    # Reinicia os outros estados de login para evitar conflito
+    is_sap_logged_in = False
+    is_bw_hana_logged_in = False
+    last_bw_creds = {}
+    
+    return jsonify({"status": "sucesso", "mensagem": "Credenciais salvas. Abrindo dashboard."})
 
 @app.route('/logout-sap', methods=['POST'])
 def logout_sap():

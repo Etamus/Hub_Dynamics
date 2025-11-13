@@ -1935,3 +1935,19 @@ body.theme-dark .logo-dark {
 .search-dropdown::-webkit-scrollbar-thumb:hover {
     background-color: var(--text-tertiary-color);
 }
+/* (Este é o seu estilo existente para os outros ícones) */
+.connection-icon {
+    height: 24px;
+    margin-right: 15px;
+}
+
+/* --- ADICIONE ESTE NOVO BLOCO --- */
+/* (Estilo específico para o ícone do Tableau) */
+.connection-icon.tableau-icon {
+    /* Ajuste este valor para o tamanho desejado (ex: 18px, 30px, etc.) */
+    height: 18px; 
+}
+.connection-item.connection-item-padded .connection-details {
+    /* Ajuste este valor (ex: 10px, 15px) como preferir */
+    margin-left: 20px;
+}

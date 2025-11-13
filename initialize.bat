@@ -9,7 +9,7 @@ echo.
 echo Iniciando o servidor...
 
 REM Edite a linha abaixo com o caminho que o comando 'where python' retornou!
-"C:\Users\PAIXAJ\AppData\Local\Programs\Python\Python311\python.exe" main_server.py
+"C:\Users\Robo01\AppData\Local\Programs\Python\Python311\python.exe" main_server.py
 
 echo.
 pause

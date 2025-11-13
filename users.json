@@ -5,7 +5,8 @@
     "area": "Log\u00edstica",
     "connections": {
       "sap": null,
-      "bw": null
+      "bw": null,
+      "tableau": null
     },
     "profile_image": "admin.jpg",
     "login_attempts": 0,

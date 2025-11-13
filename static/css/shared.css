@@ -121,6 +121,9 @@ body.theme-dark {
     max-width: 85%;
     line-height: 1.5;
     white-space: pre-wrap;
+    /* --- INÍCIO DA MODIFICAÇÃO --- */
+    overflow-wrap: break-word; /* Força a quebra de palavras muito longas */
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 .bot-message {
     background-color: #f1f0f0;

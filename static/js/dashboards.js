@@ -24,6 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const lookerNextPage = document.getElementById('looker-next-page');
     const lookerPageInfo = document.getElementById('looker-page-info');
     const lookerAreaButtons = document.querySelectorAll('#looker-area-selection .area-button');
+
+    // --- (Req 1) INÍCIO: Seletores e Variáveis do Modal de Login ---
+    let isTableauLoggedIn = false;
+    let currentTaskInfo = null; // (Armazena o botão clicado)
+    let savedConnections = {}; // (Armazena as conexões do Hub)
+
+    const modalOverlay = document.getElementById('login-modal-overlay');
+    const modalUser = document.getElementById('modal-user');
+    const modalPass = document.getElementById('modal-pass');
+    const modalExecuteBtn = document.getElementById('modal-execute-btn');
+    const modalLoginCloseBtn = document.getElementById('login-modal-close-btn');
+    const modalSaveConnBtn = document.getElementById('modal-save-conn-btn'); 
+    const modalLogoTableau = document.getElementById('modal-logo-tableau');
+    // --- FIM: Seletores do Modal ---
     
     const LOOKER_PAGE_SIZE = 4;
     let lookerCurrentPage = 1;
@@ -141,6 +155,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // (Helper) Abre o modal de login
+    function openLoginModal(button) {
+        currentTaskInfo = button; // Salva o botão que o usuário quer abrir
+        
+        // Mostra o logo correto (neste caso, sempre Tableau)
+        modalLogoTableau.classList.remove('hidden');
+
+        // Se tivermos uma conexão salva, pré-preenche
+        if (savedConnections.tableau) {
+            modalUser.value = savedConnections.tableau.user || '';
+            modalPass.value = savedConnections.tableau.pass || '';
+        } else {
+            modalUser.value = '';
+            modalPass.value = '';
+        }
+        
+        modalOverlay.classList.add('visible');
+        modalUser.focus();
+    }
+
+    // (Helper) Fecha o modal
+    function closeLoginModal() {
+        modalOverlay.classList.remove('visible');
+    }
+
+    // (Helper) Ação principal de login (chama a API)
+    function handleTableauLogin(saveConnection = false) {
+        const user = modalUser.value;
+        const pass = modalPass.value;
+
+        if (!user || !pass) {
+            alert('Por favor, preencha o usuário e a senha.');
+            return;
+        }
+
+        modalExecuteBtn.disabled = true;
+        if (modalSaveConnBtn) modalSaveConnBtn.disabled = true;
+
+        const formData = new URLSearchParams();
+        formData.append('usuario', user);
+        formData.append('senha', pass);
+        if (saveConnection) {
+            formData.append('save_connection', 'true');
+        }
+
+        // Chama a nova API do backend
+        fetch('/api/tableau/login', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    isTableauLoggedIn = true; // Define o estado de login
+                    closeLoginModal();
+                    
+                    if (saveConnection) {
+                         // Atualiza o estado local das conexões
+                         if (!savedConnections.tableau) savedConnections.tableau = {};
+                         savedConnections.tableau.user = user;
+                         savedConnections.tableau.pass = pass;
+                    }
+
+                    // (CRÍTICO) Abre o dashboard que o usuário clicou
+                    showDashboard(currentTaskInfo); 
+                } else {
+                    alert('ERRO: ' + data.mensagem);
+                }
+            })
+            .catch(err => {
+                alert('Erro de comunicação com o servidor.');
+            })
+            .finally(() => {
+                modalExecuteBtn.disabled = false;
+                if (modalSaveConnBtn) modalSaveConnBtn.disabled = false;
+            });
+    }
+
+    // (Helper) Adiciona os listeners aos botões do modal
+    function initializeLoginModalListeners() {
+        if (!modalOverlay) return; // Sai se o modal não foi carregado
+
+        modalExecuteBtn.addEventListener('click', () => handleTableauLogin(false));
+        if (modalSaveConnBtn) {
+            modalSaveConnBtn.addEventListener('click', () => handleTableauLogin(true));
+        }
+        modalLoginCloseBtn.addEventListener('click', closeLoginModal);
+        modalOverlay.addEventListener('mousedown', (e) => {
+            if (e.target === modalOverlay) closeLoginModal();
+        });
+        modalPass.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleTableauLogin(false);
+        });
+    }
+    
+    // (Helper) Refatoração da lógica que cria o Iframe
+    function showDashboard(button) {
+        if (!button) return;
+        
+        // (Lógica original de clique movida para cá)
+        saveToRecents(button); // Salva no Acesso Rápido
+
+        const dashboardUrl = button.getAttribute('data-url');
+        const customMaxWidth = button.dataset.width;
+
+        dashboardView.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.src = dashboardUrl;
+        iframe.className = 'dashboard-iframe';
+        iframe.setAttribute('allowfullscreen', '');
+
+        if (customMaxWidth) {
+            iframe.style.maxWidth = customMaxWidth;
+        }
+
+        const fab = document.getElementById('feedback-fab');
+        if (fab) {
+            fab.classList.add('hidden');
+        }
+
+        dashboardView.appendChild(iframe);
+        selectionScreen.style.display = 'none';
+        dashboardView.style.display = 'flex';
+        isViewingDashboard = true;
+        updateBackButton();
+    }
+    // --- FIM: Funções de Login ---
+
     // =================================================================
     // ===== FIM: NOVAS FUNÇÕES PARA O "ACESSO RÁPIDO" =====
     // =================================================================
@@ -226,105 +365,107 @@ document.addEventListener('DOMContentLoaded', () => {
     radios.forEach(radio => radio.addEventListener('change', handleRadioChange));
 
     allViewButtons.forEach(button => {
-  // Lógica do clique (para abrir o dashboard)
-  button.addEventListener('click', () => {
-    // --- AÇÃO ADICIONADA ---
-    // Salva o clique no histórico de recentes
-    saveToRecents(button);
-    // --- FIM DA AÇÃO ---
+        
+        // Lógica do clique (para abrir o dashboard)
+        button.addEventListener('click', () => {
+            
+            // Verifica se é um dashboard do Tableau
+            const isTableau = button.closest('#tableau-options');
+            
+            if (isTableau) {
+                // Se for Tableau, verifica o login
+                
+                // 1. Verifica conexão salva (auto-login)
+                if (savedConnections.tableau && !isTableauLoggedIn) {
+                    // Tenta logar automaticamente com a conexão salva
+                    openLoginModal(button); // Pré-preenche
+                    handleTableauLogin(false); // Tenta logar
+                
+                // 2. Se já estiver logado (sessão)
+                } else if (isTableauLoggedIn) {
+                    showDashboard(button);
+                
+                // 3. Se não tiver conexão salva E não estiver logado
+                } else {
+                    openLoginModal(button); // Pede login manual
+                }
 
-    const dashboardUrl = button.getAttribute('data-url');
-    const customMaxWidth = button.dataset.width;
+            } else {
+                // Se for Looker ou Library, abre direto
+                showDashboard(button);
+            }
+        }); 
 
-    dashboardView.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.src = dashboardUrl;
-    iframe.className = 'dashboard-iframe';
-    iframe.setAttribute('allowfullscreen', '');
+        // Lógica do mouseover (para mostrar o preview com etiquetas)
+        button.addEventListener('mouseover', () => {
+            const gifPath = button.dataset.previewGif;
+            const text = button.dataset.previewText;
+            const tagsString = button.dataset.previewTags;
 
-    if (customMaxWidth) {
-      iframe.style.maxWidth = customMaxWidth;
-    }
+            if (gifPath && text) {
+                previewImage.src = gifPath;
+                previewDescription.textContent = text;
+                previewTagsContainer.innerHTML = '';
 
-    const fab = document.getElementById('feedback-fab');
-    // Oculta o chatbot em QUALQUER visualização de dashboard
-    if (fab) {
-      fab.classList.add('hidden');
-    }
+                if (tagsString) {
+                    const tagsArray = tagsString.split(',');
+                    const knownNonKpiTags = [
+                        'daily', 'weekly', 'monthly', 'gcp', 'sheets', 'drive', 'consultation',
+                        'dashboard', 'database', 'revenue', 'efficiency', 'accuracy',
+                        'management', 'performance', 'planning', 'sla', 'tracking',
+                        'safety', 'costs', 'data'
+                    ];
 
-    dashboardView.appendChild(iframe);
-    selectionScreen.style.display = 'none';
-    dashboardView.style.display = 'flex';
-    isViewingDashboard = true;
-    updateBackButton();
-  }); // Fim do 'click'
+                    tagsArray.forEach(tagText => {
+                        const cleanTagText = tagText.trim();
+                        const tagElement = document.createElement('span');
+                        tagElement.className = 'preview-tag';
+                        tagElement.textContent = cleanTagText;
 
-  // Lógica do mouseover (para mostrar o preview com etiquetas)
-  button.addEventListener('mouseover', () => {
-    const gifPath = button.dataset.previewGif;
-    const text = button.dataset.previewText;
-    const tagsString = button.dataset.previewTags;
+                        const lowerCaseTag = cleanTagText.toLowerCase();
 
-    if (gifPath && text) {
-      previewImage.src = gifPath;
-      previewDescription.textContent = text;
-      previewTagsContainer.innerHTML = '';
+                        if (['consultation', 'dashboard', 'database'].includes(lowerCaseTag)) {
+                            tagElement.classList.add('tag-orange');
+                        } else if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
+                            tagElement.classList.add('tag-green');
+                        } else if (['gcp', 'gardem', 'sheets', 'drive', 'presentation'].includes(lowerCaseTag)) {
+                            tagElement.classList.add('tag-blue');
+                        } else if (knownNonKpiTags.includes(lowerCaseTag)) {
+                            tagElement.classList.add('tag-gray');
+                        } else {
+                            tagElement.classList.add('tag-purple'); // KPI
+                        }
 
-      if (tagsString) {
-        const tagsArray = tagsString.split(',');
-        const knownNonKpiTags = [
-          'daily', 'weekly', 'monthly', 'gcp', 'sheets', 'drive', 'consultation',
-          'dashboard', 'database', 'revenue', 'efficiency', 'accuracy',
-          'management', 'performance', 'planning', 'sla', 'tracking',
-          'safety', 'costs', 'data'
-        ];
+                        previewTagsContainer.appendChild(tagElement);
+                    });
+                }
 
-        tagsArray.forEach(tagText => {
-          const cleanTagText = tagText.trim();
-          const tagElement = document.createElement('span');
-          tagElement.className = 'preview-tag';
-          tagElement.textContent = cleanTagText;
+                previewPanel.classList.add('visible');
+            }
+        }); 
 
-          const lowerCaseTag = cleanTagText.toLowerCase();
-
-          if (['consultation', 'dashboard', 'database'].includes(lowerCaseTag)) {
-            tagElement.classList.add('tag-orange');
-          } else if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
-            tagElement.classList.add('tag-green');
-          } else if (['gcp', 'gardem', 'sheets', 'drive', 'presentation'].includes(lowerCaseTag)) {
-            tagElement.classList.add('tag-blue');
-          } else if (knownNonKpiTags.includes(lowerCaseTag)) {
-            tagElement.classList.add('tag-gray');
-          } else {
-            tagElement.classList.add('tag-purple'); // KPI
-          }
-
-          previewTagsContainer.appendChild(tagElement);
+        // Lógica do mouseout (para esconder o preview)
+        button.addEventListener('mouseout', () => {
+            previewPanel.classList.remove('visible');
         });
-      }
-
-      previewPanel.classList.add('visible');
-    }
-  }); // Fim do 'mouseover'
-
-  // Lógica do mouseout (para esconder o preview)
-  button.addEventListener('mouseout', () => {
-    previewPanel.classList.remove('visible');
-  });
-}); // Fim do 'allViewButtons.forEach'
+    }); // Fim do 'allViewButtons.forEach'
 
     
     function updateBackButton() {
             if (isViewingDashboard) {
-                // Estado: VENDO DASHBOARD (Botão "Voltar")
                 backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
-                backButton.href = '#'; // Deixa de ser um link real
-                backButton.title = 'Voltar'; // Adiciona o tooltip
+                backButton.href = '#'; 
+                backButton.title = 'Voltar';
             } else {
-                // Estado: TELA DE SELEÇÃO (Botão "Voltar ao Hub")
                 backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
-                backButton.href = '/'; // Vira um link para o Hub
-                backButton.title = 'Voltar ao Hub'; // Adiciona o tooltip
+                backButton.href = '/'; 
+                backButton.title = 'Voltar ao Hub';
+                
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+                // Reseta o estado de login do Tableau ao voltar para a seleção
+                isTableauLoggedIn = false;
+                currentTaskInfo = null;
+                // --- FIM DA MODIFICAÇÃO ---
             }
         }
 
@@ -397,7 +538,22 @@ document.addEventListener('DOMContentLoaded', () => {
     handleRadioChange(); // Inicia o estado dos rádios
     checkForAutoOpen();  // Verifica se veio do Hub com um link
     updateLookerPagination(); // --- ADICIONAR ESTA LINHA ---
-});
+
+    // --- INÍCIO DA MODIFICAÇÃO (Mova o código para aqui) ---
+    // Busca as conexões salvas do Hub
+    fetch('/api/hub/get-connections')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                savedConnections = data.connections || {};
+            }
+        });
+        
+    // Adiciona os listeners ao modal de login
+    initializeLoginModalListeners();
+    // --- FIM DA MODIFICAÇÃO ---
+
+}); // <-- Este é o fim do DOMContentLoaded
 
 // --- LÓGICA DO BOTÃO DE ALTERNAR TEMA (Req 1 - Sincronizado com o Hub) ---
     const themeToggleButton = document.getElementById('theme-toggle-btn');
