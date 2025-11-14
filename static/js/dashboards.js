@@ -251,6 +251,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function showDashboard(button) {
         if (!button) return;
         
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Forçar Paisagem) ---
+        // 1. Verifica se estamos em um dispositivo móvel (baseado na largura da tela)
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+        if (isMobile) {
+            // 2. Tenta entrar em tela cheia (obrigatório para o lock)
+            const elem = document.documentElement; // Pega a raiz <html>
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().then(() => {
+                    // 3. Tenta travar a orientação
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(err => {
+                            // Aviso (pode falhar se o usuário não permitir)
+                            console.warn("Aviso: Não foi possível travar a orientação:", err.message);
+                        });
+                    } else {
+                        console.warn("Aviso: API screen.orientation.lock() não suportada (ex: Safari/iOS).");
+                    }
+                }).catch(err => {
+                    console.warn("Aviso: Não foi possível entrar em tela cheia:", err.message);
+                });
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
         // (Lógica original de clique movida para cá)
         saveToRecents(button); // Salva no Acesso Rápido
 
@@ -398,6 +423,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Lógica do mouseover (para mostrar o preview com etiquetas)
         button.addEventListener('mouseover', () => {
+            // 1. Verifica se estamos em um dispositivo móvel
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            
+            // 2. Se for mobile, NÃO execute a função de preview.
+            if (isMobile) {
+                return; 
+            }
             const gifPath = button.dataset.previewGif;
             const text = button.dataset.previewText;
             const tagsString = button.dataset.previewTags;
@@ -453,18 +485,37 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateBackButton() {
             if (isViewingDashboard) {
+                // Estado: VENDO DASHBOARD
                 backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
                 backButton.href = '#'; 
-                backButton.title = 'Voltar';
+                backButton.title = 'Voltar'; 
             } else {
+                // Estado: TELA DE SELEÇÃO
                 backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
                 backButton.href = '/'; 
                 backButton.title = 'Voltar ao Hub';
                 
-                // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-                // Reseta o estado de login do Tableau ao voltar para a seleção
                 isTableauLoggedIn = false;
                 currentTaskInfo = null;
+
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1: Sair do modo paisagem) ---
+                
+                // 1. Tenta sair da tela cheia
+                // (Verifica se estamos em tela cheia antes de tentar sair)
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {
+                        console.warn("Falha ao sair da tela cheia:", err.message);
+                    });
+                }
+                
+                // 2. Tenta destravar a orientação
+                if (screen.orientation && screen.orientation.unlock) {
+                    try {
+                        screen.orientation.unlock();
+                    } catch(e) {
+                        // Ignora erros (pode falhar se não estava travado)
+                    }
+                }
                 // --- FIM DA MODIFICAÇÃO ---
             }
         }

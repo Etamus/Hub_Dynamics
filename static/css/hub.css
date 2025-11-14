@@ -603,23 +603,38 @@ body.theme-dark .logo-dark {
         padding: 20px;
         flex-direction: column; 
         gap: 20px;
+        /* (Req 3.1) Garante que a barra de separação (border-bottom) ocupe 100% */
+        width: 100%;
+        box-sizing: border-box; /* Garante que o padding não quebre a largura */
     }
     .logo-title {
         font-size: 1.5rem;
-        order: 1;
+        order: 1; /* Logo primeiro */
     }
     .header-tools {
         gap: 30px;
-        order: 2;
+        order: 2; /* Ferramentas em segundo */
         width: 100%;
         justify-content: center;
     }
+    html, body {
+        overflow-x: hidden; /* (Req 2) Impede o scroll lateral na raiz */
+    }
     body {
-        padding-top: 160px; 
+        /* (Req 1) Aumenta o padding-top para o header de 3 fileiras */
+        padding-top: 200px; 
     }
     
     .search-container {
-        width: 90%;
+        /* Reseta o posicionamento absoluto do desktop */
+        position: relative; 
+        top: auto;
+        left: auto;
+        transform: none; 
+        
+        /* Define a ordem e a largura */
+        order: 3; /* Pesquisa por último no header */
+        width: 100%; /* Ocupa 100% do header */
     }
     .quick-links-container {
         gap: 15px;
@@ -636,8 +651,132 @@ body.theme-dark .logo-dark {
     .settings-modal {
         width: 95%;
     }
+    .theme-selector {
+        /* Garante que eles tentem ficar na mesma linha */
+        flex-wrap: nowrap; 
+        gap: 8px; /* Espaço entre os botões */
+        padding-left: 20px; /* Alinha com o corpo do modal */
+        padding-right: 20px;
+    }
+    .theme-option {
+        flex: 1; /* Faz com que dividam o espaço igualmente */
+        min-width: auto; /* Remove a largura mínima do desktop */
+        padding: 8px 10px; /* Padding vertical e horizontal reduzidos */
+        margin: 0; /* Remove a margem individual */
+    }
+    .theme-option i {
+        font-size: 1.3rem; /* Ícone menor */
+        margin-bottom: 4px;
+    }
     .theme-option span {
-        font-size: 0.9rem;
+        font-size: 0.8rem; /* Fonte do texto menor */
+    }
+    .hub-subtitle {
+        /* (Req 1) Aumenta a margem superior para distanciar da borda */
+        margin-top: 80px; 
+        margin-bottom: 30px;
+    }
+    .hub-subtitle p {
+        font-size: 1rem; /* Diminui a fonte do subtítulo */
+    }
+    .hub-card {
+        width: 100%; /* Cards ocupam a largura total */
+        height: auto; /* Altura automática */
+    }
+    .card-media-area {
+        height: 120px; /* Altura menor para o ícone/gif */
+    }
+
+    /* --- Correção Acesso Rápido (Req 1) --- */
+    .quick-links-section {
+        margin-bottom: 50px; /* Adiciona espaço no final da página */
+    }
+
+    /* --- Correção Profile Dropdown (Req 6) --- */
+    .access-dropdown {
+        position: fixed; /* Posição relativa à tela, não ao container */
+        left: 10%;
+        transform: translateX(-50%);
+        top: 135px; /* Posição abaixo do header mobile */
+        width: 40vw; /* Ocupa 90% da largura da tela */
+        min-width: 0;
+        z-index: 1100; /* Garante que fique acima de outros elementos */
+    }
+
+    /* --- Correção Modal de Admin (Req 5) --- */
+    .settings-modal {
+        width: 95vw; /* Modal ocupa 95% da tela */
+        max-height: 90vh; /* Limita a altura */
+        display: flex;
+        flex-direction: column;
+    }
+    .settings-modal .settings-body {
+        /* Permite que o corpo do modal role */
+        overflow-y: auto;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .settings-modal .scheduler-queue-tabs {
+        display: flex;
+        overflow-x: auto; /* Permite rolagem horizontal */
+        -webkit-overflow-scrolling: touch; /* Melhora a rolagem no iOS */
+
+        /* Esconde a barra de rolagem visualmente (mas mantém a função) */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE/Edge */
+    }
+    .settings-modal .scheduler-queue-tabs::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .settings-modal .scheduler-queue-tabs .scheduler-tab {
+        /* Garante que o texto da aba (ex: "Solicitações") não quebre a linha */
+        white-space: nowrap;
+        flex-shrink: 0; /* Impede que a aba encolha */
+    }
+    /* Ajusta as colunas do form de usuário */
+    .admin-user-edit-form .scheduler-datetime-group {
+        flex-direction: column;
+        gap: 0;
+    }
+    /* Torna o container da lista rolável */
+    #admin-list-container,
+    #admin-user-list-container,
+    .admin-cms-list {
+        max-height: 60vh; /* Altura máxima da lista */
+    }
+    /* Quebra a linha de botões do admin */
+    .admin-request-main, /* <--- ADICIONE ESTA LINHA */
+    .admin-user-main,
+    .admin-cms-main { 
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .admin-request-actions, /* <--- ADICIONE ESTA LINHA */
+    .admin-user-actions,
+    .admin-cms-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .admin-request-info,
+    .admin-user-info,
+    .admin-cms-info {
+        width: 100%; /* Garante que o bloco de texto ocupe toda a largura */
+        text-align: left; /* Garante que o texto dentro dele alinhe à esquerda */
+    }
+    /* Ajusta a barra de pesquisa do admin */
+    .admin-search-container {
+        flex-direction: column;
+        align-items: stretch;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .admin-search-container .button {
+        width: 100%;
+    }
+    .admin-search-input-wrapper {
+        max-width: none;
     }
 }
 /* ============================================= */

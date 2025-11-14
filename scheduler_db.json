@@ -1,18 +1,17 @@
 {
   "global_schedule": {
-    "queue": [
+    "queue": [],
+    "history": [
       {
+        "creator": "admin",
         "id": "job_1763055160806",
+        "startTime": 1763062380000,
+        "status": "failed",
         "taskInfo": {
           "name": "Base M\u00e3e",
           "type": "sap"
-        },
-        "startTime": 1763062380000,
-        "status": "pending",
-        "creator": "admin"
-      }
-    ],
-    "history": [
+        }
+      },
       {
         "creator": "admin",
         "id": "job_1762548031551",

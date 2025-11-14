@@ -182,3 +182,36 @@ body {
     width: 90px;
     /* padding-left: 15px; (REMOVIDO) */
 }
+@media (max-width: 768px) {
+    body {
+        /* (Req 3) Aumenta o padding para "descer" o título */
+        padding-top: 80px;
+    }
+    .main-title {
+        font-size: 2.2rem;
+    }
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+    .drive-container {
+        width: 100%; /* Ocupa 100% da largura */
+        height: 70vh;
+    }
+
+    /* --- Esconde colunas desnecessárias no mobile --- */
+    .file-list-header .mod-date-header,
+    .file-list-header .file-size-header,
+    .file-item .mod-date,
+    .file-item .file-size {
+        display: none;
+    }
+
+    /* Ajusta o padding do header do nome */
+    .file-name-header {
+        padding-left: 30px;
+    }
+    .file-item i {
+        margin-right: 10px;
+    }
+}
