@@ -10,7 +10,8 @@
     },
     "profile_image": "admin.jpg",
     "login_attempts": 0,
-    "lockout_until": null
+    "lockout_until": null,
+    "display_name": "Mateus"
   },
   "lopesm21": {
     "password": "1234",

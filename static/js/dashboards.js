@@ -111,10 +111,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
+            // (1) Lógica de Recência (para Acesso Rápido)
             updateLocalStorage(id, name, icon);
+
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1: Frequência) ---
+            // (2) Lógica de Frequência (para "Mais Acessados")
+            // (Usamos o nome de usuário do localStorage, que o hub.js já salvou)
+            const username = localStorage.getItem('hubUsername') || '_guest';
+            const countStorageKey = `dashboardAccessCounts_${username}`;
+            
+            let counts = JSON.parse(localStorage.getItem(countStorageKey)) || {};
+            // Incrementa a contagem para este ID (ou define como 1)
+            counts[id] = (counts[id] || 0) + 1;
+            
+            localStorage.setItem(countStorageKey, JSON.stringify(counts));
+            // --- FIM DA MODIFICAÇÃO ---
         
         } catch (e) {
-            console.error("Falha ao salvar item recente:", e);
+            console.error("Falha ao salvar item recente/contagem:", e);
         }
     }
 

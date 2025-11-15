@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentHubUser = null;
     let currentHubArea = null; // <-- ADICIONE ESTA LINHA 
     let currentHubRole = null; // <-- ADICIONE ESTA LINHA
+    let currentHubDisplayName = null; // (Req 1) Armazena o nome de usuário globalmente
     let currentProfileUrl = defaultProfileUrl; // URL da imagem atual
     let globalCmsDashboards = {}; // Armazena o JSON de dashboards
     let globalCmsAutomations = {}; // Armazena o JSON de automações
@@ -66,7 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileAreaDisplay = document.getElementById('profile-area-display');
     const profileRoleDisplay = document.getElementById('profile-role-display');
     const profileUploadStatus = document.getElementById('profile-upload-status');
-    
+    const editNameOverlay = document.getElementById('edit-name-overlay');
+    const editNameCloseBtn = document.getElementById('edit-name-close-btn');
+    const editNameInput = document.getElementById('edit-name-input');
+    const editNameSaveBtn = document.getElementById('edit-name-save-btn');
+
     // Modal de Recorte
     const cropperOverlay = document.getElementById('cropper-overlay');
     const cropperCloseBtn = document.getElementById('cropper-close-btn');
@@ -406,71 +411,75 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * ATUALIZADO: Atualiza a UI do dropdown, a IMAGEM do botão e a largura mínima.
      */
-    function updateAccessDropdown(username = null, profileImageUrl = null, area = null, role = null) { // <-- Argumento 'role' adicionado
-    currentHubUser = username;
-    currentHubArea = area; // <-- Salva a área globalmente
-    currentHubRole = role; // <-- ADICIONE ESTA LINHA
-    accessDropdown.innerHTML = '';
-    
-    currentProfileUrl = profileImageUrl || defaultProfileUrl;
-    profileImgThumb.src = currentProfileUrl;
-    
-    if (username) {
-        accessDropdown.style.minWidth = '200px';
-    } else {
-        accessDropdown.style.minWidth = '180px';
-    }
-
-    if (username) {
-        let adminButton = '';
-        // Mostra o botão de Admin se o usuário for 'admin'
-        if (username.toLowerCase() === 'admin') {
-            adminButton = `
-            <button class="access-dropdown-item" id="access-admin-btn">
-                <i class="fas fa-user-shield"></i>Administração
-            </button>`;
-        }
-
-        accessDropdown.innerHTML = `
-            <div class="access-dropdown-header">
-                <strong>${username}</strong>
-                <span>${area || 'N/A'}</span>
-            </div>
-            <button class="access-dropdown-item" id="access-profile-btn">
-                <i class="fas fa-camera"></i>Perfil
-            </button>
-            ${adminButton} 
-            <button class="access-dropdown-item" id="access-connections-btn">
-                <i class="fas fa-plug"></i>Minhas Conexões
-            </button>
-            <button class="access-dropdown-item danger" id="access-logout-btn">
-                <i class="fas fa-sign-out-alt"></i>Deslogar
-            </button>
-        `;
-        document.getElementById('access-profile-btn').addEventListener('click', () => openProfileModal(username, currentProfileUrl));
-        document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
-        document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
+    function updateAccessDropdown(username = null, profileImageUrl = null, area = null, role = null, displayName = null) {
+        currentHubUser = username;
+        currentHubArea = area;
+        currentHubRole = role;
+        currentHubDisplayName = displayName; // <-- ADICIONE ESTA LINHA
+        accessDropdown.innerHTML = '';
         
-        // Listener do botão de Admin (se ele existir)
-        const adminBtn = document.getElementById('access-admin-btn');
-        if (adminBtn) {
-            adminBtn.addEventListener('click', openAdminModal);
+        currentProfileUrl = profileImageUrl || defaultProfileUrl;
+        profileImgThumb.src = currentProfileUrl;
+        
+        if (username) {
+            accessDropdown.style.minWidth = '200px';
+        } else {
+            accessDropdown.style.minWidth = '180px';
         }
+
+        if (username) {
+            let adminButton = '';
+            if (username.toLowerCase() === 'admin') {
+                adminButton = `<button class="access-dropdown-item" id="access-admin-btn"><i class="fas fa-user-shield"></i>Administração</button>`;
+            }
+
+            // Usa o Nome de Usuário (displayName) se existir, senão usa o Nome de Funcionário (username)
+            const nameToDisplay = displayName || username;
+
+            accessDropdown.innerHTML = `
+                <div class="access-dropdown-header">
+                    <strong>${nameToDisplay}</strong>
+                    <span>${area || 'N/A'}</span>
+                </div>
+                <button class="access-dropdown-item" id="access-profile-btn">
+                    <i class="fas fa-user"></i>Minha Conta
+                </button>
+                ${adminButton} 
+                <button class="access-dropdown-item" id="access-connections-btn">
+                    <i class="fas fa-plug"></i>Minhas Conexões
+                </button>
+                <button class="access-dropdown-item danger" id="access-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>Deslogar
+                </button>
+            `;
+
+            // Passa todos os dados para o modal de perfil
+            document.getElementById('access-profile-btn').addEventListener('click', () => {
+                // (Req 1) Passa o displayName (agora rastreado)
+                openProfileModal(username, currentHubDisplayName, currentProfileUrl);
+            });
+
+            document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
+            document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
             
-    } else {
-        // --- Usuário está DESLOGADO (Adiciona "Registrar") ---
-        accessDropdown.innerHTML = `
-            <button class="access-dropdown-item" id="access-login-btn">
-                <i class="fas fa-sign-in-alt"></i>Logar
-            </button>
-            <button class="access-dropdown-item" id="access-register-btn">
-                <i class="fas fa-user-plus"></i>Solicitar Acesso
-            </button>
-        `;
-        document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
-        document.getElementById('access-register-btn').addEventListener('click', openRegisterModal);
+            const adminBtn = document.getElementById('access-admin-btn');
+            if (adminBtn) {
+                adminBtn.addEventListener('click', openAdminModal);
+            }
+                
+        } else {
+            accessDropdown.innerHTML = `
+                <button class="access-dropdown-item" id="access-login-btn">
+                    <i class="fas fa-sign-in-alt"></i>Logar
+                </button>
+                <button class="access-dropdown-item" id="access-register-btn">
+                    <i class="fas fa-user-plus"></i>Solicitar Acesso
+                </button>
+            `;
+            document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
+            document.getElementById('access-register-btn').addEventListener('click', openRegisterModal);
+        }
     }
-}
 
     // --- Lógica de Recorte (Cropper.js) ---
 
@@ -548,58 +557,469 @@ function uploadCroppedImage(formData) {
     })
     .then(response => response.json())
     .then(data => {
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1 & 2) ---
         if (data.status === 'sucesso') {
             profileUploadStatus.textContent = data.mensagem;
             
-            // --- CORREÇÃO (Req. 4): Atualiza a URL local ---
+            // 1. Atualiza a URL da imagem global
             currentProfileUrl = data.url; 
             
-            updateAccessDropdown(currentHubUser, data.url, currentHubArea); 
-            profilePreviewImg.src = data.url;
+            // 2. Chama o update do Header com os dados corretos
+            updateAccessDropdown(currentHubUser, currentProfileUrl, currentHubArea, currentHubRole, currentHubDisplayName);
+            
+            // 3. Atualiza a imagem DENTRO do modal
+            profilePreviewImg.src = currentProfileUrl;
         } else {
             profileUploadStatus.textContent = data.mensagem || "Erro ao fazer upload.";
         }
+        // --- FIM DA MODIFICAÇÃO ---
     })
     .catch(() => {
         profileUploadStatus.textContent = "Erro de comunicação com o servidor.";
     })
     .finally(() => {
-        // --- CORREÇÃO (Req. 4): Chama a função de reabertura para reavaliar os botões ---
-        openProfileModal(currentHubUser, currentProfileUrl);
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1 & 2) ---
+        // Reabre o modal com os dados corretos (nome e a NOVA url)
+        openProfileModal(currentHubUser, currentHubDisplayName, currentProfileUrl);
+        // --- FIM DA MODIFICAÇÃO ---
     });
 }
 
+// (Req 1) NOVO: Handler para salvar o nome de usuário
+    function handleUpdateDetails(username) {
+        const btn = document.getElementById('profile-details-save-btn');
+        const input = document.getElementById('profile-display-name-input');
+        if (!btn || !input) return;
+
+        const newDisplayName = input.value.trim() || null;
+        btn.disabled = true;
+
+        fetch('/api/profile/update-details', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: newDisplayName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                // Atualiza o dropdown do header
+                updateAccessDropdown(username, currentProfileUrl, currentHubArea, currentHubRole, data.display_name);
+            }
+            alert(data.mensagem); // Mostra "Sucesso" ou "Erro"
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
+    }
+
+    // (Req 2) NOVO: Handler para alterar a senha
+    function handleChangePassword() {
+        const btn = document.getElementById('profile-password-save-btn');
+        const currentPass = document.getElementById('profile-current-pass');
+        const newPass = document.getElementById('profile-new-pass');
+        const confirmPass = document.getElementById('profile-confirm-pass');
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        const statusEl = document.getElementById('profile-password-status');
+        if (!btn || !currentPass || !newPass || !confirmPass || !statusEl) return;
+        
+        // Limpa o status anterior
+        statusEl.className = 'hub-form-status hidden';
+        // --- FIM DA MODIFICAÇÃO ---
+
+
+        if (newPass.value !== confirmPass.value) {
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            statusEl.textContent = "A nova senha e a confirmação não correspondem.";
+            statusEl.className = 'hub-form-status error visible';
+            return;
+            // --- FIM DA MODIFICAÇÃO ---
+        }
+        if (newPass.value.length < 4) {
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            statusEl.textContent = "A nova senha deve ter pelo menos 4 caracteres.";
+            statusEl.className = 'hub-form-status error visible';
+            return;
+            // --- FIM DA MODIFICAÇÃO ---
+        }
+
+        btn.disabled = true;
+        fetch('/api/profile/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_pass: currentPass.value,
+                new_pass: newPass.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            statusEl.textContent = data.mensagem; // Mostra "Senha alterada" ou "Senha atual incorreta"
+            
+            if (data.status === 'sucesso') {
+                statusEl.className = 'hub-form-status success visible';
+                // Limpa os campos
+                currentPass.value = '';
+                newPass.value = '';
+                confirmPass.value = '';
+            } else {
+                statusEl.className = 'hub-form-status error visible';
+            }
+            // --- FIM DA MODIFICAÇÃO ---
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
+    }
+
+    // (Req 3 & 4) NOVO: Helper para renderizar listas no modal
+    function renderProfileActivityList(container, items, type) {
+        container.innerHTML = '';
+        if (!items || items.length === 0) {
+            const message = (type === 'tasks') ? 'Nenhuma atividade recente.' : 'Nenhum dashboard acessado.';
+            container.innerHTML = `<li class="no-activity">${message}</li>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const li = document.createElement('li');
+            
+            if (type === 'tasks') {
+                // (Req 3) Renderiza Tarefas
+                li.className = 'profile-activity-item';
+                const jobDate = new Date(item.startTime).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                let icon = 'fa-clock';
+                if (item.status === 'done') icon = 'fa-check-circle';
+                if (item.status === 'failed') icon = 'fa-times-circle';
+                if (item.status === 'pending') icon = 'fa-hourglass-start';
+                
+                const statusMap = { 'done': 'Concluído', 'pending': 'Pendente', 'running': 'Rodando' };
+                const statusText = statusMap[item.status] || '';
+                const statusDisplay = statusText ? ` (${statusText})` : '';
+
+                li.innerHTML = `
+                    <i class="fas ${icon}"></i>
+                    <div class="profile-activity-details">
+                        <strong>${item.taskInfo.name}</strong>
+                        <span>${jobDate}${statusDisplay}</span>
+                    </div>
+                `;
+            } else {
+                // (Req 4) Renderiza Dashboards
+                li.className = 'profile-activity-item'; // (Classe base para estilo)
+                const link = document.createElement('a'); // (Transforma em link)
+                link.href = item.href;
+                link.className = 'profile-dashboard-item';
+                
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1: Mostrar Contagem) ---
+                const countHtml = item.count ? `<span>(${item.count} ${item.count > 1 ? 'acessos' : 'acesso'})</span>` : '';
+                // --- FIM DA MODIFICAÇÃO ---
+
+                link.innerHTML = `
+                    <i class="${item.icon || 'fas fa-chart-pie'}"></i>
+                    <div class="profile-activity-details">
+                        <strong>${item.name}</strong>
+                        ${countHtml}
+                    </div>
+                `;
+                // Anexa o <a> ao <li>
+                li.appendChild(link);
+            }
+            container.appendChild(li);
+        });
+    }
+
     // --- Lógica do Modal de Perfil (Input de Arquivo) ---
 
-    function openProfileModal(username, currentImageUrl) {
-    accessDropdown.classList.remove('visible');
-    profileUsernameDisplay.textContent = username;
+    function openProfileModal(username, displayName, currentImageUrl) {
+        accessDropdown.classList.remove('visible');
+        
+        // (Req 1) Define o nome de usuário (editável) ou deixa vazio
+        const displayNameValue = displayName || '';
+        // (Req 5) Pega a área para exibição
+        const areaValue = currentHubArea || 'N/A';
+        
+        // (Req 4) Pega a Função (Role)
+        const roleValue = currentHubRole || 'N/A';
 
-    // --- ADIÇÃO DA LÓGICA DE PREENCHIMENTO ---
-    profileAreaDisplay.textContent = currentHubArea || 'N/A';
-    profileRoleDisplay.textContent = currentHubRole || 'N/A';
-    // ------------------------------------------
+        // 1. Limpa o corpo do modal e define a classe para as abas
+        const modalBody = profileOverlay.querySelector('.settings-body');
+        modalBody.innerHTML = '';
+        modalBody.className = 'settings-body profile-body'; // Adiciona a nova classe
 
-    profilePreviewImg.src = currentImageUrl;
-    profileFileInput.value = null; // Limpa o input de arquivo
-    profileUploadStatus.textContent = "Selecione uma imagem (PNG, JPG)";
-    
-    // --- CORREÇÃO AQUI ---
-    // Gerencia a visibilidade E o estado 'disabled' do botão de remover
-    if (currentImageUrl !== defaultProfileUrl) {
-        profileRemoveBtn.classList.remove('hidden');
-        profileRemoveBtn.disabled = false; // Habilita o botão
-    } else {
-        profileRemoveBtn.classList.add('hidden');
-        profileRemoveBtn.disabled = true; // Desabilita o botão
+        // 2. Cria as Abas (Removeu "Dashboards")
+        const tabsHtml = `
+            <div class="profile-tabs">
+                <span class="profile-tab active" data-tab="tab-details">Perfil</span>
+                <span class="profile-tab" data-tab="tab-security">Segurança</span>
+                <span class="profile-tab" data-tab="tab-activity">Atividade</span>
+            </div>
+        `;
+        
+        // 3. Cria o Conteúdo das Abas
+        const contentHtml = `
+            <div id="tab-details" class="profile-tab-content active">
+                
+                <div style="text-align: center; margin-bottom: 35px;">
+                    <div class="profile-image-wrapper">
+                        <img id="profile-preview-img" src="${currentImageUrl}" alt="Prévia do Perfil" class="profile-preview-large">
+                        <button id="profile-edit-btn" class="profile-edit-button" title="Editar foto">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <div id="profile-edit-dropdown" class="profile-edit-dropdown">
+                            <button id="profile-edit-dropdown-alterar" class="access-dropdown-item">
+                                <i class="fas fa-upload"></i>Alterar Foto
+                            </button>
+                            <button id="profile-edit-dropdown-remover" class="access-dropdown-item danger">
+                                <i class="fas fa-trash-alt"></i>Remover Foto
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
+                    <p id="profile-upload-status" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+                </div>
+                <div class="profile-info-group">
+                    <label>Nome de Usuário:</label>
+                    <span id="profile-name-span">${displayNameValue || 'Não definido'}</span>
+                    <button id="profile-name-edit-btn" class="profile-edit-pencil-btn" title="Editar Nome">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </div>
+                <div class="profile-info-group">
+                    <label>Nome de Funcionário:</label>
+                    <span style="text-transform: uppercase;">${username}</span>
+                </div>
+                <div class="profile-info-group">
+                    <label>Área:</label>
+                    <span>${areaValue}</span>
+                </div>
+                
+                <div class="profile-info-group">
+                    <label>Função:</label>
+                    <span>${roleValue}</span>
+                </div>
+                </div>
+
+            <div id="tab-security" class="profile-tab-content hidden">
+                
+                <h4>Alterar Senha</h4>
+                <p id="profile-password-status" class="hub-form-status hidden"></p>
+                <form id="password-change-form" class="password-change-form">
+                    <div class="modal-input-group">
+                        <label for="profile-current-pass">Senha Atual:</label>
+                        <input type="password" id="profile-current-pass" class="hub-modal-input">
+                    </div>
+                    <div class="modal-input-group">
+                        <label for="profile-new-pass">Nova Senha:</label>
+                        <input type="password" id="profile-new-pass" class="hub-modal-input">
+                    </div>
+                    <div class="modal-input-group">
+                        <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
+                        <input type="password" id="profile-confirm-pass" class="hub-modal-input">
+                    </div>
+                    <button type="button" id="profile-password-save-btn" class="button-full-width btn-success">Salvar</button>
+                </form>
+            </div>
+
+            <div id="tab-activity" class="profile-tab-content hidden">
+                
+                <h4>Últimos Agendamentos</h4>
+                <ul id="profile-activity-list" class="profile-activity-list">
+                    <li class="no-activity">Carregando...</li>
+                </ul>
+                
+                <h4 style="margin-top: 25px;">Dashboard Mais Acessado</h4>
+                <ul id="profile-dashboard-list" class="profile-activity-list">
+                    <li class="no-activity">Carregando...</li>
+                </ul>
+            </div>
+        `;
+
+        modalBody.innerHTML = tabsHtml + contentHtml;
+
+        // 4. Adiciona os Listeners
+        
+        // (Listeners da Aba "Perfil")
+        const profilePreviewImg = document.getElementById('profile-preview-img');
+        const profileFileInput = document.getElementById('profile-file-input');
+        
+        // --- (Req 2) INÍCIO: Novos Listeners da Foto ---
+        const profileEditBtn = document.getElementById('profile-edit-btn');
+        const profileEditDropdown = document.getElementById('profile-edit-dropdown');
+        const profileAlterarBtn = document.getElementById('profile-edit-dropdown-alterar');
+        const profileRemoverBtn = document.getElementById('profile-edit-dropdown-remover');
+
+        // (Req 1) Botão de Lápis
+        document.getElementById('profile-name-edit-btn').addEventListener('click', () => {
+            openEditNameModal(currentHubDisplayName);
+        });
+
+        // Abre/Fecha o mini-menu
+        profileEditBtn.addEventListener('click', () => {
+            profileEditDropdown.classList.toggle('visible');
+        });
+
+        // "Alterar Foto" clica no input escondido
+        profileAlterarBtn.addEventListener('click', () => {
+            profileFileInput.click(); 
+            profileEditDropdown.classList.remove('visible');
+        });
+        
+        // "Remover Foto" (lógica do botão antigo)
+        profileRemoverBtn.addEventListener('click', () => {
+            if (!currentHubUser || profileRemoverBtn.disabled) return;
+            profileRemoverBtn.disabled = true;
+            profileEditDropdown.classList.remove('visible');
+
+            fetch('/api/profile/remove-image', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    currentProfileUrl = data.default_url;
+                    updateAccessDropdown(username, data.default_url, currentHubArea, currentHubRole, currentHubDisplayName);
+                    profilePreviewImg.src = data.default_url;
+                    profileRemoverBtn.style.display = 'none'; // Esconde a opção
+                } else {
+                    alert(data.mensagem);
+                    profileRemoverBtn.disabled = false;
+                }
+            });
+        });
+
+        // (Controla a visibilidade do botão de remover)
+        if (currentImageUrl !== defaultProfileUrl) {
+            profileRemoverBtn.style.display = 'flex';
+            profileRemoverBtn.disabled = false;
+        } else {
+            profileRemoverBtn.style.display = 'none';
+            profileRemoverBtn.disabled = true;
+        }
+        // --- (Req 2) FIM: Novos Listeners da Foto ---
+
+        
+        // Listener do input[file] (lógica mantida)
+        profileFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const fileNameParts = file.name.split('.');
+            currentUploadExtension = fileNameParts.length > 1 ? fileNameParts.pop().toLowerCase() : 'jpg';
+            if (!['png', 'jpg', 'jpeg'].includes(currentUploadExtension)) {
+                alert("Apenas arquivos PNG ou JPG são permitidos.");
+                profileFileInput.value = null; return;
+            }
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => openCropperModal(e.target.result);
+            reader.readAsDataURL(file);
+            profileFileInput.value = null;
+        });
+
+        // (Listeners da Aba "Segurança")
+        // (Req 1) Removido listener de 'profile-details-save-btn'
+        document.getElementById('profile-password-save-btn').addEventListener('click', handleChangePassword);
+
+        // (Listeners das Abas)
+        const tabs = modalBody.querySelectorAll('.profile-tab');
+        const contents = modalBody.querySelectorAll('.profile-tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.add('hidden'));
+
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                document.getElementById(tabId).classList.remove('hidden');
+
+                // (Req 3 & 6) Se clicou em Atividade, busca AMBOS
+                if (tabId === 'tab-activity') {
+                    // Busca Tarefas
+                    const listEl = document.getElementById('profile-activity-list');
+                    fetch('/api/profile/get-activity')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'sucesso') {
+                                const limitedActivity = data.activity.slice(0, 3);
+                                renderProfileActivityList(listEl, limitedActivity, 'tasks');
+                            }
+                        });
+                    
+                    
+                    // --- INÍCIO DA MODIFICAÇÃO (Req 1: Lógica de Frequência) ---
+                    const dashListEl = document.getElementById('profile-dashboard-list');
+                    
+                    // 1. Pega a contagem (frequência)
+                    // (Usa a variável global 'currentHubUser' que já temos)
+                    const countStorageKey = `dashboardAccessCounts_${currentHubUser || '_guest'}`;
+                    const counts = JSON.parse(localStorage.getItem(countStorageKey)) || {};
+                    
+                    // 2. Pega a tabela de lookup (recência, que tem os nomes/icones)
+                    const lookup = JSON.parse(localStorage.getItem(getStorageKey('recentDashboards'))) || [];
+                    
+                    // 3. Converte o objeto de contagem em array e ordena por contagem (descendente)
+                    const sortedIds = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+                    
+                    // 4. Mapeia os IDs ordenados para os dados completos (nome, icone)
+                    const items = sortedIds.map(id => {
+                        // Encontra o dashboard na lista de 'recentes' (que usamos como lookup)
+                        const dashboardData = lookup.find(d => d.id === id);
+                        
+                        if (dashboardData) {
+                            // Adiciona a contagem e o href
+                            return {
+                                ...dashboardData, 
+                                count: counts[id], // Adiciona a contagem
+                                href: `/dashboards?open=${id}`
+                            };
+                        }
+                        return null; // Caso o dashboard tenha sido excluído
+                    }).filter(Boolean).slice(0, 1);// Remove nulos
+                    
+                    // 5. Renderiza
+                    renderProfileActivityList(dashListEl, items, 'dashboards');
+                    // --- FIM DA MODIFICAÇÃO ---
+                }
+            });
+        });
+
+        // 5. Abre o Modal
+        profileOverlay.classList.add('visible');
     }
-    
-    profileOverlay.classList.add('visible');
-}
     
     profileCloseBtn.addEventListener('click', () => profileOverlay.classList.remove('visible'));
     profileOverlay.addEventListener('mousedown', (e) => {
-        if (e.target === profileOverlay) profileOverlay.classList.remove('visible');
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1: Fechar Dropdown ao Clicar Fora) ---
+        
+        // Elementos relevantes (podem não existir se o modal não estiver aberto)
+        const dropdown = document.getElementById('profile-edit-dropdown');
+        const cameraBtn = document.getElementById('profile-edit-btn');
+        
+        // 1. Lógica original: Fechar o modal ao clicar no fundo
+        if (e.target === profileOverlay) {
+            profileOverlay.classList.remove('visible');
+            // Garante que o dropdown feche junto
+            if (dropdown) dropdown.classList.remove('visible');
+            return;
+        }
+
+        // 2. Lógica nova: Fechar o mini-dropdown ao clicar no corpo do modal
+        if (dropdown && cameraBtn) {
+            // Verifica se o dropdown está visível
+            if (dropdown.classList.contains('visible')) {
+                // Verifica se o clique NÃO foi no botão da câmera
+                const isCameraClick = cameraBtn.contains(e.target);
+                // Verifica se o clique NÃO foi dentro do dropdown
+                const isDropdownClick = dropdown.contains(e.target);
+
+                if (!isCameraClick && !isDropdownClick) {
+                    dropdown.classList.remove('visible');
+                }
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
     });
 
     // Dispara o modal de recorte ao selecionar um arquivo
@@ -663,6 +1083,58 @@ profileRemoveBtn.addEventListener('click', () => {
     });
 });
 
+function openEditNameModal(currentName) {
+        editNameInput.value = currentName || '';
+        editNameOverlay.classList.add('visible');
+        editNameInput.focus();
+    }
+    
+    // (Req 1) NOVO: Fecha o modal de edição de nome
+    function closeEditNameModal() {
+        editNameOverlay.classList.remove('visible');
+    }
+    
+    // (Req 1) NOVO: Handler para salvar o nome (substitui handleUpdateDetails)
+    function handleSaveName() {
+        const newDisplayName = editNameInput.value.trim() || null;
+        editNameSaveBtn.disabled = true;
+    
+        fetch('/api/profile/update-details', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: newDisplayName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                // 1. Atualiza a variável global
+                currentHubDisplayName = data.display_name;
+                
+                // 2. Atualiza o header
+                updateAccessDropdown(currentHubUser, currentProfileUrl, currentHubArea, currentHubRole, currentHubDisplayName);
+                
+                // 3. Atualiza o texto na aba "Perfil" (que está aberta no fundo)
+                const nameSpan = document.getElementById('profile-name-span');
+                if (nameSpan) {
+                    nameSpan.textContent = currentHubDisplayName || 'Não definido';
+                }
+
+                // 4. Fecha o modal de edição
+                closeEditNameModal();
+                
+                // (Não mostramos alerta de sucesso)
+
+            } else {
+                // (Mostra o alerta APENAS se for um erro)
+                alert(data.mensagem);
+            }
+            // --- FIM DA MODIFICAÇÃO ---
+        })
+        .finally(() => {
+            editNameSaveBtn.disabled = false;
+        });
+    }
+
     // --- Lógica de Login/Sessão (Ajustadas para imagem) ---
     function openHubLoginModal() {
         accessDropdown.classList.remove('visible');
@@ -693,6 +1165,7 @@ profileRemoveBtn.addEventListener('click', () => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'sucesso') {
+                // (Req 1) Recarrega a página. O check_session fará o resto.
                 window.location.reload();
             } else { showHubLoginError(data.mensagem || "Erro desconhecido."); }
         })
@@ -854,6 +1327,16 @@ profileRemoveBtn.addEventListener('click', () => {
     });
 
     hubLoginCloseBtn.addEventListener('click', closeHubLoginModal);
+    if (editNameOverlay) {
+        editNameCloseBtn.addEventListener('click', closeEditNameModal);
+        editNameOverlay.addEventListener('mousedown', (e) => {
+            if (e.target === editNameOverlay) closeEditNameModal();
+        });
+        editNameSaveBtn.addEventListener('click', handleSaveName);
+        editNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSaveName();
+        });
+    }
     hubLoginOverlay.addEventListener('mousedown', (e) => { if (e.target === hubLoginOverlay) closeHubLoginModal(); });
     hubPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleHubLogin(); });
     hubLoginSubmitBtn.addEventListener('click', handleHubLogin);
@@ -865,18 +1348,20 @@ profileRemoveBtn.addEventListener('click', () => {
 fetch('/api/hub/check-session')
 .then(response => response.json())
 .then(data => {
-    // --- CORREÇÃO (Req. 1): Define a URL atual no carregamento ---
     currentProfileUrl = data.profile_image || defaultProfileUrl;
     
     if(data.status === 'logado') {
-        currentHubUser = data.username; // Define o usuário global
-        currentHubArea = data.area; // Define a área global
-        currentHubRole = data.role; // Salva a role
-        localStorage.setItem('hubUsername', data.username); // Sincroniza o localStorage
-        updateAccessDropdown(data.username, data.profile_image, data.area, data.role);
+        currentHubUser = data.username; 
+        currentHubArea = data.area;
+        currentHubRole = data.role;
+        localStorage.setItem('hubUsername', data.username); 
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Armazena o nome globalmente E passa para o dropdown
+        currentHubDisplayName = data.display_name;
+        updateAccessDropdown(data.username, data.profile_image, data.area, data.role, currentHubDisplayName);
+        // --- FIM DA MODIFICAÇÃO ---
 
-        // --- INÍCIO DA MODIFICAÇÃO (Persistir Ordem) ---
-        // Tenta carregar a ordem salva da sessão PARA ESTE USUÁRIO
         try {
             const savedAutomations = sessionStorage.getItem(`sortedAutomations_${data.username}`);
             if (savedAutomations) {
@@ -891,17 +1376,16 @@ fetch('/api/hub/check-session')
             sessionStorage.removeItem(`sortedAutomations_${data.username}`);
             sessionStorage.removeItem(`sortedDashboards_${data.username}`);
         }
-        // --- FIM DA MODIFICAÇÃO ---
     } else {
         currentHubUser = null;
         currentHubArea = null;
         currentHubRole = null;
+        currentHubDisplayName = null; // (Limpa o nome)
         localStorage.removeItem('hubUsername');
-        updateAccessDropdown(null, data.profile_image, null, null);
+        updateAccessDropdown(null, data.profile_image, null, null, null);
     }
 
-    renderQuickLinks(); // Renderiza os links rápidos corretos (logado ou guest)
-    // chamamos a função que CARREGA OS DADOS e DEPOIS constrói o índice.
+    renderQuickLinks(); 
     loadSearchData();
 });
 
@@ -958,7 +1442,7 @@ fetch('/api/hub/check-session')
         const role = registerRole.value;
 
         if (!username || !area) {
-            registerStatus.textContent = "Preencha o N° de Funcionário e a Área.";
+            registerStatus.textContent = "Preencha o Login de Funcionário e a Área.";
             registerStatus.classList.remove('hidden');
             return;
         }

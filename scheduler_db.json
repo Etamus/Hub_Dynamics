@@ -3,14 +3,14 @@
     "queue": [],
     "history": [
       {
+        "creator": "admin",
         "id": "job_1763213975119",
+        "startTime": 1763214060000,
+        "status": "failed",
         "taskInfo": {
           "name": "Relat\u00f3rio Pe\u00e7as",
           "type": "bw"
-        },
-        "startTime": 1763214060000,
-        "status": "failed",
-        "creator": "admin"
+        }
       },
       {
         "creator": "admin",

@@ -359,6 +359,84 @@ def profile_remove_image():
     
     return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
 
+# (Req 1) NOVO: Rota para salvar o Nome de Usuário
+@app.route('/api/profile/update-details', methods=['POST'])
+def profile_update_details():
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    
+    display_name = request.json.get('display_name', None)
+    
+    users = load_users()
+    if username in users:
+        users[username]['display_name'] = display_name
+        save_users(users)
+        return jsonify({"status": "sucesso", "mensagem": "Nome de usuário atualizado.", "display_name": display_name})
+    
+    return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+
+# (Req 2) NOVO: Rota para alterar a senha
+@app.route('/api/profile/change-password', methods=['POST'])
+def profile_change_password():
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+    
+    current_pass = request.json.get('current_pass')
+    new_pass = request.json.get('new_pass')
+
+    if not current_pass or not new_pass:
+        return jsonify({"status": "erro", "mensagem": "Todos os campos são obrigatórios."}), 400
+
+    users = load_users()
+    user_data = users.get(username)
+
+    if not user_data:
+        return jsonify({"status": "erro", "mensagem": "Usuário não encontrado."}), 404
+
+    # (Req 2) Valida a senha atual
+    if user_data['password'] != current_pass:
+        return jsonify({"status": "erro", "mensagem": "A senha atual está incorreta."}), 403
+
+    # Define a nova senha
+    user_data['password'] = new_pass
+    # Reseta tentativas de login por segurança
+    user_data['login_attempts'] = 0
+    user_data['lockout_until'] = None
+    save_users(users)
+    
+    return jsonify({"status": "sucesso", "mensagem": "Senha alterada com sucesso!"})
+
+# (Req 3) NOVO: Rota para buscar atividades do usuário
+@app.route('/api/profile/get-activity')
+def profile_get_activity():
+    username = session.get('username')
+    if not username:
+        return jsonify({"status": "erro", "mensagem": "Usuário não logado."}), 401
+
+    all_schedules = load_schedules()
+    user_activity = []
+    
+    # Filtra a fila global
+    queue = all_schedules.get("global_schedule", {}).get("queue", [])
+    user_queue = [j for j in queue if j.get('creator') == username]
+    user_activity.extend(user_queue)
+
+    # Filtra o histórico global
+    history = all_schedules.get("global_schedule", {}).get("history", [])
+    user_history = [j for j in history if j.get('creator') == username]
+    user_activity.extend(user_history)
+
+    # Ordena por data (mais recentes primeiro) e limita
+    try:
+        user_activity.sort(key=lambda x: x.get('startTime', 0), reverse=True)
+    except Exception:
+        pass # Ignora falhas de ordenação
+
+    # Retorna apenas as 10 atividades mais recentes
+    return jsonify({"status": "sucesso", "activity": user_activity[:10]})
+
 # --- ROTAS DE API (HUB LOGIN & CONEXÕES) ---
 
 @app.route('/api/hub/login', methods=['POST'])
@@ -413,7 +491,8 @@ def hub_login():
     if username.lower() == 'admin':
         role = 'Executor'
         
-    return jsonify({"status": "sucesso", "username": username, "profile_image": image_url, "area": area, "role": role})
+    display_name = user_data.get('display_name', None) # <-- ADICIONE ESTA LINHA
+    return jsonify({"status": "sucesso", "username": username, "display_name": display_name, "profile_image": image_url, "area": area, "role": role})
 
 @app.route('/api/hub/logout', methods=['POST'])
 def hub_logout():
@@ -439,7 +518,8 @@ def check_session():
 
         role = user_data.get('role', 'Analista') # De 'Visualizador' para 'Analista'
         
-        return jsonify({"status": "logado", "username": username, "profile_image": image_url, "area": area, "role": role})
+        display_name = user_data.get('display_name', None) # <-- ADICIONE ESTA LINHA
+        return jsonify({"status": "logado", "username": username, "display_name": display_name, "profile_image": image_url, "area": area, "role": role})
     
     # --- CORREÇÃO APLICADA AQUI ---
     return jsonify({"status": "deslogado", "profile_image": "/static/icones/default_profile.png"})
@@ -600,6 +680,7 @@ def hub_complete_registration():
         "password": password,
         "role": request_data['role'], # Adiciona a role
         "area": request_data['area'], # <-- ADICIONE ESTA LINHA
+        "display_name": None, # <-- ADICIONE ESTA LINHA
         "profile_image": None,
         "connections": {
             "sap": None,
@@ -685,6 +766,7 @@ def admin_get_users():
             
         user_list.append({
             "username": username,
+            "display_name": data.get('display_name', None), # <-- ADICIONE ESTA LINHA
             "area": data.get('area', 'N/A'),
             "role": data.get('role', 'Analista'), # Padrão para Analista se não definido
             "password": data.get('password', ''),
@@ -707,6 +789,7 @@ def admin_update_user():
     new_password = data.get('password') # Pode ser vazio
     new_area = data.get('area')
     new_role = data.get('role')
+    new_display_name = data.get('display_name', None) # <-- ADICIONE ESTA LINHA
 
     if not username or not new_area or not new_role:
         return jsonify({"status": "erro", "mensagem": "Campos obrigatórios (usuário, área, função) ausentes."}), 400
@@ -721,6 +804,7 @@ def admin_update_user():
     # Atualiza os dados
     users[username]['area'] = new_area
     users[username]['role'] = new_role
+    users[username]['display_name'] = new_display_name # <-- ADICIONE ESTA LINHA
     if new_password: # Só atualiza a senha se uma nova foi enviada
         users[username]['password'] = new_password
     
@@ -1115,6 +1199,7 @@ def admin_add_user():
         "password": password,
         "role": role,
         "area": area,
+        "display_name": None, # <-- ADICIONE ESTA LINHA
         "profile_image": None,
         "connections": {
             "sap": None,

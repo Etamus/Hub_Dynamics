@@ -2090,3 +2090,458 @@ body.theme-dark .logo-dark {
     /* Ajuste este valor (ex: 10px, 15px) como preferir */
     margin-left: 20px;
 }
+/* Ajuste do corpo do modal de perfil para abas */
+.settings-modal .profile-body {
+    padding: 0; /* Remove o padding do body principal */
+    text-align: left;
+    min-height: 450px; /* Altura mínima para o conteúdo */
+}
+
+/* (Copia estilos das abas do Admin) */
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.profile-tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px; /* Alinha com a borda */
+}
+.profile-tab:hover {
+    color: var(--text-primary-color);
+}
+.profile-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+
+/* Conteúdo das abas */
+.profile-tab-content {
+    padding: 25px 30px 30px;
+}
+
+/* (Req 1) Estilo do Nome de Funcionário (Read-only) */
+.profile-username-display.read-only {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+    margin-top: -5px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+.profile-username-display.read-only strong {
+    color: var(--text-tertiary-color);
+    font-weight: 600;
+}
+
+/* (Req 2) Estilos do formulário de Senha */
+.password-change-form .modal-input-group {
+    margin-bottom: 15px;
+}
+.password-change-form .button-full-width {
+    width: 100%; /* Botão ocupa 100% no modal */
+    margin-top: 10px;
+}
+
+/* (Req 3 & 4) Estilos das listas de Atividade e Dashboards */
+.profile-activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* max-height: 350px; (REMOVIDO) */
+    /* overflow-y: auto; (REMOVIDO) */
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+.profile-activity-item,
+.profile-dashboard-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-primary-color);
+}
+.profile-activity-list a.profile-dashboard-item:hover {
+    background-color: var(--card-bg-color);
+    color: var(--accent-color);
+}
+.profile-activity-item:last-child {
+    border-bottom: none;
+}
+
+.profile-activity-item i,
+.profile-dashboard-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+.profile-activity-item i.fa-check-circle { color: #28a745; }
+.profile-activity-item i.fa-times-circle { color: #dc3545; }
+.profile-activity-item i.fa-hourglass-start { color: var(--text-secondary-color); }
+.profile-dashboard-item i { color: var(--accent-color); }
+
+.profile-activity-details {
+    flex-grow: 1;
+    line-height: 1.4;
+}
+.profile-activity-details strong {
+    font-weight: 600;
+}
+.profile-activity-details span {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    display: block;
+}
+
+.profile-activity-list .no-activity {
+    text-align: center;
+    color: var(--text-secondary-color);
+    font-style: italic;
+    padding: 30px;
+}
+
+/* (Req 1) Ajuste para o botão "Salvar" do nome */
+#profile-details-save-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+/* Faz com que o input "readonly" (somente leitura) pareça um
+  texto normal, mas ainda mantenha a estrutura do formulário.
+*/
+.profile-tab-content .hub-modal-input[readonly] {
+    background-color: var(--bg-color) !important; 
+    cursor: not-allowed !important;
+    color: var(--text-secondary-color);
+    font-weight: 500;
+}
+
+/* (Req 3) Capitaliza o nome de usuário (Opcional, mas limpo) */
+.profile-tab-content input[value*="@"] {
+    text-transform: none;
+}
+
+/* Separador (entre Nome e Senha) */
+.profile-tab-content hr {
+    border-color: var(--border-color); 
+    border-top: 0; 
+    margin: 25px 0;
+}
+/* (Req 1) Estilos para os campos de texto "Nome: Teste" */
+.profile-info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px; /* Padding um pouco maior */
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    margin-bottom: 15px;
+}
+.profile-info-group label {
+    font-weight: 600;
+    color: var(--text-tertiary-color);
+    font-size: 0.9rem;
+    padding-left: 0; /* Reseta o padding herdado */
+    margin-bottom: 0;
+}
+.profile-info-group span {
+    font-weight: 500;
+    color: var(--text-primary-color);
+    font-size: 0.95rem;
+    text-transform: capitalize;
+}
+
+/* (Req 2) Esconde a UI antiga de botões de foto */
+.profile-button {
+    display: none !important;
+}
+
+/* (Req 2) Wrapper da Imagem de Perfil */
+.profile-image-wrapper {
+    position: relative;
+    width: 120px; /* Mesmo tamanho do .profile-preview-large */
+    height: 120px; /* Mesmo tamanho do .profile-preview-large */
+    margin: 0 auto 20px auto; /* Centraliza o wrapper */
+}
+
+/* (Req 2) Botão da Câmera */
+.profile-edit-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.profile-edit-button:hover {
+    transform: scale(1.1);
+    background-color: var(--accent-color-hover);
+}
+
+/* (Req 2) Dropdown de Edição de Foto (copiado do .access-dropdown) */
+.profile-edit-dropdown {
+    position: absolute;
+    top: 100%; /* Abaixo do wrapper da foto */
+    right: -10px; /* Desloca um pouco para a direita */
+    z-index: 1200; /* Acima do modal */
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    min-width: 180px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+.profile-edit-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(5px); /* Aparece 5px abaixo */
+}
+
+/* (Req 2) Copiando estilos genéricos para os botões do dropdown */
+.access-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinha texto à esquerda */
+    width: 100%;
+    padding: 10px 12px;
+    background: none !important;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--text-primary-color);
+    cursor: pointer;
+    box-sizing: border-box;
+    border-radius: 4px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.access-dropdown-item:hover {
+    transform: scale(1.02); 
+    color: var(--accent-color); 
+    background: none !important;
+}
+.access-dropdown-item i {
+    font-size: 0.9rem;
+    margin-right: 10px;
+    width: 15px;
+    text-align: center;
+    color: var(--text-secondary-color);
+    flex-shrink: 0;
+}
+.access-dropdown-item:hover i {
+    color: var(--accent-color);
+}
+.access-dropdown-item.danger {
+    color: #dc3545;
+}
+.access-dropdown-item.danger i {
+    color: #dc3545;
+}
+/* (Req 1) Estilos para os campos de texto "Nome: Teste" */
+.profile-info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    margin-bottom: 15px;
+    position: relative; /* (Necessário para o botão de lápis) */
+}
+.profile-info-group label {
+    font-weight: 600;
+    color: var(--text-tertiary-color);
+    font-size: 0.9rem;
+    padding-left: 0; 
+    margin-bottom: 0;
+}
+.profile-info-group span {
+    font-weight: 500;
+    color: var(--text-primary-color);
+    font-size: 0.95rem;
+    text-transform: capitalize;
+}
+
+/* (Req 2) Esconde a UI antiga de botões de foto */
+.profile-button {
+    display: none !important;
+}
+
+/* (Req 2) Wrapper da Imagem de Perfil */
+.profile-image-wrapper {
+    position: relative;
+    width: 120px; 
+    height: 120px;
+    margin: 0 auto 20px auto; 
+}
+
+/* (Req 2) Botão da Câmera */
+.profile-edit-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.profile-edit-button:hover {
+    transform: scale(1.1);
+    background-color: var(--accent-color-hover);
+}
+
+/* (Req 2) Dropdown de Edição de Foto (copiado do .access-dropdown) */
+.profile-edit-dropdown {
+    position: absolute;
+    top: 100%; 
+    right: -10px; 
+    z-index: 1200; 
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    min-width: 180px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+.profile-edit-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(5px); 
+}
+
+/* (Req 1) Estilo para o botão de Lápis (Editar Nome) */
+.profile-edit-pencil-btn {
+    position: absolute;
+    
+    /* --- INÍCIO DA MODIFICAÇÃO --- */
+    right: -40px; /* Move o botão para FORA da borda do container-pai */
+    /* --- FIM DA MODIFICAÇÃO --- */
+    
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 5px 8px; 
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.profile-edit-pencil-btn:hover {
+    color: var(--accent-color);
+    background-color: var(--border-color);
+}
+#profile-password-save-btn {
+    width: 60%;
+    margin-top: 20px; /* Adiciona um espaço (igual ao "Salvar Nome") */
+}
+#edit-name-save-btn {
+    width: 50%;
+}
+.profile-tab-content .modal-input-group {
+    text-align: left;
+}
+
+.profile-tab-content .modal-input-group label {
+    padding-left: 0; /* Garante que não haja padding extra */
+}
+/* (Garante que o link <a> (filho) tenha o estilo flex correto) */
+.profile-dashboard-item {
+    display: flex;
+    align-items: center;
+    border: none;
+    padding: 9px 15px;
+}
+.profile-dashboard-item:hover {
+    /* (Herda a cor do .profile-activity-item:hover) */
+    color: inherit; 
+}
+
+/* (Faz o <li> (pai) centralizar o link <a>) */
+.profile-activity-item.is-dashboard-link {
+    justify-content: center;
+}
+#profile-dashboard-list .profile-activity-details strong {
+    white-space: nowrap; /* Impede a quebra de linha */
+    overflow: hidden; /* Esconde o excesso */
+    text-overflow: ellipsis; /* Adiciona "..." */
+    
+    /* Garante que o <strong> ocupe o espaço para o ellipsis funcionar */
+    display: block; 
+    width: 100%; 
+}
+
+/* 2. Garante que o contêiner do link (<a>) ocupe 100% do <li> */
+#profile-dashboard-list .profile-dashboard-item {
+    width: 100%; 
+    box-sizing: border-box;
+}
+
+/* 3. Garante que o contêiner de detalhes possa encolher */
+#profile-dashboard-list .profile-activity-details {
+    min-width: 0; /* Permite que o flex-grow encolha corretamente */
+}
+.profile-edit-dropdown .access-dropdown-item {
+    /* (Req 1) Alinha o conteúdo (ícone + texto) ao centro */
+    justify-content: center; 
+}
+#tab-security h4 {
+    margin-top: 5px;
+}
+#tab-activity h4 {
+    margin-top: 5px;
+}
+/* --- NOVO: Estilo para Status de Formulário (Req 1) --- */
+.hub-form-status {
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-align: center;
+    display: none; /* (Começa oculto) */
+}
+.hub-form-status.visible {
+    display: block;
+}
+.hub-form-status.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+.hub-form-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}

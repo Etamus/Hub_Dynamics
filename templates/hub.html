@@ -206,7 +206,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v4.0.3</p>
+                    <p><strong>Versão Atual:</strong> v4.0.6</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -217,6 +217,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v4.0.6:</strong> Novo perfil de usuário e correção de "alert" da janela de registro</li>
                         <li><strong>v4.0.3:</strong> Correção de icones e melhoria do modo escuro</li>
                         <li><strong>v4.0.2:</strong> Adição de novas lógicas de "@media" para atualização do modo mobile</li>
                         <li><strong>v3.0.9:</strong> Adicionado login para Tableau no Dashboards e correção da quebra de linha do Chatbot</li>
@@ -289,7 +290,7 @@
     <div class="settings-modal-overlay" id="profile-overlay">
         <div class="settings-modal" style="max-width: 400px;">
             <div class="settings-header">
-                <h2>Meu Perfil</h2>
+                <h2>Minha Conta</h2>
                 <button class="settings-close-btn" id="profile-close-btn">&times;</button>
             </div>
             <div class="settings-body" style="padding: 20px 30px 30px; text-align: center;">
@@ -334,6 +335,22 @@
         </div>
     </div>
 
+    <div class="settings-modal-overlay" id="edit-name-overlay">
+        <div class="settings-modal" style="max-width: 400px;">
+            <div class="settings-header">
+                <h2>Alterar Nome</h2>
+                <button class="settings-close-btn" id="edit-name-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" style="padding: 20px 30px 30px;">
+                <div class="modal-input-group">
+                    <label for="edit-name-input">Nome de Usuário:</label>
+                    <input type="text" id="edit-name-input" class="hub-modal-input">
+                </div>
+                <button id="edit-name-save-btn" class="button-full-width btn-success" style="margin-top: 20px;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="settings-modal-overlay" id="register-overlay">
     <div class="settings-modal" style="max-width: 450px;">
         <div class="settings-header">
@@ -349,6 +366,7 @@
             
             <div id="register-form">
                 <div id="register-fields">
+                    <p id="register-status" class="hub-form-error hidden" style="text-align: center; margin-top: -5px;"></p>
                     <div class="modal-input-group" style="margin-bottom: 15px;">
                         <label for="register-user">Login de Funcionário:</label>
                         <input type="text" id="register-user" class="hub-modal-input" placeholder="Ex: LOPESM21" maxlength="10">
@@ -378,7 +396,6 @@
                     
                     <button id="register-submit-btn" class="button-full-width" style="width: 40%; margin-top: 15px;">Solicitar</button>
 
-                    <p id="register-status" class="hub-form-error hidden" style="text-align: center; margin-top: 15px;"></p>
                 </div>
 
                 <div id="register-token-display" class="hidden" style="text-align: center;">
@@ -391,13 +408,13 @@
         
         <div id="consult-tab-content" class="settings-body hidden" style="padding: 10px 30px 30px;">
 
+            <p id="consult-status-error" class="hub-form-error hidden" style="text-align: center; margin-top: -5px"></p>
+
             <div class="modal-input-group" style="margin-bottom: 15px;">
                 <label for="consult-token">Insira seu Token de Acesso:</label>
                 <input type="text" id="consult-token" class="hub-modal-input">
             </div>
             <button id="consult-token-btn" class="button-full-width" style="width: 40%; margin-top: 30px;">Consultar</button>
-            
-            <p id="consult-status-error" class="hub-form-error hidden" style="text-align: center;"></p>
 
             <div id="consult-status-wrapper" class="hidden" style="margin-top: 25px; text-align: left;">
                 <hr style="border-color: var(--border-color); border-top: 0;">
