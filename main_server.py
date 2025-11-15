@@ -192,31 +192,42 @@ def automacao():
     last_bw_creds = {}
     
     initial_zv62n_file = find_file_by_prefix(DOWNLOAD_DIR, "ZV62N")
-    
-    # --- ALTERADO: Carrega automações do JSON ---
     automations = load_automations()
+    
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    profile_data = get_user_profile_data()
+    # --- FIM DA MODIFICAÇÃO ---
     
     return render_template(
         'automacao.html', 
-        macros=automations, # Passa o dicionário de automações
+        macros=automations,
         initial_zv62n_file=initial_zv62n_file,
-        is_hub_logged_in=session.get('username')
+        is_hub_logged_in=session.get('username'),
+        role=profile_data['role'] # <-- ADICIONADO
     )
 
 @app.route('/dashboards')
 def dashboards():
-    # --- ALTERADO: Carrega dashboards do JSON ---
     dashboards_data = load_dashboards()
+    
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    profile_data = get_user_profile_data()
+    # --- FIM DA MODIFICAÇÃO ---
     
     return render_template(
         'dashboards.html', 
         is_hub_logged_in=session.get('username'),
-        dashboards_data=dashboards_data # Passa os dados para o Jinja2
-    ) 
+        dashboards_data=dashboards_data,
+        role=profile_data['role'] # <-- ADICIONADO
+    )
 
 @app.route('/drive')
 def drive():
-    return render_template('drive.html', is_hub_logged_in=session.get('username')) 
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    profile_data = get_user_profile_data()
+    # --- FIM DA MODIFICAÇÃO ---
+    
+    return render_template('drive.html', is_hub_logged_in=session.get('username'), role=profile_data['role']) # <-- ADICIONADO
 
 
 # --- ROTAS DE API (DRIVE) ---

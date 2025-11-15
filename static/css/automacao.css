@@ -9,7 +9,7 @@ body {
     align-items: flex-start;
     min-height: 100vh;
     margin: 0;
-    padding: 80px 20px 20px 20px;
+    padding: 120px 20px 20px 20px;
     box-sizing: border-box;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -21,7 +21,7 @@ body {
 /* Botão de Logout (Ícone mais à esquerda) */
 .logout-button {
     position: absolute;
-    top: 45px;
+    top: 30px;
     /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) + 30px (ícone) + 30px (gap) = 220px */
     right: 215px; 
     z-index: 10;
@@ -41,7 +41,7 @@ body {
 /* Botão Agendador (Ícone do meio) */
 .scheduler-button {
     position: absolute;
-    top: 45px;
+    top: 30px;
     /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) = 160px */
     right: 155px; 
     z-index: 10;
@@ -920,6 +920,10 @@ body {
 }
 .tag-purple { color: #5e35b1; background-color: #ede7f6; border-color: #d1c4e9; }
 @media (max-width: 768px) {
+    body {
+        /* Alinha com o padding-top do hub.html (mobile) */
+        padding-top: 120px; 
+    }
     .container {
         width: 100%; /* Ocupa a largura total */
     }
@@ -999,4 +1003,14 @@ body.theme-dark .modal-content .modal-logo.logo-dark {
 body:not(.theme-dark) .modal-content .modal-logo.logo-light {
     /* (Req 1) MANTÉM O ALINHAMENTO CENTRAL */
     display: inline-block; 
+}
+.nav-tab.disabled {
+    pointer-events: none; /* Desabilita o clique */
+    opacity: 0.6;
+    background-color: var(--bg-color);
+    cursor: not-allowed;
+}
+
+.nav-tab.disabled i {
+    filter: grayscale(100%);
 }

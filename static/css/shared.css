@@ -208,7 +208,7 @@ body.theme-dark {
 /* Botão principal (Voltar ao Hub) */
 .back-button {
     position: absolute;
-    top: 40px; /* (Era 25px) Alinha com os outros ícones do header */
+    top: 25px; /* (Era 25px) Alinha com os outros ícones do header */
     left: 35px;
     z-index: 10;
     
@@ -275,7 +275,7 @@ body.theme-dark {
 /* --- CORRIGIDO: Estilo do Botão de Tela Cheia (Páginas Internas) --- */
 .fullscreen-button {
     position: absolute;
-    top: 45px; /* Padrão (igual ao padding do Hub) */
+    top: 30px; /* Padrão (igual ao padding do Hub) */
     right: 40px; /* Padrão (igual ao padding do Hub) */
     z-index: 10;
     
@@ -296,7 +296,7 @@ body.theme-dark {
 /* --- NOVO: Botão de Alternar Tema (Páginas Internas) --- */
 .theme-toggle-button {
     position: absolute;
-    top: 45px; /* Alinhado com o fullscreen-btn */
+    top: 30px; /* Alinhado com o fullscreen-btn */
     right: 95px; /* Posição à esquerda do botão de tela cheia */
     z-index: 10;
     
@@ -464,4 +464,88 @@ body.theme-dark .bot-message.error {
     background-color: #5a2a2a; /* Fundo vermelho escuro */
     color: #ffcccc; /* Texto vermelho claro */
     border-color: #dc3545;
+}
+.page-header-separator {
+    position: absolute;
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    /* (Alinhado com a barra do hub.css (desktop)) */
+    top: 90px;
+    /* --- FIM DA MODIFICAÇÃO --- */
+    
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-bottom: 2px solid var(--border-color);
+    z-index: 5; 
+}
+
+/* Ajuste para Mobile (onde a área do header é menor) */
+@media (max-width: 768px) {
+    .page-header-separator {
+        /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+        /* (Alinhado com a barra do hub.css (mobile)) */
+        top: 74px;
+        /* --- FIM DA MODIFICAÇÃO --- */
+    }
+}
+.main-nav-tabs {
+    /* Posicionamento e centralização */
+    position: absolute;
+    top: 23px; /* Alinha no topo do espaço do header */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20; /* Garante que fique acima de todos os outros botões */
+    
+    /* Layout */
+    display: flex;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color-light);
+    overflow: hidden;
+}
+
+.nav-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--text-secondary-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border-right: 1px solid var(--border-color); /* Separador visual */
+}
+
+.nav-tab:last-child {
+    border-right: none;
+}
+
+.nav-tab:hover {
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+}
+
+.nav-tab i {
+    color: var(--text-tertiary-color);
+    font-size: 1.1rem;
+}
+
+/* Estado Ativo (Cor de destaque) */
+.nav-tab.active {
+    background-color: var(--accent-color);
+    color: white !important;
+}
+
+.nav-tab.active i {
+    color: white !important;
+}
+
+
+/* --- Ajustes Mobile --- */
+@media (max-width: 768px) {
+    .main-nav-tabs {
+        display: none !important;
+    }
 }

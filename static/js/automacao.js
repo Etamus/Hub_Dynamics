@@ -1323,3 +1323,9 @@ function initialize() {
     }
 
     initializeThemeToggle();
+
+    const pageKey = window.location.pathname.replace('/', '').split('?')[0]; // Extrai "automacao", "dashboards", ou "drive"
+    const currentTab = document.querySelector(`.main-nav-tabs .nav-tab[data-page="${pageKey}"]`);
+    if (currentTab) {
+        currentTab.classList.add('active');
+    }

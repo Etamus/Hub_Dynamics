@@ -1,7 +1,7 @@
 /* Seus estilos CSS originais permanecem aqui, sem alterações */
 body { 
     display: flex; justify-content: center; align-items: flex-start; 
-    padding-top: 80px; box-sizing: border-box; overflow-x: hidden; 
+    padding-top: 120px; box-sizing: border-box; overflow-x: hidden; 
     /* ALTERADO: Usando variáveis */
     background-color: var(--bg-color);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -18,7 +18,7 @@ body {
     margin-bottom: 60px; display: flex; align-items: center; 
     justify-content: center; gap: 10px; 
 }
-.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: 20px;}
+.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: -15px;}
 .dashboard-iframe { 
     width: 100%; height: 100%; border: none; border-radius: 16px; 
     /* ALTERADO: Usando variáveis */
@@ -301,6 +301,10 @@ body {
     opacity: 0.7; 
 }
 @media (max-width: 768px) {
+    body {
+        /* Alinha com o padding-top do hub.html (mobile) */
+        padding-top: 120px; 
+    }
     .main-title {
         font-size: 2.2rem;
     }
@@ -378,4 +382,14 @@ body.theme-dark .modal-content .modal-logo.logo-dark {
 }
 body:not(.theme-dark) .modal-content .modal-logo.logo-light {
     display: inline-block; /* Show light logo */
+}
+.nav-tab.disabled {
+    pointer-events: none; /* Desabilita o clique */
+    opacity: 0.6;
+    background-color: var(--bg-color);
+    cursor: not-allowed;
+}
+
+.nav-tab.disabled i {
+    filter: grayscale(100%);
 }

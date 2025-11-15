@@ -30,6 +30,41 @@
       })();
     </script>
 
+    <div class="main-nav-tabs">
+        
+        {% if role == 'Executor' %}
+        <a href="/automacao" class="nav-tab" data-page="automacao" title="Automações">
+            <i class="fas fa-robot"></i>
+            <span>Automações</span>
+        </a>
+        {% else %}
+        <div class="nav-tab disabled" title="Acesso restrito a Executores">
+            <i class="fas fa-robot"></i>
+            <span>Automações</span>
+        </div>
+        {% endif %}
+
+        <a href="/dashboards" class="nav-tab" data-page="dashboards" title="Dashboards">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboards</span>
+        </a>
+
+        {% if role == 'Executor' or role == 'Analista' %}
+        <a href="/drive" class="nav-tab" data-page="drive" title="Drive (F:) Online">
+            <i class="fas fa-hdd"></i>
+            <span>Drive</span>
+        </a>
+        {% else %}
+        <div class="nav-tab disabled" title="Faça login para acessar o Drive">
+            <i class="fas fa-hdd"></i>
+            <span>Drive</span>
+        </div>
+        {% endif %}
+        
+    </div>
+
+    <div class="page-header-separator"></div>
+
     <button id="theme-toggle-btn" class="theme-toggle-button" aria-label="Alternar Tema" title="Alternar Tema">
         <i class="fas fa-sun"></i> 
     </button>
