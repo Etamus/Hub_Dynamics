@@ -964,3 +964,39 @@ body {
         max-height: 40vh;
     }
 }
+/* --- Dark Mode Logo Swapping --- */
+.logo-light { display: none; }
+.logo-dark { display: none; }
+body:not(.theme-dark) .logo-light { 
+    display: inline-block; /* (Req 1) Correção: Permite ficar ao lado do texto */
+    vertical-align: middle; /* (Req 1) Alinha verticalmente com o texto */
+}
+body.theme-dark .logo-dark { 
+    display: inline-block; /* (Req 1) Correção: Permite ficar ao lado do texto */
+    vertical-align: middle; /* (Req 1) Alinha verticalmente com o texto */
+}
+
+/* (Fix for logos in flex containers) */
+.system-selector label,
+.scheduler-task-label {
+    /* Garante que o display:block do logo não quebre o layout */
+    display: inline-flex;
+    align-items: center;
+}
+.queue-item-details strong {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* (Fix for modal logo) */
+.modal-content .modal-logo.logo-dark {
+    display: none; 
+}
+body.theme-dark .modal-content .modal-logo.logo-dark {
+    /* (Req 1) MANTÉM O ALINHAMENTO CENTRAL */
+    display: inline-block; 
+}
+body:not(.theme-dark) .modal-content .modal-logo.logo-light {
+    /* (Req 1) MANTÉM O ALINHAMENTO CENTRAL */
+    display: inline-block; 
+}

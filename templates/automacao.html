@@ -49,7 +49,11 @@
         <p class="subtitle" id="main-subtitle"><i class="fas fa-info-circle"></i> <span id="subtitle-text">Selecione uma tarefa para executar</span></p>
         
         <div class="system-selector">
-            <label> <input type="radio" name="login_system" value="sap" checked> <img src="/static/icones/sap_logo.png" alt="Logo SAP"> </label>
+            <label>
+                <input type="radio" name="login_system" value="sap" checked>
+                <img src="/static/icones/sap_logo.png" alt="Logo SAP" class="logo-light">
+                <img src="/static/icones/sapblack_logo.png" alt="Logo SAP" class="logo-dark">
+            </label>
             <label> <input type="radio" name="login_system" value="bw"> <img src="/static/icones/bwhana_logo.png" alt="Logo BW HANA"> </label>
         </div>
 
@@ -119,8 +123,11 @@
     <div id="login-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <button id="login-modal-close-btn" class="modal-close" title="Fechar">&times;</button>
-            <img id="modal-logo-sap" src="/static/icones/sap_logo.png" alt="Logo SAP" class="modal-logo hidden">
+            
+            <img id="modal-logo-sap-light" src="/static/icones/sap_logo.png" alt="Logo SAP" class="modal-logo logo-light hidden">
+            <img id="modal-logo-sap-dark" src="/static/icones/sapblack_logo.png" alt="Logo SAP" class="modal-logo logo-dark hidden">
             <img id="modal-logo-bw" src="/static/icones/bwhana_logo.png" alt="Logo BW HANA" class="modal-logo hidden">
+            
             <p id="modal-subtitle">Insira suas credenciais para logar.</p>
             <div class="modal-form">
                 <div class="modal-input-group">

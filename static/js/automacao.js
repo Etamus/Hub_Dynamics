@@ -223,10 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTaskInfo = taskInfo; 
         
         if (taskInfo.type === 'sap') {
-            modalLogoSap.classList.remove('hidden');
+            // --- INÍCIO DA MODIFICAÇÃO (Req 2) ---
+            document.getElementById('modal-logo-sap-light').classList.remove('hidden');
+            document.getElementById('modal-logo-sap-dark').classList.remove('hidden');
+            // --- FIM DA MODIFICAÇÃO ---
             modalLogoBw.classList.add('hidden');
+
         } else if (taskInfo.type === 'bw') {
-            modalLogoSap.classList.add('hidden');
+            // --- INÍCIO DA MODIFICAÇÃO (Req 2) ---
+            document.getElementById('modal-logo-sap-light').classList.add('hidden');
+            document.getElementById('modal-logo-sap-dark').classList.add('hidden');
+            // --- FIM DA MODIFICAÇÃO ---
             modalLogoBw.classList.remove('hidden');
         }
         
@@ -618,7 +625,6 @@ function renderPaginatedTasks() {
     const container = document.getElementById('scheduler-tasks-container');
     if (!container) return;
 
-    // Garante que a lista de tarefas está preenchida
     if (schedulerAllTasks.length === 0) {
         collectAllTasks();
         if (schedulerAllTasks.length === 0) return;
@@ -633,42 +639,45 @@ function renderPaginatedTasks() {
     
     const totalPages = Math.ceil(totalTasks / TASKS_PER_PAGE);
 
-    // --- 1. Renderiza as tarefas visíveis ---
     tasksToRender.forEach((task, index) => {
         const actualIndex = startIndex + index;
         const taskValue = `${task.type}|${task.name}`;
-        
-        // Use a primeira tarefa do array COMPLETO como checked se nenhum estiver marcado
         const isChecked = actualIndex === 0 ? 'checked' : ''; 
         
-        const imagePath = task.type === 'sap' 
-            ? '/static/icones/sap_logo.png' 
-            : '/static/icones/bwhanashort_logo.png';
+        // --- INÍCIO DA MODIFICAÇÃO (Req 2 e 3) ---
+        let imageHtml = '';
+        if (task.type === 'sap') {
+            // (Req 2: Usar sapblack_logo.png)
+            // (Req 3: Remover _logo extra)
+            imageHtml = `
+                <img src="/static/icones/sap_logo.png" alt="SAP Logo" class="scheduler-task-system-image logo-light">
+                <img src="/static/icones/sapblack_logo.png" alt="SAP Logo" class="scheduler-task-system-image logo-dark">
+            `;
+        } else { // 'bw'
+            imageHtml = `<img src="/static/icones/bwhanashort_logo.png" alt="BW Logo" class="scheduler-task-system-image">`;
+        }
         
         const label = document.createElement('label');
         label.className = `scheduler-task-label ${task.type}`;
         label.innerHTML = `
             <input type="radio" name="scheduler_task" value="${taskValue}" ${isChecked}>
-            <img src="${imagePath}" alt="${task.type.toUpperCase()} Logo" class="scheduler-task-system-image">
+            ${imageHtml}
             <span class="task-name">${task.name}</span>
         `;
+        // --- FIM DA MODIFICAÇÃO ---
         container.appendChild(label);
     });
 
-    // --- 2. Injeta Placeholders Invisíveis para manter a altura ---
+    // (O restante da função continua igual... placeholders e paginação)
     const tasksRenderedCount = tasksToRender.length;
     const placeholdersNeeded = TASKS_PER_PAGE - tasksRenderedCount;
 
     for (let i = 0; i < placeholdersNeeded; i++) {
         const placeholder = document.createElement('div');
-        // Usamos 'scheduler-task-placeholder' para o CSS de invisibilidade
         placeholder.className = 'scheduler-task-placeholder'; 
         container.appendChild(placeholder);
     }
-    // -----------------------------------------------------------------
-
     
-    // --- 3. Renderiza Controles de Paginação (se necessário) ---
     if (totalPages > 1) {
         const paginationDiv = document.createElement('div');
         paginationDiv.className = 'task-pagination-controls';
@@ -676,9 +685,7 @@ function renderPaginatedTasks() {
         const prevButton = `<button class="pagination-btn" onclick="handleTaskPagination(-1)" ${currentTaskPage === 0 ? 'disabled' : ''} aria-label="Página anterior">
             <i class="fas fa-chevron-left"></i>
         </button>`;
-        
         const pageInfo = `<span class="page-info">${currentTaskPage + 1} de ${totalPages}</span>`;
-        
         const nextButton = `<button class="pagination-btn" onclick="handleTaskPagination(1)" ${currentTaskPage >= totalPages - 1 ? 'disabled' : ''} aria-label="Próxima página">
             <i class="fas fa-chevron-right"></i>
         </button>`;
@@ -729,50 +736,43 @@ function renderJobList(listElement, jobs, showRemoveButton) {
         const li = document.createElement('li');
         li.className = `queue-item ${job.status}`;
         
-        // --- INÍCIO DA ALTERAÇÃO (Req 1): Formato de Data/Hora ---
         const jobDate = new Date(job.startTime).toLocaleString('pt-BR', {
             day: '2-digit', month: '2-digit', year: 'numeric'
-        }); // Ex: 07/11/2025
-        
+        });
         const jobTime = new Date(job.startTime).toLocaleString('pt-BR', {
             hour: '2-digit', minute: '2-digit'
-        }); // Ex: 17:55
-        // --- FIM DA ALTERAÇÃO ---
+        });
         
         const statusInfo = statusMap[job.status] || { icon: 'fa-question-circle', text: 'Desconhecido' };
-
-        // --- INÍCIO DA NOVA LÓGICA (Req 1 e 2) ---
-        let actionItemHtml = ''; // O HTML para o "X" ou o nome
-        
+        let actionItemHtml = '';
         const jobCreator = job.creator || null; 
         const currentUser = currentHubUser || null;
         const creatorName = (jobCreator || "Sistema").toUpperCase(); 
 
         if (showRemoveButton) { 
-            // Estamos na aba "Fila"
             if (jobCreator === currentUser) {
-                // O usuário atual é o criador: Mostrar o 'X'
                 actionItemHtml = `<button class="queue-item-remove" data-job-id="${job.id}" title="Remover Tarefa" aria-label="Remover ${job.taskInfo.name} da fila">&times;</button>`;
             } else {
-                // Não é o criador: Mostrar o nome
                 actionItemHtml = `<span class="queue-item-creator" title="Agendado por ${creatorName}">${creatorName}</span>`;
             }
         } else {
-            // --- CORREÇÃO: Estamos na aba "Histórico" ---
-            // Mostra o nome do criador (seja quem for)
             actionItemHtml = `<span class="queue-item-creator" title="Agendado por ${creatorName}">${creatorName}</span>`;
         }
-        // --- FIM DA LÓGICA DE AÇÃO ----
         
-        // --- Lógica de Imagem (baseada no pedido anterior) ---
-        const imagePath = job.taskInfo.type === 'sap' 
-            ? '/static/icones/sap_logo.png' 
-            : '/static/icones/bwhanashort_logo.png'; 
-        
-        const taskIconHtml = `<img src="${imagePath}" class="queue-item-task-icon" alt="${job.taskInfo.type} logo">`;
-        // ----------------------------------------------------
+        // --- INÍCIO DA MODIFICAÇÃO (Req 2 e 3) ---
+        let taskIconHtml = '';
+        if (job.taskInfo.type === 'sap') {
+            // (Req 2: Usar sapblack_logo.png)
+            // (Req 3: Remover _logo extra)
+            taskIconHtml = `
+                <img src="/static/icones/sap_logo.png" class="queue-item-task-icon logo-light" alt="SAP logo">
+                <img src="/static/icones/sapblack_logo.png" class="queue-item-task-icon logo-dark" alt="SAP logo">
+            `;
+        } else { // 'bw'
+            taskIconHtml = `<img src="/static/icones/bwhanashort_logo.png" class="queue-item-task-icon" alt="BW logo">`;
+        }
+        // --- FIM DA MODIFICAÇÃO ---
 
-        // --- ALTERAÇÃO NO INNERHTML (Req 1) ---
         li.innerHTML = `
             <i class="fas ${statusInfo.icon} queue-item-icon" title="${statusInfo.text}"></i>
             <div class="queue-item-details">
@@ -782,7 +782,6 @@ function renderJobList(listElement, jobs, showRemoveButton) {
             </div>
             ${actionItemHtml}
         `;
-        // --- FIM DA ALTERAÇÃO ---
         listElement.appendChild(li);
     });
     
@@ -792,7 +791,7 @@ function renderJobList(listElement, jobs, showRemoveButton) {
                 const jobId = btn.dataset.jobId;
                 jobQueue = jobQueue.filter(job => job.id !== jobId);
                 renderJobQueue();
-                saveScheduleToServer(); // <-- ADICIONE ESTA LINHA
+                saveScheduleToServer(); 
             });
         });
     }

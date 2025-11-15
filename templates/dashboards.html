@@ -46,8 +46,17 @@
             {% for system_key, system_data in dashboards_data.items() %}
                 <label>
                     <input type="radio" name="dashboard_system" value="{{ system_key }}" {{ 'checked' if loop.first }}>
-                    <img src="{{ system_data.icon }}" alt="Logo {{ system_data.system_name }}">
-                </label>
+                    
+                    {% if system_key == 'looker' %}
+                        <img src="/static/icones/looker_logo.png" alt="Logo Looker Studio" class="logo-light">
+                        <img src="/static/icones/lookerblack_logo.png" alt="Logo Looker Studio" class="logo-dark">
+                    {% elif system_key == 'library' %}
+                        <img src="/static/icones/library_logo.png" alt="Logo Library" class="logo-light">
+                        <img src="/static/icones/libraryblack_logo.png" alt="Logo Library" class="logo-dark">
+                    {% else %}
+                        <img src="{{ system_data.icon }}" alt="Logo {{ system_data.system_name }}">
+                    {% endif %}
+                    </label>
             {% endfor %}
         </div>
         

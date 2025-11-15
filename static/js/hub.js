@@ -762,15 +762,11 @@ profileRemoveBtn.addEventListener('click', () => {
     function createConnectionItem(system, iconSrc, systemName, connectionData) {
         const item = document.createElement('div');
         
-        // --- INÍCIO DA MODIFICAÇÃO ---
-        // Define a classe base
         let itemClass = 'connection-item';
-        // Adiciona a classe extra APENAS se for SAP ou BW
         if (system === 'sap' || system === 'bw') {
             itemClass += ' connection-item-padded';
         }
         item.className = itemClass;
-        // --- FIM DA MODIFICAÇÃO ---
 
         let userDisplay = 'Não conectada';
         let removeBtnHtml = '';
@@ -785,9 +781,22 @@ profileRemoveBtn.addEventListener('click', () => {
         }
 
         const iconClass = (system === 'tableau') ? 'connection-icon tableau-icon' : 'connection-icon';
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Req 3) ---
+        let iconHtml = '';
+        if (system === 'sap') {
+            // (Req 3: Remover _logo extra)
+            iconHtml = `
+                <img src="/static/icones/saplong_logo.png" alt="SAP Logo" class="${iconClass} logo-light">
+                <img src="/static/icones/sapblacklong_logo.png" alt="SAP Logo" class="${iconClass} logo-dark">
+            `;
+        } else {
+            iconHtml = `<img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">`;
+        }
+        // --- FIM DA MODIFICAÇÃO ---
 
         item.innerHTML = `
-            <img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">
+            ${iconHtml}
             <div class="connection-details">
                 <strong>${systemName}</strong>
                 <span>${userDisplay}</span>

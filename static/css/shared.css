@@ -16,17 +16,19 @@
 }
 
 body.theme-dark {
-    --bg-color: #121212;
-    --card-bg-color: #1E1E1E;
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 2) --- */
+    --bg-color: #181818;           /* (Era #121212) */
+    --card-bg-color: #242424;      /* (Era #1E1E1E) */
     --text-primary-color: #E0E0E0;
     --text-secondary-color: #A0A0A0;
     --text-tertiary-color: #BDBDBD;
-    --border-color: #444444;
+    --border-color: #4A4A4A;       /* (Era #444444) */
     --accent-color: #0088ff;
     --accent-color-hover: #33aaff;
     --shadow-color: rgba(255, 255, 255, 0.08);
     --shadow-color-hover: rgba(255, 255, 255, 0.1);
     --shadow-color-light: rgba(255, 255, 255, 0.03);
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 /* ============================================= */
 
@@ -379,4 +381,83 @@ body.theme-dark {
     .theme-toggle-button { right: 65px; }
     .scheduler-button { right: 120px; }
     .logout-button { right: 170px; }
+}
+body.theme-dark .chat-popup {
+    background-color: var(--card-bg-color); /* Fundo do popup */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+/* Seta do balão */
+body.theme-dark .chat-popup::after {
+    border-top: 10px solid var(--card-bg-color);
+}
+
+/* Header (já é azul, mas ajustamos o botão de fechar) */
+body.theme-dark .chat-header {
+    background-color: var(--accent-color); /* Usa o azul mais vibrante do dark mode */
+}
+body.theme-dark .close-button {
+    color: rgba(255, 255, 255, 0.7);
+}
+body.theme-dark .close-button:hover {
+    color: white;
+}
+
+/* Fundo das mensagens */
+body.theme-dark .chat-messages {
+    background-color: var(--bg-color);
+}
+
+/* Balão do Bot */
+body.theme-dark .bot-message {
+    background-color: var(--card-bg-color); /* Fundo do balão do bot */
+    color: var(--text-primary-color); /* Texto claro */
+}
+
+/* Balão do Usuário (já é azul, mas usa a variável de acento) */
+body.theme-dark .user-reply {
+    background-color: var(--accent-color);
+}
+
+/* Botão de formulário (Demanda/Sugestão) */
+body.theme-dark .chat-action-button {
+    background-color: var(--card-bg-color);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+body.theme-dark .chat-action-button:hover {
+    background-color: var(--accent-color);
+    color: var(--card-bg-color);
+}
+
+/* Área de input (onde digita) */
+body.theme-dark .chat-input-area {
+    background-color: var(--card-bg-color);
+    border-top: 1px solid var(--border-color);
+}
+
+body.theme-dark .chat-input {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary-color);
+}
+
+body.theme-dark .chat-input:focus {
+    border-color: var(--accent-color);
+}
+
+/* Botão de Enviar (já usa a cor de acento) */
+body.theme-dark .send-button {
+    background-color: var(--accent-color);
+}
+body.theme-dark .send-button:hover {
+    background-color: var(--accent-color-hover);
+}
+
+/* Mensagem de erro do bot */
+body.theme-dark .bot-message.error {
+    background-color: #5a2a2a; /* Fundo vermelho escuro */
+    color: #ffcccc; /* Texto vermelho claro */
+    border-color: #dc3545;
 }
