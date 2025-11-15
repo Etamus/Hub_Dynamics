@@ -22,7 +22,7 @@
       "bw": null
     },
     "login_attempts": 0,
-    "lockout_until": "2025-11-10T13:29:47.805538-03:00"
+    "lockout_until": null
   },
   "paixaj": {
     "password": "1234",

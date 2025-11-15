@@ -34,7 +34,7 @@
         <i class="fas fa-sun"></i> 
     </button>
     <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
-    <a href="/" id="back-btn" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
+    <a href="/" id="back-btn" class="back-button" title="Voltar ao Hub"><i class="fas fa-home"></i></a>
     
     <div id="selection-screen">
         <div style="text-align: center;">
@@ -53,6 +53,10 @@
                     {% elif system_key == 'library' %}
                         <img src="/static/icones/library_logo.png" alt="Logo Library" class="logo-light">
                         <img src="/static/icones/libraryblack_logo.png" alt="Logo Library" class="logo-dark">
+                    
+                    {% elif system_key == 'tableau' %}
+                        <img src="/static/icones/tableau_logo.png" alt="Logo Tableau" class="logo-light">
+                        <img src="/static/icones/tableaublack_logo.png" alt="Logo Tableau" class="logo-dark">
                     {% else %}
                         <img src="{{ system_data.icon }}" alt="Logo {{ system_data.system_name }}">
                     {% endif %}
@@ -112,7 +116,8 @@
         <div class="modal-content">
             <button id="login-modal-close-btn" class="modal-close" title="Fechar">&times;</button>
             
-            <img id="modal-logo-tableau" src="/static/icones/tableau_logo.png" alt="Logo Tableau" class="modal-logo">
+            <img id="modal-logo-tableau-light" src="/static/icones/tableau_logo.png" alt="Logo Tableau" class="modal-logo logo-light hidden">
+            <img id="modal-logo-tableau-dark" src="/static/icones/tableaublack_logo.png" alt="Logo Tableau" class="modal-logo logo-dark hidden">
             
             <p id="modal-subtitle">Insira suas credenciais para logar.</p>
             <div class="modal-form">

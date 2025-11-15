@@ -33,12 +33,22 @@ body {
 }
 
 .drive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px; /* Espaço entre o caminho e a busca */
     padding: 15px 20px;
     /* ALTERADO: Usando variáveis */
-    background-color: var(--bg-color);
+    background-color: var(--border-color); 
     border-bottom: 1px solid var(--border-color);
     font-weight: 500;
     color: var(--text-secondary-color);
+}
+#breadcrumbs-container {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 #breadcrumbs a {
     /* ALTERADO: Usando variáveis */
@@ -67,7 +77,7 @@ body {
     transition: background-color 0.2s ease;
 
     /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-    gap: 15px; /* Adiciona 15px de espaço ENTRE as colunas */
+    gap: 30px; /* Adiciona 15px de espaço ENTRE as colunas */
     /* --- FIM DA MODIFICAÇÃO --- */
 }
 .file-item:hover {
@@ -98,16 +108,25 @@ body {
 /* (NOVO) Data de Modificação */
 .mod-date {
     width: 100px; 
-    text-align: center;
-    flex-shrink: 0; /* Impede que encolha */
+    text-align: left;
+    flex-shrink: 0; 
+
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    padding-left: 15px;
+    border-left: 1px solid var(--bg-color); /* (Cor clara do fundo) */
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 
 /* (NOVO) Tamanho do Arquivo */
 .file-size {
     width: 90px; 
     text-align: right;
-    flex-shrink: 0; /* Impede que encolha */
-    /* padding-left: 15px; (REMOVIDO) */
+    flex-shrink: 0; 
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    padding-left: 15px;
+    border-left: 1px solid var(--bg-color); /* (Cor clara do fundo) */
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 /* --- FIM DAS MODIFICAÇÕES --- */
 
@@ -136,16 +155,20 @@ body {
     display: flex;
     align-items: center;
     padding: 10px 20px; 
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 2) --- */
+    /* (Muda a cor para ser diferente do .drive-header) */
     background-color: var(--bg-color);
+    /* --- FIM DA MODIFICAÇÃO --- */
+
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--text-tertiary-color);
     flex-shrink: 0; 
-
-    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-    gap: 15px; /* Adiciona 15px de espaço ENTRE os títulos */
-    /* --- FIM DA MODIFICAÇÃO --- */
+    
+    /* (Gap removido na sua última alteração) */
+    /* gap: 15px; */
 }
 .file-name {
     flex-grow: 1; 
@@ -175,12 +198,53 @@ body {
 /* Data (Cabeçalho) - Alinhado com a coluna de dados */
 .mod-date-header {
     width: 130px;
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    padding-left: 15px;
+    /* (Usa a cor de fundo do item para o traço) */
+    border-left: 1px solid var(--text-secondary-color);
+    text-align: left; /* Alinha este cabeçalho à esquerda */
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 
 /* Tamanho (Cabeçalho) - Alinhado com a coluna de dados */
 .file-size-header {
     width: 90px;
-    /* padding-left: 15px; (REMOVIDO) */
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    padding-left: 15px;
+    border-left: 1px solid var(--text-secondary-color);
+    text-align: left; /* (Mudou de 'right' para 'left') */
+    /* --- FIM DA MODIFICAÇÃO --- */
+}
+.drive-search-container {
+    position: relative;
+    flex-shrink: 0; /* Não deixa a barra encolher */
+    width: 300px;
+}
+.drive-search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary-color);
+}
+#drive-search-input {
+    width: 100%;
+    padding: 8px 15px 8px 40px; /* Padding menor */
+    font-size: 0.9rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    background-color: var(--card-bg-color);
+    color: var(--text-primary-color);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+#drive-search-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: var(--card-bg-color);
 }
 @media (max-width: 768px) {
     body {
@@ -214,4 +278,26 @@ body {
     .file-item i {
         margin-right: 10px;
     }
+    .drive-header {
+        flex-direction: column; /* Stack (empilha) */
+        align-items: stretch; /* Ocupa 100% da largura */
+        gap: 10px;
+        padding-bottom: 10px; /* Ajuste do padding */
+    }
+    .drive-search-container {
+        width: 100%; /* Busca ocupa 100% */
+    }
+    #breadcrumbs-container {
+        text-align: center; /* Centraliza o "Caminho:" */
+        padding-bottom: 5px;
+    }
+}
+body.theme-dark .file-item .mod-date,
+body.theme-dark .file-item .file-size {
+    /* (Usa a variável de texto primário, que é branca no modo escuro) */
+    border-left-color: var(--bg-color);
+}
+body.theme-dark .file-list-header .mod-date-header,
+body.theme-dark .file-list-header .file-size-header {
+    border-left-color: var(--text-primary-color);
 }

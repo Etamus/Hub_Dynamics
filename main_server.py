@@ -448,7 +448,7 @@ def hub_login():
     
     user_data = users.get(username)
     
-    # --- NOVA LÓGICA DE BLOQUEIO (Req 1) ---
+    # --- LÓGICA DE BLOQUEIO ---
     if user_data:
         # 1. Verifica se o usuário está bloqueado
         lockout_until = user_data.get('lockout_until')
@@ -468,8 +468,18 @@ def hub_login():
                 save_users(users)
                 return jsonify({"status": "erro", "mensagem": f"Muitas tentativas falhas. Usuário bloqueado por 5 minutos."}), 429
             
+            # --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+            remaining_attempts = LOGIN_ATTEMPT_LIMIT - attempts
+            
+            # Cria a segunda linha da mensagem
+            attempts_text = f"{remaining_attempts} {'tentativa restante' if remaining_attempts == 1 else 'tentativas restantes'}."
+            # Junta as duas linhas com um caractere de nova linha (\n)
+            mensagem_erro = f"Usuário ou senha inválidos.\n{attempts_text}"
+            
             save_users(users)
-            return jsonify({"status": "erro", "mensagem": "Usuário ou senha inválidos."}), 401
+            # Retorna a nova mensagem
+            return jsonify({"status": "erro", "mensagem": mensagem_erro}), 401
+            # --- FIM DA MODIFICAÇÃO ---
             
         # 3. Se a senha estiver correta
         # Reseta o bloqueio e tentativas no login bem-sucedido
@@ -491,7 +501,7 @@ def hub_login():
     if username.lower() == 'admin':
         role = 'Executor'
         
-    display_name = user_data.get('display_name', None) # <-- ADICIONE ESTA LINHA
+    display_name = user_data.get('display_name', None) 
     return jsonify({"status": "sucesso", "username": username, "display_name": display_name, "profile_image": image_url, "area": area, "role": role})
 
 @app.route('/api/hub/logout', methods=['POST'])

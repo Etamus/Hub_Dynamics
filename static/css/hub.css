@@ -965,6 +965,7 @@ body.theme-dark .logo-dark {
     font-size: 0.9rem;
     margin-bottom: 15px;
     text-align: center;
+    white-space: pre-wrap; /* <-- ADICIONE ESTA LINHA */
 }
 .hub-form-error.hidden {
     display: none;
@@ -2444,26 +2445,33 @@ body.theme-dark .logo-dark {
 /* (Req 1) Estilo para o botão de Lápis (Editar Nome) */
 .profile-edit-pencil-btn {
     position: absolute;
-    
-    /* --- INÍCIO DA MODIFICAÇÃO --- */
-    right: -40px; /* Move o botão para FORA da borda do container-pai */
-    /* --- FIM DA MODIFICAÇÃO --- */
-    
+    right: -45px; /* (Ajustado para o novo tamanho) */
     top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
+    
+    /* (Req 1) Estilo Círculo */
+    width: 32px;  /* Define a largura */
+    height: 32px; /* Define a altura (igual à largura) */
+    border-radius: 50%; /* Torna o botão redondo */
+    background-color: #f0f0f0; /* Fundo sutil */
+    border: 1px solid var(--border-color);
+
+    /* (Req 1) Centralizar Ícone */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
     color: var(--text-secondary-color);
     cursor: pointer;
     font-size: 0.9rem;
-    padding: 5px 8px; 
-    border-radius: 4px;
+    padding: 0; /* (Remove o padding antigo) */
     transition: all 0.2s ease;
 }
 
 .profile-edit-pencil-btn:hover {
     color: var(--accent-color);
     background-color: var(--border-color);
+    border-color: var(--accent-color); /* (Adicionado) */
 }
 #profile-password-save-btn {
     width: 60%;
@@ -2544,4 +2552,8 @@ body.theme-dark .logo-dark {
 .hub-form-status.error {
     background-color: #f8d7da;
     color: #721c24;
+}
+#edit-name-overlay .settings-modal {
+    /* Altere este valor para o que desejar (ex: 350px, 450px) */
+    width: 380px; 
 }

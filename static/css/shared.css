@@ -208,35 +208,39 @@ body.theme-dark {
 /* Botão principal (Voltar ao Hub) */
 .back-button {
     position: absolute;
-    top: 25px;
-    left: 25px;
+    top: 40px; /* (Era 25px) Alinha com os outros ícones do header */
+    left: 35px;
     z-index: 10;
     
-    /* Aparência */
-    background-color: var(--card-bg-color);
-    color: var(--text-tertiary-color);
-    border: 1px solid var(--border-color);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%; /* Circular */
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    /* Remove fundo, borda e sombra */
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+
+    /* Remove tamanho fixo */
+    width: auto;
+    height: auto;
     
-    /* Alinhamento do Ícone */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Ajusta o ícone */
+    color: var(--text-tertiary-color);
+    text-decoration: none;
+    font-size: 1.8rem; /* Tamanho maior para o ícone */
     
     /* Efeitos */
-    text-decoration: none;
-    font-size: 16px;
-    box-shadow: 0 4px 12px var(--shadow-color-light);
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 
 .back-button:hover {
-    transform: translateY(-2px);
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    transform: scale(1.1); /* Efeito de zoom */
     color: var(--accent-color);
-    border-color: var(--accent-color);
-    box-shadow: 0 6px 16px var(--shadow-color);
+    
+    /* Remove efeitos de borda/sombra */
+    border-color: transparent; 
+    box-shadow: none;
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 
 /* Botão secundário (Voltar para Áreas em Dashboards) */

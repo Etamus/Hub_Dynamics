@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalExecuteBtn = document.getElementById('modal-execute-btn');
     const modalLoginCloseBtn = document.getElementById('login-modal-close-btn');
     const modalSaveConnBtn = document.getElementById('modal-save-conn-btn'); 
-    const modalLogoTableau = document.getElementById('modal-logo-tableau');
+    const modalLogoTableauLight = document.getElementById('modal-logo-tableau-light');
+    const modalLogoTableauDark = document.getElementById('modal-logo-tableau-dark');
+    
     // --- FIM: Seletores do Modal ---
     
     const LOOKER_PAGE_SIZE = 4;
@@ -173,8 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function openLoginModal(button) {
         currentTaskInfo = button; // Salva o botão que o usuário quer abrir
         
-        // Mostra o logo correto (neste caso, sempre Tableau)
-        modalLogoTableau.classList.remove('hidden');
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        // Mostra ambos os logos (o CSS cuida de qual exibir)
+        if (modalLogoTableauLight) modalLogoTableauLight.classList.remove('hidden');
+        if (modalLogoTableauDark) modalLogoTableauDark.classList.remove('hidden');
+        // --- FIM DA MODIFICAÇÃO ---
 
         // Se tivermos uma conexão salva, pré-preenche
         if (savedConnections.tableau) {
@@ -499,38 +504,36 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateBackButton() {
             if (isViewingDashboard) {
-                // Estado: VENDO DASHBOARD
-                backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                // Estado: VENDO DASHBOARD (Botão "Voltar")
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+                backButton.innerHTML = '<i class="fas fa-arrow-left"></i>'; // Seta para voltar
+                // --- FIM DA MODIFICAÇÃO ---
                 backButton.href = '#'; 
                 backButton.title = 'Voltar'; 
             } else {
-                // Estado: TELA DE SELEÇÃO
-                backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                // Estado: TELA DE SELEÇÃO (Botão "Voltar ao Hub")
+                // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+                backButton.innerHTML = '<i class="fas fa-home"></i>'; // Casa para ir ao Hub
+                // --- FIM DA MODIFICAÇÃO ---
                 backButton.href = '/'; 
                 backButton.title = 'Voltar ao Hub';
                 
                 isTableauLoggedIn = false;
                 currentTaskInfo = null;
 
-                // --- INÍCIO DA MODIFICAÇÃO (Req 1: Sair do modo paisagem) ---
-                
-                // 1. Tenta sair da tela cheia
-                // (Verifica se estamos em tela cheia antes de tentar sair)
+                // (Lógica para sair da tela cheia/paisagem permanece a mesma)
                 if (document.fullscreenElement && document.exitFullscreen) {
                     document.exitFullscreen().catch(err => {
                         console.warn("Falha ao sair da tela cheia:", err.message);
                     });
                 }
-                
-                // 2. Tenta destravar a orientação
                 if (screen.orientation && screen.orientation.unlock) {
                     try {
                         screen.orientation.unlock();
                     } catch(e) {
-                        // Ignora erros (pode falhar se não estava travado)
+                        // Ignora erros
                     }
                 }
-                // --- FIM DA MODIFICAÇÃO ---
             }
         }
 

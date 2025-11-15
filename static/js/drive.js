@@ -33,6 +33,7 @@ function formatModDate(isoString) {
 document.addEventListener('DOMContentLoaded', () => {
     const fileList = document.getElementById('file-list');
     const breadcrumbs = document.getElementById('breadcrumbs');
+    const searchInput = document.getElementById('drive-search-input');
 
     // Função principal para buscar e renderizar o conteúdo de uma pasta
     const fetchDirectory = async (path = '') => {
@@ -53,6 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Limpa a lista atual
         fileList.innerHTML = '';
         
+        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
+        // Limpa a busca ao carregar um novo diretório
+        if (searchInput.value) {
+            searchInput.value = '';
+        }
+        // --- FIM DA MODIFICAÇÃO ---
+
         // Cria os breadcrumbs (navegação de caminho)
         renderBreadcrumbs(currentPath);
 
@@ -144,6 +152,51 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     };
+
+searchInput.addEventListener('keyup', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const allItems = fileList.querySelectorAll('.file-item');
+        let itemsFound = 0;
+
+        allItems.forEach(item => {
+            const itemNameSpan = item.querySelector('.file-name');
+            if (!itemNameSpan) return; 
+
+            const itemName = itemNameSpan.textContent.toLowerCase();
+            
+            // ".." (Voltar) deve sempre aparecer
+            if (itemName === '..') {
+                item.style.display = 'flex';
+                return;
+            }
+
+            if (itemName.includes(searchTerm)) {
+                item.style.display = 'flex';
+                itemsFound++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // (Req 1) Gerencia a mensagem de "Nenhum resultado"
+        let noResultsMsg = fileList.querySelector('.no-results-message');
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('li');
+            noResultsMsg.className = 'file-item no-results-message'; // Reusa a classe
+            noResultsMsg.style.display = 'none'; 
+            noResultsMsg.style.justifyContent = 'center'; 
+            noResultsMsg.style.fontStyle = 'italic';
+            noResultsMsg.style.cursor = 'default';
+            fileList.appendChild(noResultsMsg);
+        }
+
+        if (itemsFound === 0 && searchTerm !== '') {
+            noResultsMsg.textContent = 'Nenhum item encontrado.';
+            noResultsMsg.style.display = 'flex';
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    });
 
     // Carga inicial
     fetchDirectory('');

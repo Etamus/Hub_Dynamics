@@ -36,17 +36,23 @@
 
     <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
 
-    <a href="/" class="back-button" title="Voltar ao Hub"><i class="fas fa-arrow-left"></i></a>
+    <a href="/" class="back-button" title="Voltar ao Hub"><i class="fas fa-home"></i></a>
 
     <div style="text-align: center; width: 100%; max-width: 900px;">
         <h1 class="main-title">Drive (F:) Online</h1>
-        <p class="subtitle"><i class="fas fa-info-circle"></i> <span>Caminhe pelas pastas da rede</span></p>
+        <p class="subtitle"><i class="fas fa-info-circle"></i> <span>Navegue pelas pastas da rede</span></p>
     </div>
     <div class="drive-container">
         <div class="drive-header">
+          <span id="breadcrumbs-container">
             Caminho: <span id="breadcrumbs"></span>
+        </span>
+        
+        <div class="drive-search-container">
+                <i class="fas fa-search drive-search-icon"></i>
+                <input type="text" id="drive-search-input" placeholder="Buscar nesta pasta...">
+            </div>
         </div>
-
         <div class="file-list-header">
             <span class="file-name-header">Nome</span>
             <span class="file-info-header mod-date-header">Modificado em</span>

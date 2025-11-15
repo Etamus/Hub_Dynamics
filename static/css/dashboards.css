@@ -18,7 +18,7 @@ body {
     margin-bottom: 60px; display: flex; align-items: center; 
     justify-content: center; gap: 10px; 
 }
-.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center;}
+.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: 20px;}
 .dashboard-iframe { 
     width: 100%; height: 100%; border: none; border-radius: 16px; 
     /* ALTERADO: Usando variáveis */
@@ -351,4 +351,31 @@ body {
         width: 100%;
         height: 80vh; /* Altura do iframe */
     }
+}
+.logo-light { display: none; }
+.logo-dark { display: none; }
+body:not(.theme-dark) .logo-light { 
+    display: inline-block; /* (Usa inline-block para centralizar) */
+    vertical-align: middle;
+}
+body.theme-dark .logo-dark { 
+    display: inline-block; 
+    vertical-align: middle;
+}
+
+/* (Fix para logos no seletor de sistema) */
+.system-selector label {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* (Fix para logos no modal de login) */
+.modal-content .modal-logo.logo-dark {
+    display: none; 
+}
+body.theme-dark .modal-content .modal-logo.logo-dark {
+    display: inline-block; /* Show dark logo */
+}
+body:not(.theme-dark) .modal-content .modal-logo.logo-light {
+    display: inline-block; /* Show light logo */
 }

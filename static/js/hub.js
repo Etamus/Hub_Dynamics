@@ -784,7 +784,7 @@ function uploadCroppedImage(formData) {
                 <div class="profile-info-group">
                     <label>Nome de Usuário:</label>
                     <span id="profile-name-span">${displayNameValue || 'Não definido'}</span>
-                    <button id="profile-name-edit-btn" class="profile-edit-pencil-btn" title="Editar Nome">
+                    <button id="profile-name-edit-btn" class="profile-edit-pencil-btn" title="Alterar Nome">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
                 </div>
@@ -1255,15 +1255,20 @@ function openEditNameModal(currentName) {
 
         const iconClass = (system === 'tableau') ? 'connection-icon tableau-icon' : 'connection-icon';
         
-        // --- INÍCIO DA MODIFICAÇÃO (Req 3) ---
+        // --- INÍCIO DA MODIFICAÇÃO ---
         let iconHtml = '';
         if (system === 'sap') {
-            // (Req 3: Remover _logo extra)
             iconHtml = `
                 <img src="/static/icones/saplong_logo.png" alt="SAP Logo" class="${iconClass} logo-light">
                 <img src="/static/icones/sapblacklong_logo.png" alt="SAP Logo" class="${iconClass} logo-dark">
             `;
+        } else if (system === 'tableau') {
+             iconHtml = `
+                <img src="/static/icones/tableau_logo.png" alt="Tableau Logo" class="${iconClass} logo-light">
+                <img src="/static/icones/tableaublack_logo.png" alt="Tableau Logo" class="${iconClass} logo-dark">
+            `;
         } else {
+            // (Fallback para BW)
             iconHtml = `<img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">`;
         }
         // --- FIM DA MODIFICAÇÃO ---
