@@ -206,7 +206,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v4.2</p>
+                    <p><strong>Versão Atual:</strong> v4.4</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -217,6 +217,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v4.4:</strong> Lançamento do novo design de janelas do Hub</li>
                         <li><strong>v4.2:</strong> Layout alterado por completo, melhorias de perfil e correções</li>
                         <li><strong>v4.0.9:</strong> Melhoria de layout e nova seleção de tela nas páginas</li>
                         <li><strong>v4.0.8:</strong> Melhorias no Drive F: Online e alterações nos icones das páginas</li>
@@ -291,7 +292,7 @@
     </div>
 
     <div class="settings-modal-overlay" id="profile-overlay">
-        <div class="settings-modal" style="max-width: 420px;">
+        <div class="settings-modal">
             <div class="settings-header">
                 <h2>Minha Conta</h2>
                 <button class="settings-close-btn" id="profile-close-btn">&times;</button>
@@ -320,22 +321,23 @@
         </div>
     </div>
     <div class="settings-modal-overlay" id="cropper-overlay">
-        <div class="settings-modal" style="max-width: 90vw; width: 600px;">
-            <div class="settings-header">
-                <h2>Editar Imagem</h2>
-                <button class="settings-close-btn" id="cropper-close-btn">&times;</button>
+                <div class="settings-modal cropper-modal-styling"> 
+                        <div class="settings-body" style="padding: 5px 20px 0;">
+                <button class="settings-close-btn" id="cropper-close-btn" style="position: absolute; top: 15px; right: 20px; z-index: 10;">&times;</button>
+                <div class="cropper-container">
+                    <img id="cropper-image" style="max-width: 100%;" src="" alt="Imagem para Recortar">
+                </div>
+                    </div>
+            <div class="profile-form-footer" id="cropper-footer">
+                <button class="button btn-cancel" id="cropper-close-footer-btn">Fechar</button>
+                <button class="button btn-save" id="cropper-save-btn">Recortar e Salvar</button>
             </div>
-            <div class="settings-body" style="padding: 20px 20px 30px;">
-                <div class="cropper-container">
-                    <img id="cropper-image" style="max-width: 100%;" src="" alt="Imagem para Recortar">
-                </div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button id="cropper-save-btn" class="button-full-width" style="width: 40%;">
-                        Recortar e Salvar
-                    </button>
-                </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="stats-overlay">
+        <div class="settings-modal" id="stats-modal-content" style="max-width: 600px;">
             </div>
-        </div>
     </div>
 
     <div class="settings-modal-overlay" id="edit-name-overlay">

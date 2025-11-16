@@ -1154,32 +1154,7 @@ body.theme-dark .logo-dark {
     flex: 1;
 }
 
-/* Display do Token */
-.token-display {
-    padding: 15px;
-    background-color: var(--bg-color);
-    border: 1px dashed var(--accent-color);
-    color: var(--text-primary-color);
-    font-weight: 600;
-    font-family: 'Courier New', Courier, monospace;
-    border-radius: 8px;
-    word-break: break-all;
-    cursor: text;
-}
 
-/* Display do Status da Consulta */
-.consult-status-box {
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    text-align: center; /* <-- ADICIONE ESTA LINHA */
-
-    /* --- ADICIONE ESTAS 3 LINHAS --- */
-    width: 55%;                /* Define a largura (ex: 60% do espaço) */
-    margin-left: auto;         /* Centraliza o bloco da caixa */
-    margin-right: auto;        /* Centraliza o bloco da caixa */
-}
 .consult-status-box.pending {
     background-color: var(--bg-color);
     color: var(--text-tertiary-color);
@@ -1304,182 +1279,6 @@ body.theme-dark .logo-dark {
 /* --- CORREÇÃO: Classe de utilidade .hidden --- */
 .hidden {
     display: none !important;
-}
-
-/* --- ESTILOS DO MODAL DE REGISTRO E ADMIN --- */
-
-/* Reutiliza o estilo das abas do agendador */
-.scheduler-queue-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 20px;
-}
-.scheduler-tab {
-    padding: 10px 15px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-secondary-color);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -1px; /* Alinha com a borda */
-}
-.scheduler-tab:hover {
-    color: var(--text-primary-color);
-}
-.scheduler-tab.active {
-    color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
-}
-/* Garante que o select no modal de registro se pareça com o input */
-.settings-modal select.hub-modal-input {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-}
-.settings-modal .scheduler-datetime-group {
-    display: flex;
-    gap: 10px;
-}
-.settings-modal .scheduler-datetime-group .modal-input-group {
-    flex: 1;
-}
-
-/* Display do Token */
-.token-display {
-    padding: 15px;
-    background-color: var(--bg-color);
-    border: 1px dashed var(--accent-color);
-    color: var(--text-primary-color);
-    font-weight: 600;
-    font-family: 'Courier New', Courier, monospace;
-    border-radius: 8px;
-    word-break: break-all;
-    cursor: text;
-    margin-top: 20px; /* Adiciona espaço acima do token */
-}
-
-/* Display do Status da Consulta */
-.consult-status-box {
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-.consult-status-box.pending {
-    background-color: var(--bg-color);
-    color: var(--text-tertiary-color);
-    border: 1px solid var(--border-color);
-}
-.consult-status-box.approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-.consult-status-box.rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* --- ESTILOS DO MODAL DE ADMIN (REVISÃO COMPLETA) --- */
-#admin-list-container {
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 10px; /* Padding sutil para a rolagem */
-    background-color: var(--bg-color); /* Fundo sutil */
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* Espaço entre os cards de solicitação */
-}
-
-.admin-request-card {
-    display: flex;
-    flex-direction: column; /* Empilha a info e o form de rejeição */
-    padding: 20px;
-    border-radius: 10px;
-    background-color: var(--card-bg-color);
-    box-shadow: 0 4px 12px var(--shadow-color-light);
-    border: 1px solid var(--border-color);
-}
-
-/* Container principal (Info + Botões de Ação) */
-.admin-request-main {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-}
-
-.admin-request-info {
-    flex-grow: 1;
-    text-align: left;
-}
-
-.admin-request-info .username {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary-color);
-    margin-bottom: 2px;
-}
-
-.admin-request-info .details {
-    font-size: 0.9rem;
-    color: var(--text-secondary-color);
-    line-height: 1.5;
-}
-.admin-request-info .details strong {
-    color: var(--text-tertiary-color);
-}
-
-.admin-request-actions {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0; /* Impede que os botões encolham */
-    align-items: center;
-}
-
-/* Botões de ação do Admin (usando classes de botão existentes) */
-.admin-request-actions .button {
-    /* Ajusta o padding para ser menor (padrão 12px 20px é muito grande) */
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    min-width: 90px;
-    text-align: center;
-}
-
-.admin-justification-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-color);
-    color: var(--text-primary-color);
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-size: 0.9rem;
-    font-family: 'Poppins', sans-serif;
-    resize: vertical;
-    min-height: 60px;
-}
-
-.admin-justification-actions {
-    margin-top: 10px;
-    display: flex;
-    justify-content: flex-end; /* Alinha os botões Salvar/Cancelar à direita */
-    gap: 10px;
-}
-
-.admin-justification-actions .button {
-    /* Ajusta o padding para ser menor */
-    padding: 8px 12px;
-    font-size: 0.9rem;
-}
-
-.no-requests {
-    text-align: center;
-    color: var(--text-secondary-color);
-    font-style: italic;
-    padding: 40px 20px;
-    background-color: var(--card-bg-color);
-    border-radius: 10px;
 }
 .admin-justification-input {
     width: 100%;
@@ -2268,32 +2067,6 @@ body.theme-dark .logo-dark {
     margin: 25px 0;
 }
 /* (Req 1) Estilos para os campos de texto "Nome: Teste" */
-.profile-info-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px; /* Padding um pouco maior */
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--bg-color);
-    margin-bottom: 15px;
-}
-.profile-info-group label {
-    font-weight: 600;
-    color: var(--text-tertiary-color);
-    font-size: 0.9rem;
-    padding-left: 0; /* Reseta o padding herdado */
-    margin-bottom: 0;
-}
-.profile-info-group span {
-    font-weight: 500;
-    color: var(--text-primary-color);
-    font-size: 0.95rem;
-    text-transform: capitalize;
-    cursor: default;
-    user-select: none;
-}
-
 /* (Req 2) Esconde a UI antiga de botões de foto */
 .profile-button {
     display: none !important;
@@ -2354,128 +2127,6 @@ body.theme-dark .logo-dark {
 }
 
 /* (Req 2) Copiando estilos genéricos para os botões do dropdown */
-.access-dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* Alinha texto à esquerda */
-    width: 100%;
-    padding: 10px 12px;
-    background: none !important;
-    border: none;
-    font-size: 0.95rem;
-    color: var(--text-primary-color);
-    cursor: pointer;
-    box-sizing: border-box;
-    border-radius: 4px;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-.access-dropdown-item:hover {
-    transform: scale(1.02); 
-    color: var(--accent-color); 
-    background: none !important;
-}
-.access-dropdown-item i {
-    font-size: 0.9rem;
-    margin-right: 10px;
-    width: 15px;
-    text-align: center;
-    color: var(--text-secondary-color);
-    flex-shrink: 0;
-}
-.access-dropdown-item:hover i {
-    color: var(--accent-color);
-}
-.access-dropdown-item.danger {
-    color: #dc3545;
-}
-.access-dropdown-item.danger i {
-    color: #dc3545;
-}
-/* (Req 1) Estilos para os campos de texto "Nome: Teste" */
-.profile-info-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--bg-color);
-    margin-bottom: 15px;
-    position: relative; /* (Necessário para o botão de lápis) */
-}
-.profile-info-group label {
-    font-weight: 600;
-    color: var(--text-tertiary-color);
-    font-size: 0.9rem;
-    padding-left: 0; 
-    margin-bottom: 0;
-}
-.profile-info-group span {
-    font-weight: 500;
-    color: var(--text-primary-color);
-    font-size: 0.95rem;
-    text-transform: capitalize;
-}
-
-/* (Req 2) Esconde a UI antiga de botões de foto */
-.profile-button {
-    display: none !important;
-}
-
-/* (Req 2) Wrapper da Imagem de Perfil */
-.profile-image-wrapper {
-    position: relative;
-    width: 120px; 
-    height: 120px;
-    margin: 0 auto 20px auto; 
-}
-
-/* (Req 2) Botão da Câmera */
-.profile-edit-button {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 36px;
-    height: 36px;
-    background-color: var(--accent-color);
-    color: white;
-    border-radius: 50%;
-    border: 2px solid var(--card-bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-.profile-edit-button:hover {
-    transform: scale(1.1);
-    background-color: var(--accent-color-hover);
-}
-
-/* (Req 2) Dropdown de Edição de Foto (copiado do .access-dropdown) */
-.profile-edit-dropdown {
-    position: absolute;
-    top: 100%; 
-    right: -10px; 
-    z-index: 1200; 
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 15px var(--shadow-color);
-    min-width: 180px;
-    padding: 8px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-}
-.profile-edit-dropdown.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(5px); 
-}
-
 /* (Req 1) Estilo para o botão de Lápis (Editar Nome) */
 .profile-edit-pencil-btn {
     position: absolute;
@@ -2680,16 +2331,6 @@ body.theme-dark .logo-dark {
     align-items: center;
 }
 
-/* (Req 3) MODIFICADO: Estilo do Valor (Texto dentro da caixa) */
-.profile-info-group span {
-    font-weight: 500;
-    color: var(--text-primary-color);
-    font-size: 0.95rem; /* Ajuste para caber melhor na grade 2x2 */
-    text-transform: capitalize;
-    display: inline-block;
-    transform: translateY(-4px)
-}
-
 /* (Ajuste do lápis) Garante que o lápis fique na posição correta no novo layout */
 .profile-info-group .profile-edit-pencil-btn {
     top: 50%; /* Centraliza no meio da caixa (que agora tem padding fixo) */
@@ -2706,4 +2347,857 @@ body.theme-dark .logo-dark {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+#profile-overlay .settings-modal {
+  max-width: 720px;
+  width: 90%;
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.new-profile-modal {
+  background-color: var(--card-bg-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px var(--shadow-color-hover);
+  border: 1px solid var(--border-color);
+  width: 100%;
+}
+
+.profile-header-card {
+  padding: 25px 30px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 5px 20px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  grid-row: 1 / 3;
+}
+
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border-color);
+}
+
+.profile-camera-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 50%;
+  border: 2px solid var(--card-bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform .2s ease, background-color .2s ease;
+  z-index: 10;
+}
+
+.profile-camera-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--accent-color-hover);
+}
+
+.profile-edit-dropdown {
+  position: absolute;
+  top: 95px;
+  left: 95px;
+  z-index: 1200;
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px var(--shadow-color);
+  min-width: 180px;
+  padding: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all .2s ease;
+}
+
+.profile-edit-dropdown.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profile-edit-dropdown .access-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 10px 12px;
+  background: none !important;
+  border: none;
+  font-size: 0.95rem;
+  color: var(--text-primary-color);
+  cursor: pointer;
+  box-sizing: border-box;
+  border-radius: 4px;
+  transition: color .2s ease, transform .2s ease, background-color .2s ease;
+}
+
+.profile-edit-dropdown .access-dropdown-item:hover {
+  color: var(--accent-color);
+  background-color: var(--bg-color) !important;
+}
+
+.profile-edit-dropdown .access-dropdown-item i {
+  font-size: 0.9rem;
+  margin-right: 10px;
+  width: 15px;
+  text-align: center;
+  color: var(--text-secondary-color);
+  flex-shrink: 0;
+  transition: color .2s ease;
+}
+
+.profile-edit-dropdown .access-dropdown-item:hover i {
+  color: var(--accent-color);
+}
+
+.profile-edit-dropdown .access-dropdown-item.danger {
+  color: #dc3545;
+}
+
+.profile-edit-dropdown .access-dropdown-item.danger i {
+  color: #dc3545;
+}
+.profile-user-info {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: left;
+}
+
+.profile-user-info h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary-color);
+}
+
+.profile-user-meta {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: var(--text-secondary-color);
+}
+
+.profile-user-meta i {
+  margin-right: 5px;
+}
+
+.profile-header-actions {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  gap: 10px;
+}
+
+.profile-header-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-tertiary-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.profile-header-btn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary-color);
+}
+
+.profile-header-btn i {
+  margin-right: 6px;
+}
+
+#profile-signout-btn {
+  border-color: transparent;
+  color: var(--text-secondary-color);
+}
+
+#profile-signout-btn:hover {
+  color: #dc3545;
+}
+
+.profile-tags {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.profile-tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--bg-color);
+  color: var(--text-tertiary-color);
+  border: 1px solid var(--border-color);
+}
+
+.profile-nav-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 15px 30px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+}
+
+.profile-nav-link {
+  text-decoration: none;
+  color: var(--text-secondary-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all .2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.profile-nav-link i {
+  margin-right: 8px;
+}
+
+.profile-nav-link:hover {
+  background-color: var(--card-bg-color);
+  color: var(--text-primary-color);
+}
+
+.profile-nav-link.active {
+  background-color: var(--card-bg-color);
+  color: var(--text-primary-color);
+  box-shadow: 0 2px 5px var(--shadow-color-light);
+}
+
+.profile-nav-link.disabled-feature {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.profile-form-section {
+  padding: 30px;
+  text-align: left;
+}
+
+.profile-tab-pane {
+  display: none;
+}
+
+.profile-tab-pane.active {
+  display: block;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 350px;
+  margin: 0;
+}
+
+.form-group {
+  margin-bottom: 25px;
+  flex-grow: 1;
+  position: relative;
+}
+
+#tab-profile .form-group {
+  max-width: 450px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary-color);
+}
+
+.profile-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  color: var(--text-primary-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+#profile-username.profile-input:disabled {
+  text-transform: uppercase;
+  background-color: var(--bg-color);
+  color: var(--text-secondary-color);
+  cursor: not-allowed;
+}
+
+.profile-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0,123,255,.2);
+}
+
+.input-check-icon {
+  position: absolute;
+  right: 15px;
+  top: 45px;
+  color: #28a745;
+}
+
+hr.form-divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 25px 0;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.form-group-inline span {
+  color: var(--text-primary-color);
+  font-weight: 500;
+  font-size: 0.9rem;
+  position: relative;
+  top: -4px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 35px;
+  flex-shrink: 0;
+}
+
+.toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-label:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.toggle-input:checked + .toggle-label {
+  background-color: #333;
+}
+
+body.theme-dark .toggle-input:checked + .toggle-label {
+  background-color: var(--accent-color);
+}
+
+.toggle-input:checked + .toggle-label:before {
+  transform: translateX(22px);
+}
+
+.profile-form-footer {
+  padding: 20px 30px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-radius: 0 0 16px 16px;
+}
+
+.profile-form-footer .button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  width: auto;
+}
+
+.profile-form-footer .btn-cancel {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary-color);
+}
+
+.profile-form-footer .btn-cancel:hover {
+  background-color: var(--border-color);
+}
+
+.profile-form-footer .btn-save {
+  background-color: #111827;
+  color: white;
+}
+
+body.theme-dark .profile-form-footer .btn-save {
+  background-color: var(--accent-color);
+}
+
+body.theme-dark .profile-form-footer .btn-save:hover {
+  background-color: var(--accent-color-hover);
+}
+
+#tab-security .modal-input-group,
+#tab-activity .modal-input-group,
+#tab-settings .modal-input-group {
+  text-align: left;
+}
+
+#tab-security .hub-modal-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  color: var(--text-primary-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+#tab-security .hub-modal-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0,123,255,.2);
+}
+
+#tab-security .form-row {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 350px;
+}
+
+.profile-activity-list.new-design {
+  background-color: transparent;
+  border: none;
+  max-height: 350px;
+  overflow-y: auto;
+  max-width: 350px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.profile-activity-list.new-design .profile-activity-item,
+.profile-activity-list.new-design a.profile-dashboard-item {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 12px 15px;
+  display: flex;
+  text-decoration: none;
+  color: var(--text-primary-color);
+}
+
+.profile-activity-list.new-design a.profile-dashboard-item:hover {
+  background-color: var(--bg-color);
+  color: var(--accent-color);
+}
+
+.profile-activity-list.new-design .no-activity {
+  border: 1px dashed var(--border-color);
+  background-color: var(--bg-color);
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary-color);
+  font-style: italic;
+  border-radius: 8px;
+}
+
+.profile-activity-item.is-dashboard-link {
+  justify-content: flex-start;
+}
+
+#tab-settings .setting-group {
+  padding-left: 0;
+  padding-right: 0;
+  text-align: left;
+  margin-bottom: 25px;
+  flex-grow: 1;
+  position: relative;
+  max-width: 450px;
+}
+
+#tab-settings .setting-group label {
+  display: block;
+  margin-bottom: 20px; /* <--- VALOR AUMENTADO */
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary-color);
+  padding-left: 0;
+}
+
+#tab-settings .count-selector {
+  justify-content: flex-start;
+  gap: 0;
+  margin: 0 -8px;
+}
+
+#tab-settings .count-selector .setting-option {
+  min-width: 60px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+#tab-settings .button-danger {
+  margin-left: 0;
+  margin-right: 0;
+}
+.profile-form-footer .button.btn-danger-outline {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+.profile-form-footer .button.btn-danger-outline:hover {
+    background-color: #dc3545;
+    color: white;
+}
+.settings-modal-overlay.stats-mode .settings-modal {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    max-width: 600px; /* (Um bom tamanho para a lista) */
+}
+
+.settings-modal-overlay.stats-mode .settings-body {
+    background: var(--card-bg-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px var(--shadow-color-hover);
+    border: 1px solid var(--border-color);
+    position: relative;
+    padding-top: 50px; /* (Espaço para o botão de fechar) */
+    text-align: left; /* (Garante alinhamento) */
+}
+
+/* (Ajusta as listas dentro do modal de estatísticas) */
+.settings-modal-overlay.stats-mode .settings-body .profile-activity-list.new-design {
+    max-width: 100%;
+    max-height: 400px;
+}
+.settings-modal-overlay.stats-mode .settings-body h4 {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary-color);
+    padding-left: 0;
+}
+.settings-modal-overlay.stats-mode .profile-activity-list.new-design a.profile-dashboard-item {
+    border: none;
+    /* (Adiciona uma sombra leve para compensar a falta de borda) */
+    box-shadow: 0 2px 5px var(--shadow-color-light);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.settings-modal-overlay.stats-mode .profile-activity-list.new-design a.profile-dashboard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+    background-color: var(--bg-color);
+}
+#tab-profile hr.form-divider + .form-group > label {
+    margin-bottom: 20px; /* (Aumenta o padrão de 8px) */
+}
+#tab-security #profile-password-status.hub-form-status {
+    max-width: 350px; /* (Mesma largura do .form-row) */
+    margin-left: 0; /* (Alinha à esquerda) */
+    margin-right: 0; /* (Alinha à esquerda) */
+    box-sizing: border-box; /* (Garante que o padding não estoure) */
+}
+#cropper-overlay .settings-modal.cropper-modal-styling {
+    max-width: 90vw;
+    width: 600px;
+    overflow: hidden !important; /* <-- ADICIONADO */
+    padding: 0;
+    background: var(--card-bg-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+#cropper-overlay.settings-modal-overlay.visible 
+.settings-modal.cropper-modal-styling {
+    transform: scale(1);
+}
+
+/* Corpo */
+.cropper-modal-styling .settings-body {
+    padding: 20px 20px 0 !important;
+    margin: 0 !important; /* <-- ADICIONADO */
+    background: transparent;
+    border-radius: 12px 12px 0 0;
+    border: none;
+}
+
+/* Container da imagem */
+.cropper-modal-styling .cropper-container {
+    max-height: 450px;
+}
+
+/* Rodapé */
+#cropper-footer {
+    padding: 20px 30px;
+    background: var(--bg-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: -25px !important; /* <-- ADICIONADO */
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 12px 12px;
+}
+
+/* Botões */
+#cropper-footer .button {
+    padding: 10px 20px;
+    font-size: .9rem;
+}
+
+#cropper-footer .btn-save {
+    background: #111827;
+    color: #fff;
+}
+body.theme-dark #cropper-footer .btn-save {
+    background: var(--accent-color);
+}
+body.theme-dark #cropper-footer .btn-save:hover {
+    background: var(--accent-color-hover);
+}
+
+#cropper-footer .btn-cancel {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary-color);
+}
+#cropper-footer .btn-cancel:hover {
+    background: var(--border-color);
+}
+.cropper-modal-styling .settings-body #cropper-close-btn {
+    display: none;
+}
+#tab-profile #profile-name-status {
+    max-width: 350px; /* (Define a mesma largura máxima do .form-row) */
+    margin-left: 0;
+    margin-right: auto;
+    box-sizing: border-box; 
+}
+#stats-overlay .settings-modal {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    /* (Req: Remove o padding do modal para o body e footer se alinharem) */
+    padding: 0; 
+}
+
+/* (Estiliza o corpo como o card principal) */
+#stats-overlay .settings-body {
+    background: var(--card-bg-color);
+    /* (Arredonda apenas o topo) */
+    border-radius: 12px 12px 0 0; 
+    border: 1px solid var(--border-color);
+    border-bottom: none; /* (A borda de baixo fica no footer) */
+    padding: 25px;
+    padding-bottom: 15px;
+    text-align: left;
+    position: relative; /* (Necessário para o botão 'X' se for usado) */
+}
+
+#stats-overlay .settings-body h4 {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary-color);
+    padding-left: 0;
+    margin-top: 5px;
+}
+#stats-overlay .profile-activity-list.new-design .profile-activity-item {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 8px; /* (Mantém o espaçamento entre os botões) */
+}
+/* (Estiliza o footer do modal) */
+#stats-overlay .profile-form-footer {
+    /* (Copiado do modal de perfil) */
+    padding: 20px 30px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    /* (Arredonda apenas a base) */
+    border-radius: 0 0 12px 12px; 
+    /* (Garante que a borda e sombra se alinhem) */
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 10px 40px var(--shadow-color-hover);
+    margin-top: -1px; /* (Puxa para cima para cobrir a borda do body) */
+}
+#stats-overlay .profile-form-footer .button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    width: auto;
+}
+
+/* (Estiliza os botões de dashboard) */
+#stats-overlay .profile-activity-list.new-design {
+    max-width: 100%;
+    max-height: 400px;
+    background-color: transparent; /* (O fundo já é branco) */
+    border: none; /* (Remove a borda da lista) */
+}
+#stats-overlay .profile-activity-list.new-design a.profile-dashboard-item {
+    /* (Req: A borda própria do botão é mantida, mas a sombra é removida) */
+    /* border: none; (REMOVIDO) */
+    box-shadow: none; /* (REMOVIDO) */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+#stats-overlay .profile-activity-list.new-design .no-activity {
+    border: none;
+    background-color: var(--bg-color);
+}
+#stats-overlay .profile-activity-list.new-design a.profile-dashboard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: none; /* (REMOVIDO) */
+    background-color: var(--bg-color);
+}
+#stats-overlay .profile-activity-list.new-design .no-activity {
+    /* (Estilo de "vazio" sem a borda tracejada) */
+    background-color: transparent;
+    border: none;
+    padding: 20px;
+}
+@media (max-width: 768px) {
+  #profile-overlay .settings-modal {
+    max-width: 100%;
+    width: 95vw;
+    height: auto;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .new-profile-modal {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .profile-header-card {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    padding: 20px;
+  }
+
+  .profile-avatar-wrapper {
+    grid-row: 1 / 3;
+  }
+
+  .profile-avatar {
+    width: 65px;
+    height: 65px;
+  }
+
+  .profile-camera-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    bottom: 3px;
+    right: 3px;
+  }
+
+  .profile-edit-dropdown {
+    left: 0;
+    top: 70px;
+  }
+
+  .profile-user-info h2 {
+    font-size: 1.1rem;
+  }
+
+  .profile-user-meta {
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.8rem;
+  }
+
+  .profile-header-actions {
+    grid-column: 1 / 3;
+    grid-row: 3;
+    margin-top: 10px;
+  }
+
+  .profile-tags {
+    grid-column: 1 / 3;
+    grid-row: 4;
+    flex-wrap: wrap;
+  }
+
+  .profile-nav-tabs {
+    padding: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .profile-form-section {
+    padding: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+    max-width: 100%;
+  }
+
+  .form-group-inline {
+    gap: 8px;
+  }
+
+  .form-group-inline span {
+    font-size: 0.85rem;
+  }
+
+  .profile-form-footer {
+    padding: 15px 20px;
+  }
 }

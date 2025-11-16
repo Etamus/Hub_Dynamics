@@ -226,14 +226,22 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('hubTheme', theme);
     }
 
-    function applyCountSetting(count) {
-        const numericCount = parseInt(count) || 4;
-        countOptions.forEach(opt => {
-            opt.classList.toggle('active', opt.dataset.count == numericCount);
-        });
+    function applyCountSetting(count, context = document) { // (Adiciona 'context = document')
+    const numericCount = parseInt(count) || 4;
+    
+    // (Usa 'context.querySelectorAll' para procurar apenas dentro do modal certo)
+    const optionsToUpdate = context.querySelectorAll('.count-selector .setting-option'); 
+    
+    optionsToUpdate.forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.count == numericCount);
+    });
+    
+    // (A lógica de salvar e renderizar permanece global)
+    if (context === document) {
         localStorage.setItem('hubItemCount', numericCount);
         renderQuickLinks();
     }
+}
 
     function clearRecents() {
         localStorage.removeItem(getStorageKey('recentDashboards'));
@@ -274,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     aboutBtn.addEventListener('click', () => { aboutOverlay.classList.add('visible'); });
     aboutCloseBtn.addEventListener('click', () => { aboutOverlay.classList.remove('visible'); });
     aboutOverlay.addEventListener('mousedown', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
+    document.getElementById('stats-overlay').addEventListener('mousedown', (e) => { if (e.target === document.getElementById('stats-overlay')) { closeStatsModal(); } });
     countOptions.forEach(option => { option.addEventListener('click', () => { applyCountSetting(option.dataset.count); }); });
     clearRecentsBtn.addEventListener('click', clearRecents);
     
@@ -412,79 +421,80 @@ document.addEventListener('DOMContentLoaded', () => {
      * ATUALIZADO: Atualiza a UI do dropdown, a IMAGEM do botão e a largura mínima.
      */
     function updateAccessDropdown(username = null, profileImageUrl = null, area = null, role = null, displayName = null) {
-        currentHubUser = username;
-        currentHubArea = area;
-        currentHubRole = role;
-        currentHubDisplayName = displayName; // <-- ADICIONE ESTA LINHA
-        accessDropdown.innerHTML = '';
-        
-        currentProfileUrl = profileImageUrl || defaultProfileUrl;
-        profileImgThumb.src = currentProfileUrl;
-        
-        if (username) {
-            accessDropdown.style.minWidth = '200px';
-        } else {
-            accessDropdown.style.minWidth = '180px';
-        }
-
-        if (username) {
-            let adminButton = '';
-            if (username.toLowerCase() === 'admin') {
-                adminButton = `<button class="access-dropdown-item" id="access-admin-btn"><i class="fas fa-user-shield"></i>Administração</button>`;
-            }
-
-            // Usa o Nome de Usuário (displayName) se existir, senão usa o Nome de Funcionário (username)
-            const nameToDisplay = displayName || username;
-
-            accessDropdown.innerHTML = `
-                <div class="access-dropdown-header">
-                    <strong>${nameToDisplay}</strong>
-                    <span>${area || 'N/A'}</span>
-                </div>
-                <button class="access-dropdown-item" id="access-profile-btn">
-                    <i class="fas fa-user"></i>Minha Conta
-                </button>
-                ${adminButton} 
-                <button class="access-dropdown-item" id="access-connections-btn">
-                    <i class="fas fa-plug"></i>Minhas Conexões
-                </button>
-                <button class="access-dropdown-item danger" id="access-logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>Deslogar
-                </button>
-            `;
-
-            // Passa todos os dados para o modal de perfil
-            document.getElementById('access-profile-btn').addEventListener('click', () => {
-                // (Req 1) Passa o displayName (agora rastreado)
-                openProfileModal(username, currentHubDisplayName, currentProfileUrl);
-            });
-
-            document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
-            document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
-            
-            const adminBtn = document.getElementById('access-admin-btn');
-            if (adminBtn) {
-                adminBtn.addEventListener('click', openAdminModal);
-            }
-                
-        } else {
-            accessDropdown.innerHTML = `
-                <button class="access-dropdown-item" id="access-login-btn">
-                    <i class="fas fa-sign-in-alt"></i>Logar
-                </button>
-                <button class="access-dropdown-item" id="access-register-btn">
-                    <i class="fas fa-user-plus"></i>Solicitar Acesso
-                </button>
-            `;
-            document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
-            document.getElementById('access-register-btn').addEventListener('click', openRegisterModal);
-        }
+    currentHubUser = username;
+    currentHubArea = area;
+    currentHubRole = role;
+    currentHubDisplayName = displayName; 
+    accessDropdown.innerHTML = ''; // Limpa o conteúdo
+    
+    currentProfileUrl = profileImageUrl || defaultProfileUrl;
+    profileImgThumb.src = currentProfileUrl;
+    
+    if (username) {
+        accessDropdown.style.minWidth = '200px';
+    } else {
+        accessDropdown.style.minWidth = '180px';
     }
+
+    if (username) {
+        let adminButton = '';
+        if (username.toLowerCase() === 'admin') {
+            adminButton = `<button class="access-dropdown-item" id="access-admin-btn"><i class="fas fa-user-shield"></i>Administração</button>`;
+        }
+
+        const nameToDisplay = displayName || username;
+
+        accessDropdown.innerHTML = `
+            <div class="access-dropdown-header">
+                <strong>${nameToDisplay}</strong>
+                <span>${area || 'N/A'}</span>
+            </div>
+            <button class="access-dropdown-item" id="access-profile-btn">
+                <i class="fas fa-user"></i>Minha Conta
+            </button>
+            ${adminButton} 
+            <button class="access-dropdown-item" id="access-connections-btn">
+                <i class="fas fa-plug"></i>Minhas Conexões
+            </button>
+            <button class="access-dropdown-item danger" id="access-logout-btn">
+                <i class="fas fa-sign-out-alt"></i>Deslogar
+            </button>
+        `;
+
+        // --- CORREÇÃO: Anexa os listeners AQUI, depois de criar os botões ---
+        document.getElementById('access-profile-btn').addEventListener('click', () => {
+            openProfileModal(username, currentHubDisplayName, currentProfileUrl);
+        });
+        document.getElementById('access-connections-btn').addEventListener('click', openConnectionsModal);
+        document.getElementById('access-logout-btn').addEventListener('click', handleHubLogout);
+        
+        const adminBtn = document.getElementById('access-admin-btn');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', openAdminModal);
+        }
+        // --- FIM DA CORREÇÃO ---
+            
+    } else {
+        accessDropdown.innerHTML = `
+            <button class="access-dropdown-item" id="access-login-btn">
+                <i class="fas fa-sign-in-alt"></i>Logar
+            </button>
+            <button class="access-dropdown-item" id="access-register-btn">
+                <i class="fas fa-user-plus"></i>Solicitar Acesso
+            </button>
+        `;
+        
+        // --- CORREÇÃO: Anexa os listeners AQUI ---
+        document.getElementById('access-login-btn').addEventListener('click', openHubLoginModal);
+        document.getElementById('access-register-btn').addEventListener('click', openRegisterModal);
+        // --- FIM DA CORREÇÃO ---
+    }
+}
 
     // --- Lógica de Recorte (Cropper.js) ---
 
     function openCropperModal(imageSrc) {
-        profileOverlay.classList.remove('visible'); // Fecha o modal de perfil
+        cropperOverlay.style.zIndex = '1200';
         cropperImage.src = imageSrc;
         cropperOverlay.classList.add('visible');
 
@@ -513,9 +523,11 @@ document.addEventListener('DOMContentLoaded', () => {
             cropper = null;
         }
         cropperOverlay.classList.remove('visible');
+        cropperOverlay.style.zIndex = '';
     }
 
     cropperCloseBtn.addEventListener('click', closeCropperModal);
+    document.getElementById('cropper-close-footer-btn').addEventListener('click', closeCropperModal);
     cropperOverlay.addEventListener('mousedown', (e) => {
         if (e.target === cropperOverlay) closeCropperModal();
     });
@@ -559,8 +571,6 @@ function uploadCroppedImage(formData) {
     .then(data => {
         // --- INÍCIO DA MODIFICAÇÃO (Req 1 & 2) ---
         if (data.status === 'sucesso') {
-            profileUploadStatus.textContent = data.mensagem;
-            
             // 1. Atualiza a URL da imagem global
             currentProfileUrl = data.url; 
             
@@ -568,20 +578,28 @@ function uploadCroppedImage(formData) {
             updateAccessDropdown(currentHubUser, currentProfileUrl, currentHubArea, currentHubRole, currentHubDisplayName);
             
             // 3. Atualiza a imagem DENTRO do modal
-            profilePreviewImg.src = currentProfileUrl;
+            const profileImgInModal = document.getElementById('new-profile-avatar-img');
+            if (profileImgInModal) {
+                profileImgInModal.src = currentProfileUrl;
+            }
+            
+            // 3. (Req: Habilita o botão de remover foto)
+            const removerBtn = document.getElementById('profile-edit-dropdown-remover');
+            if (removerBtn) {
+                removerBtn.style.display = 'flex';
+                removerBtn.disabled = false;
+            }
+
         } else {
-            profileUploadStatus.textContent = data.mensagem || "Erro ao fazer upload.";
+            alert(data.mensagem || "Erro ao fazer upload.");
         }
-        // --- FIM DA MODIFICAÇÃO ---
     })
     .catch(() => {
-        profileUploadStatus.textContent = "Erro de comunicação com o servidor.";
+        alert("Erro de comunicação com o servidor.");
     })
     .finally(() => {
-        // --- INÍCIO DA MODIFICAÇÃO (Req 1 & 2) ---
-        // Reabre o modal com os dados corretos (nome e a NOVA url)
-        openProfileModal(currentHubUser, currentHubDisplayName, currentProfileUrl);
-        // --- FIM DA MODIFICAÇÃO ---
+        // (Req: NÃO reabre o modal de perfil, pois ele já está aberto)
+        // A função openProfileModal() foi REMOVIDA daqui.
     });
 }
 
@@ -614,64 +632,131 @@ function uploadCroppedImage(formData) {
 
     // (Req 2) NOVO: Handler para alterar a senha
     function handleChangePassword() {
-        const btn = document.getElementById('profile-password-save-btn');
-        const currentPass = document.getElementById('profile-current-pass');
-        const newPass = document.getElementById('profile-new-pass');
-        const confirmPass = document.getElementById('profile-confirm-pass');
-        
-        // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-        const statusEl = document.getElementById('profile-password-status');
-        if (!btn || !currentPass || !newPass || !confirmPass || !statusEl) return;
-        
-        // Limpa o status anterior
-        statusEl.className = 'hub-form-status hidden';
-        // --- FIM DA MODIFICAÇÃO ---
-
-
-        if (newPass.value !== confirmPass.value) {
-            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-            statusEl.textContent = "A nova senha e a confirmação não correspondem.";
-            statusEl.className = 'hub-form-status error visible';
-            return;
-            // --- FIM DA MODIFICAÇÃO ---
-        }
-        if (newPass.value.length < 4) {
-            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-            statusEl.textContent = "A nova senha deve ter pelo menos 4 caracteres.";
-            statusEl.className = 'hub-form-status error visible';
-            return;
-            // --- FIM DA MODIFICAÇÃO ---
-        }
-
-        btn.disabled = true;
-        fetch('/api/profile/change-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                current_pass: currentPass.value,
-                new_pass: newPass.value
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // --- INÍCIO DA MODIFICAÇÃO (Req 1) ---
-            statusEl.textContent = data.mensagem; // Mostra "Senha alterada" ou "Senha atual incorreta"
-            
-            if (data.status === 'sucesso') {
-                statusEl.className = 'hub-form-status success visible';
-                // Limpa os campos
-                currentPass.value = '';
-                newPass.value = '';
-                confirmPass.value = '';
-            } else {
-                statusEl.className = 'hub-form-status error visible';
-            }
-            // --- FIM DA MODIFICAÇÃO ---
-        })
-        .finally(() => {
-            btn.disabled = false;
-        });
+    // (Req 1: CORREÇÃO DO BUG)
+    const modal = document.getElementById('profile-overlay');
+    const btn = modal.querySelector('#profile-save-btn'); // O botão do footer
+    const currentPass = modal.querySelector('#profile-current-pass');
+    const newPass = modal.querySelector('#profile-new-pass');
+    const confirmPass = modal.querySelector('#profile-confirm-pass');
+    const statusEl = modal.querySelector('#profile-password-status');
+    
+    if (!btn || !currentPass || !newPass || !confirmPass || !statusEl) {
+        console.error("Erro: Elementos do formulário de senha não encontrados.");
+        return;
     }
+    
+    statusEl.className = 'hub-form-status hidden';
+
+    if (newPass.value !== confirmPass.value) {
+        statusEl.textContent = "A nova senha e a confirmação não correspondem.";
+        statusEl.className = 'hub-form-status error visible';
+        return;
+    }
+    if (newPass.value.length < 4) {
+        statusEl.textContent = "A nova senha deve ter pelo menos 4 caracteres.";
+        statusEl.className = 'hub-form-status error visible';
+        return;
+    }
+    
+    // (Req 2: Limite de 16 caracteres)
+    if (newPass.value.length > 16) {
+        statusEl.textContent = "A nova senha não pode ter mais de 16 caracteres.";
+        statusEl.className = 'hub-form-status error visible';
+        return;
+    }
+
+    btn.disabled = true;
+    fetch('/api/profile/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            current_pass: currentPass.value,
+            new_pass: newPass.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        statusEl.textContent = data.mensagem; 
+        
+        if (data.status === 'sucesso') {
+            statusEl.className = 'hub-form-status success visible';
+            currentPass.value = '';
+            newPass.value = '';
+            confirmPass.value = '';
+        } else {
+            statusEl.className = 'hub-form-status error visible';
+        }
+    })
+    .finally(() => {
+        btn.disabled = false;
+    });
+}
+
+function openStatsModal(currentHubUser) {
+    const statsOverlay = document.getElementById('stats-overlay');
+    const statsModal = document.getElementById('stats-modal-content');
+    if (!statsOverlay || !statsModal) return;
+
+    // (Req 1: Aplica Z-index para sobrepor o modal de Perfil)
+    statsOverlay.style.zIndex = '1200';
+
+    // (Req 2, 4, 5: Injeta o HTML minimalista com o rodapé)
+    statsModal.innerHTML = `
+        <div class="settings-body" style="padding: 25px; padding-bottom: 15px;">
+            <h4 style="margin-top: 5px; text-align: left;">Dashboards Mais Acessados</h4>
+            <ul id="stats-dashboard-list" class="profile-activity-list new-design">
+                <li class="no-activity">Carregando...</li>
+            </ul>
+        </div>
+        <div class="profile-form-footer" id="stats-footer">
+            <button class="button btn-cancel" id="stats-close-footer-btn">Fechar</button>
+        </div>
+    `;
+
+    const dashListEl = statsModal.querySelector('#stats-dashboard-list');
+
+    // (Lógica dos Top 4)
+    const countStorageKey = `dashboardAccessCounts_${currentHubUser || '_guest'}`;
+    const counts = JSON.parse(localStorage.getItem(countStorageKey)) || {};
+    const lookup = JSON.parse(localStorage.getItem(getStorageKey('recentDashboards'))) || [];
+    const sortedIds = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    
+    const items = sortedIds.map(id => {
+        const dashboardData = lookup.find(d => d.id === id);
+        if (dashboardData) {
+            return { ...dashboardData, count: counts[id], href: `/dashboards?open=${id}` };
+        }
+        return null;
+    }).filter(Boolean).slice(0, 4); // Pega o Top 4
+
+    // (Renderiza)
+    if (typeof renderProfileActivityList === 'function') {
+        renderProfileActivityList(dashListEl, items, 'dashboards');
+    } else {
+        dashListEl.innerHTML = '<li class="no-activity">Erro ao carregar renderizador.</li>';
+    }
+
+    // (Req 4: Adiciona listener ao novo botão de fechar)
+    statsModal.querySelector('#stats-close-footer-btn').addEventListener('click', closeStatsModal);
+    
+    // (Abre o modal)
+    statsOverlay.classList.add('visible');
+}
+
+/**
+ * (Req 1) ATUALIZADO: Fecha o NOVO modal de estatísticas.
+ */
+function closeStatsModal() {
+    const statsOverlay = document.getElementById('stats-overlay');
+    if (!statsOverlay) return;
+
+    statsOverlay.classList.remove('visible');
+    statsOverlay.style.zIndex = '';
+    
+    // Limpa o conteúdo para economizar memória e evitar IDs duplicados
+    const statsModal = document.getElementById('stats-modal-content');
+    statsModal.innerHTML = '';
+}
 
     // (Req 3 & 4) NOVO: Helper para renderizar listas no modal
     function renderProfileActivityList(container, items, type) {
@@ -735,274 +820,463 @@ function uploadCroppedImage(formData) {
     // --- Lógica do Modal de Perfil (Input de Arquivo) ---
 
     function openProfileModal(username, displayName, currentImageUrl) {
-        accessDropdown.classList.remove('visible');
-        
-        // (Req 1) Define o nome de usuário (editável) ou deixa vazio
-        const displayNameValue = displayName || '';
-        // (Req 5) Pega a área para exibição
-        const areaValue = currentHubArea || 'N/A';
-        
-        // (Req 4) Pega a Função (Role)
-        const roleValue = currentHubRole || 'N/A';
-
-        // 1. Limpa o corpo do modal e define a classe para as abas
-        const modalBody = profileOverlay.querySelector('.settings-body');
-        modalBody.innerHTML = '';
-        modalBody.className = 'settings-body profile-body'; // Adiciona a nova classe
-
-        // 2. Cria as Abas (Removeu "Dashboards")
-        const tabsHtml = `
-            <div class="profile-tabs">
-                <span class="profile-tab active" data-tab="tab-details">Perfil</span>
-                <span class="profile-tab" data-tab="tab-security">Segurança</span>
-                <span class="profile-tab" data-tab="tab-activity">Atividade</span>
-            </div>
+    accessDropdown.classList.remove('visible');
+    
+    const modal = profileOverlay.querySelector('.settings-modal');
+    if (!modal) return; 
+    
+    // --- 1. Mapeamento de Dados ---
+    const nameToDisplay = displayName || username;
+    const usernameHandle = username; 
+    const location = currentHubArea || 'N/A'; 
+    const role = currentHubRole || 'N/A'; 
+    
+    let accessTagsHtml = '';
+    if (role === 'Executor' || role === 'Admin') {
+        accessTagsHtml = `
+            <span class="profile-tag">Automações</span>
+            <span class="profile-tag">Dashboards</span>
+            <span class="profile-tag">Drive</span>
         `;
-        
-        // 3. Cria o Conteúdo das Abas
-        const contentHtml = `
-            <div id="tab-details" class="profile-tab-content active">
-        
-        <div style="text-align: center;">
-            <div class="profile-image-wrapper">
-                <img id="profile-preview-img" src="${currentImageUrl}" alt="Prévia do Perfil" class="profile-preview-large">
-                <button id="profile-edit-btn" class="profile-edit-button" title="Alterar foto">
-                    <i class="fas fa-camera"></i>
-                </button>
-                <div id="profile-edit-dropdown" class="profile-edit-dropdown">
-                    <button id="profile-edit-dropdown-alterar" class="access-dropdown-item">
-                        <i class="fas fa-upload"></i>Alterar Foto
-                    </button>
-                    <button id="profile-edit-dropdown-remover" class="access-dropdown-item danger">
-                        <i class="fas fa-trash-alt"></i>Remover Foto
-                    </button>
-                </div>
-            </div>
-            <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
-            <p id="profile-upload-status" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
-        </div>
-        <div class="profile-info-grid">
-            
-            <div class="profile-field-container">
-                <label>Nome de Usuário:</label>
-                <div class="profile-info-group editable-group">
-                    <span id="profile-name-span">${displayNameValue || 'Não definido'}</span>
-                    <button id="profile-name-edit-btn" class="profile-edit-pencil-btn" title="Alterar Nome">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="profile-field-container">
-                <label>Nome de Funcionário:</label>
-                <div class="profile-info-group">
-                    <span style="text-transform: uppercase;">${username}</span>
-                </div>
-            </div>
-            
-            <div class="profile-field-container">
-                <label>Área:</label>
-                <div class="profile-info-group">
-                    <span>${areaValue}</span>
-                </div>
-            </div>
-            
-            <div class="profile-field-container">
-                <label>Função:</label>
-                <div class="profile-info-group">
-                    <span>${roleValue}</span>
-                </div>
-            </div>
-        </div>
-        </div>
-
-    <div id="tab-security" class="profile-tab-content hidden">
-        
-        <h4>Alterar Senha</h4>
-
-        <p id="profile-password-status" class="hub-form-status hidden"></p>
-
-        <form id="password-change-form" class="password-change-form">
-            <div class="modal-input-group">
-                <label for="profile-current-pass">Senha Atual:</label>
-                <input type="password" id="profile-current-pass" class="hub-modal-input">
-            </div>
-            <div class="modal-input-group">
-                <label for="profile-new-pass">Nova Senha:</label>
-                <input type="password" id="profile-new-pass" class="hub-modal-input">
-            </div>
-            <div class="modal-input-group">
-                <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
-                <input type="password" id="profile-confirm-pass" class="hub-modal-input">
-            </div>
-            <button type="button" id="profile-password-save-btn" class="button-full-width btn-success">Salvar</button>
-        </form>
-    </div>
-
-    <div id="tab-activity" class="profile-tab-content hidden">
-        
-        <h4>Últimos Agendamentos</h4>
-        <ul id="profile-activity-list" class="profile-activity-list">
-            <li class="no-activity">Carregando...</li>
-        </ul>
-        
-        <h4 style="margin-top: 25px;">Dashboard Mais Acessado</h4>
-        <ul id="profile-dashboard-list" class="profile-activity-list">
-            <li class="no-activity">Carregando...</li>
-        </ul>
-    </div>
-`;
-
-        modalBody.innerHTML = tabsHtml + contentHtml;
-
-        // 4. Adiciona os Listeners
-        
-        // (Listeners da Aba "Perfil")
-        const profilePreviewImg = document.getElementById('profile-preview-img');
-        const profileFileInput = document.getElementById('profile-file-input');
-        
-        // --- (Req 2) INÍCIO: Novos Listeners da Foto ---
-        const profileEditBtn = document.getElementById('profile-edit-btn');
-        const profileEditDropdown = document.getElementById('profile-edit-dropdown');
-        const profileAlterarBtn = document.getElementById('profile-edit-dropdown-alterar');
-        const profileRemoverBtn = document.getElementById('profile-edit-dropdown-remover');
-
-        // (Req 1) Botão de Lápis
-        document.getElementById('profile-name-edit-btn').addEventListener('click', () => {
-            openEditNameModal(currentHubDisplayName);
-        });
-
-        // Abre/Fecha o mini-menu
-        profileEditBtn.addEventListener('click', () => {
-            profileEditDropdown.classList.toggle('visible');
-        });
-
-        // "Alterar Foto" clica no input escondido
-        profileAlterarBtn.addEventListener('click', () => {
-            profileFileInput.click(); 
-            profileEditDropdown.classList.remove('visible');
-        });
-        
-        // "Remover Foto" (lógica do botão antigo)
-        profileRemoverBtn.addEventListener('click', () => {
-            if (!currentHubUser || profileRemoverBtn.disabled) return;
-            profileRemoverBtn.disabled = true;
-            profileEditDropdown.classList.remove('visible');
-
-            fetch('/api/profile/remove-image', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'sucesso') {
-                    currentProfileUrl = data.default_url;
-                    updateAccessDropdown(username, data.default_url, currentHubArea, currentHubRole, currentHubDisplayName);
-                    profilePreviewImg.src = data.default_url;
-                    profileRemoverBtn.style.display = 'none'; // Esconde a opção
-                } else {
-                    alert(data.mensagem);
-                    profileRemoverBtn.disabled = false;
-                }
-            });
-        });
-
-        // (Controla a visibilidade do botão de remover)
-        if (currentImageUrl !== defaultProfileUrl) {
-            profileRemoverBtn.style.display = 'flex';
-            profileRemoverBtn.disabled = false;
-        } else {
-            profileRemoverBtn.style.display = 'none';
-            profileRemoverBtn.disabled = true;
-        }
-        // --- (Req 2) FIM: Novos Listeners da Foto ---
-
-        
-        // Listener do input[file] (lógica mantida)
-        profileFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const fileNameParts = file.name.split('.');
-            currentUploadExtension = fileNameParts.length > 1 ? fileNameParts.pop().toLowerCase() : 'jpg';
-            if (!['png', 'jpg', 'jpeg'].includes(currentUploadExtension)) {
-                alert("Apenas arquivos PNG ou JPG são permitidos.");
-                profileFileInput.value = null; return;
-            }
-            selectedFile = file;
-            const reader = new FileReader();
-            reader.onload = (e) => openCropperModal(e.target.result);
-            reader.readAsDataURL(file);
-            profileFileInput.value = null;
-        });
-
-        // (Listeners da Aba "Segurança")
-        // (Req 1) Removido listener de 'profile-details-save-btn'
-        document.getElementById('profile-password-save-btn').addEventListener('click', handleChangePassword);
-
-        // (Listeners das Abas)
-        const tabs = modalBody.querySelectorAll('.profile-tab');
-        const contents = modalBody.querySelectorAll('.profile-tab-content');
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.add('hidden'));
-
-                tab.classList.add('active');
-                const tabId = tab.dataset.tab;
-                document.getElementById(tabId).classList.remove('hidden');
-
-                // (Req 3 & 6) Se clicou em Atividade, busca AMBOS
-                if (tabId === 'tab-activity') {
-                    // Busca Tarefas
-                    const listEl = document.getElementById('profile-activity-list');
-                    fetch('/api/profile/get-activity')
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === 'sucesso') {
-                                const limitedActivity = data.activity.slice(0, 3);
-                                renderProfileActivityList(listEl, limitedActivity, 'tasks');
-                            }
-                        });
-                    
-                    
-                    // --- INÍCIO DA MODIFICAÇÃO (Req 1: Lógica de Frequência) ---
-                    const dashListEl = document.getElementById('profile-dashboard-list');
-                    
-                    // 1. Pega a contagem (frequência)
-                    // (Usa a variável global 'currentHubUser' que já temos)
-                    const countStorageKey = `dashboardAccessCounts_${currentHubUser || '_guest'}`;
-                    const counts = JSON.parse(localStorage.getItem(countStorageKey)) || {};
-                    
-                    // 2. Pega a tabela de lookup (recência, que tem os nomes/icones)
-                    const lookup = JSON.parse(localStorage.getItem(getStorageKey('recentDashboards'))) || [];
-                    
-                    // 3. Converte o objeto de contagem em array e ordena por contagem (descendente)
-                    const sortedIds = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-                    
-                    // 4. Mapeia os IDs ordenados para os dados completos (nome, icone)
-                    const items = sortedIds.map(id => {
-                        // Encontra o dashboard na lista de 'recentes' (que usamos como lookup)
-                        const dashboardData = lookup.find(d => d.id === id);
-                        
-                        if (dashboardData) {
-                            // Adiciona a contagem e o href
-                            return {
-                                ...dashboardData, 
-                                count: counts[id], // Adiciona a contagem
-                                href: `/dashboards?open=${id}`
-                            };
-                        }
-                        return null; // Caso o dashboard tenha sido excluído
-                    }).filter(Boolean).slice(0, 1);// Remove nulos
-                    
-                    // 5. Renderiza
-                    renderProfileActivityList(dashListEl, items, 'dashboards');
-                    // --- FIM DA MODIFICAÇÃO ---
-                }
-            });
-        });
-
-        // 5. Abre o Modal
-        profileOverlay.classList.add('visible');
+    } else if (role === 'Analista') {
+        accessTagsHtml = `
+            <span class="profile-tag">Dashboards</span>
+            <span class="profile-tag">Drive</span>
+        `;
     }
+
+    // --- 2. Injeção do Novo HTML (Abas "Experience" e "About" removidas) ---
+    modal.innerHTML = `
+<div class="new-profile-modal">
+    <div class="profile-header-card">
+        <div class="profile-avatar-wrapper">
+            <img src="${currentImageUrl}" alt="Foto de Perfil" class="profile-avatar" id="new-profile-avatar-img" title="Foto de Perfil">
+            <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden">
+            <button id="profile-edit-btn" class="profile-camera-btn" title="Alterar foto">
+                <i class="fas fa-camera"></i>
+            </button>
+            <div id="profile-edit-dropdown" class="profile-edit-dropdown">
+                <button id="profile-edit-dropdown-alterar" class="access-dropdown-item">
+                    <i class="fas fa-upload"></i>Alterar Foto
+                </button>
+                <button id="profile-edit-dropdown-remover" class="access-dropdown-item danger">
+                    <i class="fas fa-trash-alt"></i>Remover Foto
+                </button>
+            </div>
+        </div>
+        
+        <div class="profile-user-info">
+            <h2>${nameToDisplay} <i class="fas fa-check-circle" style="color: #007bff; font-size: 1rem;" title="Usuário Verificado"></i></h2>
+            <div class="profile-user-meta">
+                <span><i class="fas fa-user-tag"></i> ${role}</span>
+                <span><i class="fas fa-briefcase"></i> ${location}</span>
+            </div>
+        </div>
+        
+        <div class="profile-header-actions">
+            <button class="profile-header-btn" id="profile-stats-btn" title="Estatísticas">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </button>
+            <button class="profile-header-btn" id="profile-signout-btn" title="Deslogar">
+                <i class="fas fa-sign-out-alt"></i> Deslogar
+            </button>
+        </div>
+        
+        <div class="profile-tags">
+            ${accessTagsHtml}
+        </div>
+    </div>
+
+    <nav class="profile-nav-tabs">
+        <a href="#" class="profile-nav-link active" data-tab="tab-profile">
+            <i class="fas fa-user-circle"></i> Perfil
+        </a>
+        <a href="#" class="profile-nav-link" data-tab="tab-security">
+            <i class="fas fa-lock"></i> Segurança
+        </a>
+        <a href="#" class="profile-nav-link" data-tab="tab-activity">
+            <i class="fas fa-history"></i> Atividade
+        </a>
+        <a href="#" class="profile-nav-link" data-tab="tab-settings">
+            <i class="fas fa-cog"></i> Configurações
+        </a>
+    </nav>
+
+    <div class="profile-form-section">
+    
+        <div class="profile-tab-pane active" id="tab-profile">
+        <p id="profile-name-status" class="hub-form-status hidden" style="margin-top: -15px;"></p>
+            <div class="form-row"> 
+                <div class="form-group">
+                    <label for="profile-full-name">Nome de Exibição</label>
+                    <input type="text" id="profile-full-name" class="profile-input" value="${displayName || ''}" placeholder="Seu Nome de Exibição" maxlength="16">
+                </div>
+                <div class="form-group">
+                    <label for="profile-username">Login de Funcionário</label>
+                    <input type="text" id="profile-username" class="profile-input" value="${usernameHandle.toUpperCase()}" readonly disabled>
+                    <i class="fas fa-check-circle input-check-icon" title="Nome de funcionário verificado"></i>
+                </div>
+            </div>
+            
+            <hr class="form-divider">
+            
+            <div class="form-group">
+                <label>Personalização</label>
+                <div class="form-group-inline">
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="toggle-terceiros" class="toggle-input">
+                        <label for="toggle-terceiros" class="toggle-label"></label>
+                    </div>
+                    <span>Permitir acesso a dados de terceiros.</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-tab-pane" id="tab-security">
+            </div>
+
+        <div class="profile-tab-pane" id="tab-activity">
+            </div>
+
+        <div class="profile-tab-pane" id="tab-settings">
+            </div>
+    </div>
+
+    <div class="profile-form-footer">
+        <button class="button btn-cancel" id="profile-discard-btn">Descartar</button>
+        <button class="button btn-save" id="profile-save-btn">Salvar Alterações</button>
+    </div>
+</div>
+    `;
+
+    // --- 3. Re-injeção de Conteúdo Antigo e Listeners ---
+    
+    // (HTML de Segurança - SEM o botão)
+    const securityHTML = `
+        <h4>Alterar Senha</h4>
+        <p id="profile-password-status" class="hub-form-status hidden"></p>
+        <form id="password-change-form" class="password-change-form form-row">
+            <div class="form-group">
+                <label for="profile-current-pass">Senha Atual:</label>
+                <input type="password" id="profile-current-pass" class="profile-input">
+            </div>
+            <div class="form-group">
+                <label for="profile-new-pass">Nova Senha:</label>
+                <input type="password" id="profile-new-pass" class="profile-input" maxlength="16">
+            </div>
+            <div class="form-group">
+                <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
+                <input type="password" id="profile-confirm-pass" class="profile-input" maxlength="16">
+            </div>
+            </form>
+    `;
+    
+    // (Req 3: HTML de Atividade - SEM Dashboard Mais Acessado)
+    const activityHTML = `
+        <h4>Últimos Agendamentos</h4>
+        <ul id="profile-activity-list" class="profile-activity-list new-design">
+            <li class="no-activity">Carregando...</li>
+        </ul>
+        `;
+
+    // (HTML de Configurações - SEM o botão)
+    const settingsHTML = `
+    <h4 style="margin-top: 5px;">Menu Principal</h4>
+        <div class="setting-group form-group" style="padding: 0;">
+            <label>Quantidade de Cards</label>
+            <div class="count-selector" style="justify-content: flex-start;">
+                <div class="setting-option" data-count="4">
+                    <span>4 Espaços</span>
+                </div>
+                <div class="setting-option" data-count="6">
+                    <span>6 Espaços</span>
+                </div>
+                <div class="setting-option" data-count="8">
+                    <span>8 Espaços</span>
+                </div>
+            </div>
+            </div>
+    `;
+    
+    modal.querySelector('#tab-security').innerHTML = securityHTML;
+    modal.querySelector('#tab-activity').innerHTML = activityHTML;
+    modal.querySelector('#tab-settings').innerHTML = settingsHTML; 
+    
+    
+    // --- 4. Helper para salvar o Nome de Exibição ---
+    const handleSaveName = () => {
+        // (Req: Pega o modal e o status)
+        const modal = profileOverlay.querySelector('.settings-modal');
+        const statusEl = modal.querySelector('#profile-name-status');
+        const newDisplayName = modal.querySelector('#profile-full-name').value.trim() || null;
+        
+        statusEl.className = 'hub-form-status hidden'; // Limpa status
+
+        if (newDisplayName && newDisplayName.length > 16) {
+             // (Req: Usa o status em vez de alert)
+             statusEl.textContent = "O Nome de Exibição não pode ter mais de 16 caracteres.";
+             statusEl.className = 'hub-form-status error visible';
+             return;
+        }
+
+        fetch('/api/profile/update-details', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: newDisplayName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                currentHubDisplayName = data.display_name;
+                updateAccessDropdown(currentHubUser, currentProfileUrl, currentHubArea, currentHubRole, currentHubDisplayName);
+                modal.querySelector('.profile-user-info h2').innerHTML = `${currentHubDisplayName || username} <i class="fas fa-check-circle" style="color: #007bff; font-size: 1rem;" title="Usuário Verificado"></i>`;
+                
+                // (Req: Usa o status em vez de alert)
+                statusEl.textContent = "Nome de exibição salvo.";
+                statusEl.className = 'hub-form-status success visible';
+            } else {
+                // (Req: Usa o status em vez de alert)
+                statusEl.textContent = data.mensagem;
+                statusEl.className = 'hub-form-status error visible';
+            }
+            
+            // (Esconde a mensagem depois de 3 segundos)
+            setTimeout(() => {
+                if(statusEl) { // Verifica se o modal ainda existe
+                    statusEl.className = 'hub-form-status hidden';
+                }
+            }, 3000);
+        });
+    };
+
+    // --- 5. (Req 1, 3, 4) Helper para atualizar os botões do rodapé ---
+    function updateFooterButtons(activeTabId) {
+        const footer = modal.querySelector('.profile-form-footer');
+        const footerDiscardBtn = modal.querySelector('#profile-discard-btn');
+        const footerSaveBtn = modal.querySelector('#profile-save-btn');
+
+        // Clona os botões para remover listeners antigos
+        const newSaveBtn = footerSaveBtn.cloneNode(true);
+        footerSaveBtn.parentNode.replaceChild(newSaveBtn, footerSaveBtn);
+        
+        const newDiscardBtn = footerDiscardBtn.cloneNode(true);
+        footerDiscardBtn.parentNode.replaceChild(newDiscardBtn, footerDiscardBtn);
+
+        // Ação padrão: Descartar = Fechar
+        newDiscardBtn.onclick = () => profileOverlay.classList.remove('visible');
+
+        switch (activeTabId) {
+            case 'tab-profile':
+                footer.style.display = 'flex'; // Garante que está visível
+                newSaveBtn.textContent = 'Salvar Alterações';
+                newSaveBtn.className = 'button btn-save'; // Preto
+                newSaveBtn.disabled = false;
+                newSaveBtn.style.display = 'block';
+                newSaveBtn.onclick = handleSaveName; 
+
+                newDiscardBtn.textContent = 'Descartar';
+                newDiscardBtn.className = 'button btn-cancel'; // Cinza
+                newDiscardBtn.style.display = 'block';
+                break;
+
+            case 'tab-security':
+                footer.style.display = 'flex'; 
+                newSaveBtn.textContent = 'Salvar Senha';
+                newSaveBtn.className = 'button btn-save'; // (Req 2: Preto)
+                newSaveBtn.disabled = false;
+                newSaveBtn.style.display = 'block';
+                newSaveBtn.onclick = handleChangePassword; 
+
+                newDiscardBtn.textContent = 'Descartar';
+                newDiscardBtn.className = 'button btn-cancel'; // Cinza
+                newDiscardBtn.style.display = 'block';
+                break;
+
+            case 'tab-settings':
+                footer.style.display = 'flex'; 
+                newSaveBtn.textContent = 'Fechar'; // (Req 4: Texto)
+                newSaveBtn.className = 'button btn-cancel'; // (Req 4: Cinza)
+                newSaveBtn.disabled = false;
+                newSaveBtn.style.display = 'block';
+                newSaveBtn.onclick = () => profileOverlay.classList.remove('visible'); 
+
+                newDiscardBtn.textContent = 'Limpar Cards'; // (Req 4: Texto)
+                newDiscardBtn.className = 'button btn-danger-outline'; // (Req 4: Estilo)
+                newDiscardBtn.style.display = 'block';
+                newDiscardBtn.onclick = () => {
+                    if (confirm("Tem certeza que deseja limpar todos os cards do Acesso Rápido?")) {
+                        clearRecents();
+                    }
+                }; 
+                break;
+
+            case 'tab-activity':
+            default:
+                // (Req 1: Mostrar apenas o botão "Fechar" na aba Atividade)
+                footer.style.display = 'flex';
+                // O botão "Salvar" vira o botão "Fechar"
+                newSaveBtn.textContent = 'Fechar';
+                newSaveBtn.className = 'button btn-cancel'; // Estilo cinza
+                newSaveBtn.disabled = false;
+                newSaveBtn.style.display = 'block';
+                newSaveBtn.onclick = () => profileOverlay.classList.remove('visible');
+
+                // Esconde o botão "Descartar"
+                newDiscardBtn.style.display = 'none'; 
+                break;
+        }
+    }
+    
+    // --- 6. Anexa os Listeners aos Elementos ---
+    
+    // (Listener das Abas)
+    modal.querySelectorAll('.profile-nav-link').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (tab.classList.contains('disabled-feature')) {
+                alert('Esta funcionalidade é apenas para fins de design no momento.');
+                return;
+            }
+
+            modal.querySelectorAll('.profile-nav-link').forEach(t => t.classList.remove('active'));
+            modal.querySelectorAll('.profile-tab-pane').forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            const tabId = tab.dataset.tab;
+            modal.querySelector(`#${tabId}`).classList.add('active');
+
+            updateFooterButtons(tabId);
+
+            // (Req 3: Lógica de Atividade ATUALIZADA - sem dash)
+            if (tabId === 'tab-activity') {
+                const listEl = document.getElementById('profile-activity-list');
+                fetch('/api/profile/get-activity')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'sucesso') {
+                            renderProfileActivityList(listEl, data.activity.slice(0, 3), 'tasks');
+                        }
+                    });
+                // (Lógica do Dashboard Mais Acessado REMOVIDA daqui)
+            }
+            else if (tabId === 'tab-settings') {
+                if (typeof applyCountSetting === 'function') {
+                    applyCountSetting(localStorage.getItem('hubItemCount') || 4, modal); 
+                }
+            }
+        });
+    });
+    
+    const nameInput = modal.querySelector('#profile-full-name');
+    if (nameInput) {
+        nameInput.addEventListener('input', () => {
+            const statusEl = modal.querySelector('#profile-name-status');
+            if (statusEl) {
+                statusEl.className = 'hub-form-status hidden';
+            }
+        });
+    }
+
+    // (Listeners do Header do Modal)
+    modal.querySelector('#profile-signout-btn').addEventListener('click', handleHubLogout);
+    
+    // (Req 3: Habilita o botão Estatísticas)
+    const statsBtn = modal.querySelector('#profile-stats-btn');
+    statsBtn.classList.remove('disabled-feature');
+    statsBtn.addEventListener('click', () => {
+        openStatsModal(currentHubUser);
+    });
+
+    // (Listeners de Upload de Foto)
+    const profileEditBtn = modal.querySelector('#profile-edit-btn');
+    const profileEditDropdown = modal.querySelector('#profile-edit-dropdown');
+    const profileAlterarBtn = modal.querySelector('#profile-edit-dropdown-alterar');
+    const profileRemoverBtn = modal.querySelector('#profile-edit-dropdown-remover');
+    const newFileInput = modal.querySelector('#profile-file-input');
+
+    profileEditBtn.addEventListener('click', () => {
+        profileEditDropdown.classList.toggle('visible');
+    });
+    profileAlterarBtn.addEventListener('click', () => {
+        newFileInput.click(); 
+        profileEditDropdown.classList.remove('visible');
+    });
+    profileRemoverBtn.addEventListener('click', () => {
+        if (!currentHubUser || profileRemoverBtn.disabled) return;
+        profileRemoverBtn.disabled = true;
+        profileEditDropdown.classList.remove('visible');
+        handleRemoveProfileImage(username, displayName); 
+    });
+    if (currentImageUrl !== defaultProfileUrl) {
+        profileRemoverBtn.style.display = 'flex';
+        profileRemoverBtn.disabled = false;
+    } else {
+        profileRemoverBtn.style.display = 'none';
+        profileRemoverBtn.disabled = true;
+    }
+    newFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const fileNameParts = file.name.split('.');
+        currentUploadExtension = fileNameParts.length > 1 ? fileNameParts.pop().toLowerCase() : 'jpg';
+        if (!['png', 'jpg', 'jpeg'].includes(currentUploadExtension)) {
+            alert("Apenas arquivos PNG ou JPG são permitidos.");
+            newFileInput.value = null; return;
+        }
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => openCropperModal(e.target.result);
+        reader.readAsDataURL(file);
+        newFileInput.value = null;
+    });
+
+    // (Listeners das Configurações Movidas)
+    modal.querySelectorAll('#tab-settings .count-selector .setting-option').forEach(option => {
+        option.addEventListener('click', () => {
+            if (typeof applyCountSetting === 'function') {
+                applyCountSetting(option.dataset.count, modal); 
+            }
+        });
+    });
+    
+    // --- 7. Define o estado inicial do Footer ---
+    updateFooterButtons('tab-profile'); // Define o estado inicial para a aba "Perfil"
+
+    // --- 8. Abre o Modal ---
+    profileOverlay.classList.add('visible');
+}
+
+function handleRemoveProfileImage(username, displayName) {
+    const profilePreviewImg = document.getElementById('new-profile-avatar-img'); // (Seletor do novo modal)
+    const profileRemoverBtn = document.getElementById('profile-edit-dropdown-remover'); // (Seletor do novo modal)
+
+    fetch('/api/profile/remove-image', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'sucesso') {
+            currentProfileUrl = data.default_url;
+            updateAccessDropdown(username, data.default_url, currentHubArea, currentHubRole, displayName);
+            
+            if (profilePreviewImg) {
+                profilePreviewImg.src = data.default_url;
+            }
+            if (profileRemoverBtn) {
+                profileRemoverBtn.style.display = 'none'; // Esconde a opção
+            }
+        } else {
+            alert(data.mensagem);
+            if (profileRemoverBtn) {
+                profileRemoverBtn.disabled = false; // Reabilita se falhar
+            }
+        }
+    })
+    .catch(() => {
+        alert("Erro de comunicação ao remover imagem.");
+        if (profileRemoverBtn) {
+            profileRemoverBtn.disabled = false; // Reabilita se falhar
+        }
+    });
+}
     
     profileCloseBtn.addEventListener('click', () => profileOverlay.classList.remove('visible'));
     profileOverlay.addEventListener('mousedown', (e) => {
