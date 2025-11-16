@@ -59,6 +59,9 @@
         </div>
         <div class="header-tools">
             
+            <button id="about-btn" aria-label="Sobre" title="Sobre"><i class="fas fa-question-circle"></i></button>
+            <button id="settings-btn" aria-label="Configurações" title="Configurações"><i class="fas fa-cog"></i></button>
+            <button id="fullscreen-btn" aria-label="Tela Cheia" title="Tela Cheia"><i class="fas fa-expand"></i></button>
             <div class="access-container">
                 <button id="access-btn" class="access-button" aria-label="Acesso" title="Acesso">
                     <img id="profile-img" src="{{ profile_image or '/static/icones/default_profile.png' }}" alt="Perfil" class="profile-image-thumb">
@@ -66,9 +69,6 @@
                 <div class="access-dropdown" id="access-dropdown">
                     </div>
             </div>
-            <button id="about-btn" aria-label="Sobre" title="Sobre"><i class="fas fa-question-circle"></i></button>
-            <button id="settings-btn" aria-label="Configurações" title="Configurações"><i class="fas fa-cog"></i></button>
-            <button id="fullscreen-btn" aria-label="Tela Cheia" title="Tela Cheia"><i class="fas fa-expand"></i></button>
         </div>
     </div>
     
@@ -206,7 +206,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v4.0.9</p>
+                    <p><strong>Versão Atual:</strong> v4.2</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -217,6 +217,7 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
+                        <li><strong>v4.2:</strong> Layout alterado por completo, melhorias de perfil e correções</li>
                         <li><strong>v4.0.9:</strong> Melhoria de layout e nova seleção de tela nas páginas</li>
                         <li><strong>v4.0.8:</strong> Melhorias no Drive F: Online e alterações nos icones das páginas</li>
                         <li><strong>v4.0.6:</strong> Novo perfil de usuário e correção de "alert" da janela de registro</li>
@@ -290,7 +291,7 @@
     </div>
 
     <div class="settings-modal-overlay" id="profile-overlay">
-        <div class="settings-modal" style="max-width: 400px;">
+        <div class="settings-modal" style="max-width: 420px;">
             <div class="settings-header">
                 <h2>Minha Conta</h2>
                 <button class="settings-close-btn" id="profile-close-btn">&times;</button>
@@ -346,7 +347,7 @@
             <div class="settings-body" style="padding: 20px 30px 30px;">
                 <div class="modal-input-group">
                     <label for="edit-name-input">Nome de Usuário:</label>
-                    <input type="text" id="edit-name-input" class="hub-modal-input">
+                    <input type="text" id="edit-name-input" class="hub-modal-input" maxlength="16">
                 </div>
                 <button id="edit-name-save-btn" class="button-full-width btn-success" style="margin-top: 20px;">Salvar</button>
             </div>

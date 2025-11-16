@@ -1329,3 +1329,32 @@ function initialize() {
     if (currentTab) {
         currentTab.classList.add('active');
     }
+
+    const automacaoSearchInput = document.getElementById('automacao-search-input');
+    if (automacaoSearchInput) {
+        function handleAutomationSearch() {
+            const searchTerm = automacaoSearchInput.value.toLowerCase();
+            const sapContainer = document.querySelector('#sap-tasks-section .button-container');
+            const bwContainer = document.querySelector('#bw-tasks-section .button-container');
+
+            // Seleciona todos os containers de botões (incluindo grupos)
+            const allTaskElements = [...sapContainer.querySelectorAll('.task-button'), 
+                                     ...bwContainer.querySelectorAll('.task-button'),
+                                     ...sapContainer.querySelectorAll('.task-button-group'),
+                                     ...bwContainer.querySelectorAll('.task-button-group')];
+
+            allTaskElements.forEach(element => {
+                // Encontra o botão real dentro do grupo ou o próprio elemento
+                const button = element.querySelector('.task-button') || element;
+                const taskName = button.dataset.taskName.toLowerCase();
+
+                if (taskName.includes(searchTerm)) {
+                    element.style.display = 'flex';
+                } else {
+                    element.style.display = 'none';
+                }
+            });
+        }
+
+        automacaoSearchInput.addEventListener('keyup', handleAutomationSearch);
+    }

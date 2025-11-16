@@ -76,6 +76,7 @@ body {
     font-size: 1.2rem;
     color: var(--text-secondary-color);
     margin-bottom: 60px;
+    margin-top: 20px; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -499,8 +500,11 @@ body {
 /* NOVO: Estilos das Abas (Fila / Histórico) */
 .scheduler-queue-tabs {
     display: flex;
+    width: fit-content; /* Faz o container ocupar apenas o espaço das abas */
+    margin: 0 auto 20px auto; /* Centraliza horizontalmente e adiciona margem inferior */
+    /* --- FIM DA MODIFICAÇÃO --- */
+    
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 20px;
 }
 .scheduler-tab {
     padding: 10px 15px;
@@ -931,8 +935,9 @@ body {
         font-size: 2.2rem;
     }
     .subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 40px;
+        margin-top: -20px; 
     }
     .task-button {
         width: 100%; /* Botões ocupam 100% */
@@ -1013,4 +1018,49 @@ body:not(.theme-dark) .modal-content .modal-logo.logo-light {
 
 .nav-tab.disabled i {
     filter: grayscale(100%);
+}
+.page-search-container {
+    width: 90%;
+    max-width: 450px; /* Largura boa para o centro */
+    margin: 0 auto 10px auto; /* Centraliza horizontalmente e adiciona margem inferior */
+    position: relative;
+    text-align: left;
+    margin-top: 10px;
+}
+
+.page-search-icon {
+    position: absolute;
+    /* --- MODIFICAÇÃO: Alinhar ao Hub --- */
+    left: 20px; /* (Centraliza o ícone com o padding de 50px) */
+    /* --- FIM DA MODIFICAÇÃO --- */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary-color);
+    font-size: 1.1rem;
+    z-index: 1;
+}
+
+.page-search-container input {
+    width: 100%;
+    /* --- MODIFICAÇÃO: Replicar Padding/Fonte do Hub --- */
+    padding: 15px 20px 15px 50px; /* (Ajustado para 15px top/bottom e 50px left) */
+    font-family: 'Poppins', sans-serif; /* ADICIONADO */
+    /* --- FIM DA MODIFICAÇÃO --- */
+    font-size: 1rem;
+    border-radius: 25px; /* Bordas arredondadas */
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    background-color: var(--card-bg-color);
+    color: var(--text-primary-color);
+    transition: border-color 0.2s ease;
+}
+
+.page-search-container input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+@media (max-width: 768px) {
+.page-search-container {
+    display: none !important;
+ }
 }

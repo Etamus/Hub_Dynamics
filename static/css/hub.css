@@ -6,7 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 150px; /* <--- VALOR AUMENTADO (de 120px) */
+    padding-top: 110px; /* Reduzido de 150px para 130px para compensar a barra mais alta */
     min-height: 100vh;
     margin: 0;
     color: var(--text-primary-color); /* MODIFICADO */
@@ -23,7 +23,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 30px 40px;
+    padding: 0.72rem 40px;
     z-index: 10;
     border-bottom: 2px solid var(--border-color); /* <-- ADICIONE ESTA LINHA */
 }
@@ -990,6 +990,21 @@ body.theme-dark .logo-dark {
 }
 .connection-details {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* Ícone em cima, texto embaixo */
+    justify-content: center;
+    align-items: flex-start; /* Alinha o Icone e o Texto à esquerda */
+    /* Removido o padding-top, pois o ícone está na coluna */
+}
+.connection-user-text {
+    /* Adiciona um espaço entre o ícone e o texto */
+    margin-top: 15px; 
+    font-size: 1rem;
+    line-height: 1.2;
+}
+.connection-details span {
+    font-size: 1rem;
+    line-height: 1.2;
 }
 .connection-details strong {
     color: var(--text-primary-color);
@@ -1881,7 +1896,6 @@ body.theme-dark .logo-dark {
     padding: -5px 30px 15px 30px; 
     background-color: var(--card-bg-color);
 }
-
 /* (Req 2) Wrapper para o Input e Ícone */
 .admin-search-input-wrapper {
     position: relative;
@@ -2095,15 +2109,18 @@ body.theme-dark .logo-dark {
 .settings-modal .profile-body {
     padding: 0; /* Remove o padding do body principal */
     text-align: left;
-    min-height: 450px; /* Altura mínima para o conteúdo */
+    max-height: 550px;
+    min-height: auto; /* Permite que o modal cresça com o conteúdo */
 }
 
 /* (Copia estilos das abas do Admin) */
 .profile-tabs {
     display: flex;
     border-bottom: 1px solid var(--border-color);
-    padding-left: 20px;
-    padding-right: 20px;
+    width: fit-content; /* Faz o container ocupar apenas o espaço necessário */
+    margin: -17px auto -5px auto; /* Centraliza o bloco no modal */
+    padding-left: 0; /* Remove padding lateral que forçava a largura */
+    padding-right: 0;
 }
 .profile-tab {
     padding: 10px 15px;
@@ -2176,6 +2193,21 @@ body.theme-dark .logo-dark {
 }
 .profile-activity-item:last-child {
     border-bottom: none;
+}
+.profile-activity-list a.profile-dashboard-item {
+    /* Define o layout para ocupar o espaço da linha */
+    display: flex; 
+    width: 95%; 
+    
+    /* Adiciona margem vertical para separar os itens */
+    margin: 0 auto 5px auto; 
+    
+    /* Adiciona cantos arredondados e padding interno */
+    border-radius: 8px; 
+    padding: 10px 15px; 
+    
+    /* Z-index para garantir que fique acima do item de baixo */
+    position: relative;
 }
 
 .profile-activity-item i,
@@ -2258,6 +2290,8 @@ body.theme-dark .logo-dark {
     color: var(--text-primary-color);
     font-size: 0.95rem;
     text-transform: capitalize;
+    cursor: default;
+    user-select: none;
 }
 
 /* (Req 2) Esconde a UI antiga de botões de foto */
@@ -2445,36 +2479,32 @@ body.theme-dark .logo-dark {
 /* (Req 1) Estilo para o botão de Lápis (Editar Nome) */
 .profile-edit-pencil-btn {
     position: absolute;
-    right: -45px; /* (Ajustado para o novo tamanho) */
+    right: 15px; 
     top: 50%;
     transform: translateY(-50%);
-    
-    /* (Req 1) Estilo Círculo */
-    width: 32px;  /* Define a largura */
-    height: 32px; /* Define a altura (igual à largura) */
-    border-radius: 50%; /* Torna o botão redondo */
-    background-color: #f0f0f0; /* Fundo sutil */
-    border: 1px solid var(--border-color);
-
-    /* (Req 1) Centralizar Ícone */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
+    background: none;
+    border: none;
     color: var(--text-secondary-color);
     cursor: pointer;
     font-size: 0.9rem;
-    padding: 0; /* (Remove o padding antigo) */
+    
+    /* --- INÍCIO DA MODIFICAÇÃO --- */
+    padding: 0; /* Remove padding */
+    border-radius: 0; /* Remove arredondamento (por segurança) */
+    /* --- FIM DA MODIFICAÇÃO --- */
+
     transition: all 0.2s ease;
 }
 
 .profile-edit-pencil-btn:hover {
     color: var(--accent-color);
-    background-color: var(--border-color);
-    border-color: var(--accent-color); /* (Adicionado) */
+    
+    /* --- INÍCIO DA MODIFICAÇÃO --- */
+    background-color: transparent; /* Garante que o fundo não apareça */
+    /* --- FIM DA MODIFICAÇÃO --- */
 }
 #profile-password-save-btn {
-    width: 60%;
+    width: 55%;
     margin-top: 20px; /* Adiciona um espaço (igual ao "Salvar Nome") */
 }
 #edit-name-save-btn {
@@ -2556,4 +2586,124 @@ body.theme-dark .logo-dark {
 #edit-name-overlay .settings-modal {
     /* Altere este valor para o que desejar (ex: 350px, 450px) */
     width: 380px; 
+}
+.settings-modal-overlay#register-overlay .scheduler-queue-tabs,
+.settings-modal-overlay#admin-overlay .scheduler-queue-tabs {
+    
+    /* Sobrescreve o padding-left inline do HTML */
+    padding-left: 0 !important; 
+    padding-right: 0;
+
+    /* A principal lógica de centralização */
+    width: fit-content; /* Faz com que o bloco ocupe apenas o espaço das abas */
+    margin: 0 auto 20px auto; /* Centraliza horizontalmente e adiciona margem inferior */
+    
+    /* Garante que os itens fiquem na mesma linha (já em display: flex) */
+    justify-content: center; 
+}
+.header-tools #settings-btn, 
+.header-tools #about-btn, 
+.header-tools #fullscreen-btn,
+.header-tools #access-btn { 
+    padding-top: 3px; 
+}
+.profile-info-group #profile-name-span {
+    padding-right: 25px; 
+}
+.profile-info-grid {
+    display: grid;
+    gap: 15px;
+    margin-bottom: -8px;
+    row-gap: 20px; /* Aumenta o espaçamento vertical (era 15px) */
+    margin-top: 40px;
+    max-width: 230px;
+    margin-left: auto; /* Centraliza o bloco */
+    margin-right: auto; /* Centraliza o bloco */
+}
+
+/* (Req 1) NOVO: Container para Título e Campo (Célula do Grid) */
+.profile-field-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
+    position: relative; /* Define o contexto para o rótulo absoluto */
+    /* --- FIM DA MODIFICAÇÃO --- */
+}
+
+/* (Req 1) MODIFICADO: Estilo da Label (Título) */
+.profile-field-container label {
+    font-weight: 600;
+    color: #000000;
+    font-size: 0.9rem;
+    padding-left: 0;
+    text-align: left;
+    white-space: nowrap;
+
+    /* Posicionamento e Conteúdo */
+    position: absolute;
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Borda e Topo) --- */
+    top: -12px; /* Sobe a label para compensar a borda de 1px */
+    z-index: 2; /* Garante que fique sobre a borda da caixa */
+    background-color: #fafafa; /* Fundo do modal/card */
+    
+    /* Borda e Arredondamento */
+    border: 1px solid var(--border-color); /* Borda delineada cinza */
+    border-radius: 4px; /* Arredondamento */
+    padding: 0 5px; 
+    /* --- FIM DA MODIFICAÇÃO --- */
+
+    left: 10px;
+    margin-bottom: 0; 
+}
+
+/* (Req 1) MODIFICADO: Container do Valor (a caixa com o texto e o lápis) */
+.profile-info-group {
+    width: 100%;
+    
+    /* --- INÍCIO DA MODIFICAÇÃO (Req 1: Ajuste de Padding) --- */
+    /* Aumenta o padding superior para compensar a label flutuante */
+    padding: 20px 15px 8px 15px; 
+    /* --- FIM DA MODIFICAÇÃO --- */
+    
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    margin-bottom: 0 !important; 
+    
+    position: relative; 
+    text-align: left; 
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* (Req 3) MODIFICADO: Estilo do Valor (Texto dentro da caixa) */
+.profile-info-group span {
+    font-weight: 500;
+    color: var(--text-primary-color);
+    font-size: 0.95rem; /* Ajuste para caber melhor na grade 2x2 */
+    text-transform: capitalize;
+    display: inline-block;
+    transform: translateY(-4px)
+}
+
+/* (Ajuste do lápis) Garante que o lápis fique na posição correta no novo layout */
+.profile-info-group .profile-edit-pencil-btn {
+    top: 50%; /* Centraliza no meio da caixa (que agora tem padding fixo) */
+    transform: translateY(-50%);
+}
+.profile-info-grid,
+.profile-info-grid * {
+    box-sizing: border-box;
+}
+
+/* 2. Garante que os containers de valor não quebrem o texto */
+.profile-info-group span {
+    /* (Este estilo já existia, mas vamos garantir o no-wrap) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

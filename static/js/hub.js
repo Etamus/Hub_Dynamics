@@ -762,81 +762,96 @@ function uploadCroppedImage(formData) {
         // 3. Cria o Conteúdo das Abas
         const contentHtml = `
             <div id="tab-details" class="profile-tab-content active">
-                
-                <div style="text-align: center; margin-bottom: 35px;">
-                    <div class="profile-image-wrapper">
-                        <img id="profile-preview-img" src="${currentImageUrl}" alt="Prévia do Perfil" class="profile-preview-large">
-                        <button id="profile-edit-btn" class="profile-edit-button" title="Editar foto">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                        <div id="profile-edit-dropdown" class="profile-edit-dropdown">
-                            <button id="profile-edit-dropdown-alterar" class="access-dropdown-item">
-                                <i class="fas fa-upload"></i>Alterar Foto
-                            </button>
-                            <button id="profile-edit-dropdown-remover" class="access-dropdown-item danger">
-                                <i class="fas fa-trash-alt"></i>Remover Foto
-                            </button>
-                        </div>
-                    </div>
-                    <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
-                    <p id="profile-upload-status" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+        
+        <div style="text-align: center;">
+            <div class="profile-image-wrapper">
+                <img id="profile-preview-img" src="${currentImageUrl}" alt="Prévia do Perfil" class="profile-preview-large">
+                <button id="profile-edit-btn" class="profile-edit-button" title="Alterar foto">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <div id="profile-edit-dropdown" class="profile-edit-dropdown">
+                    <button id="profile-edit-dropdown-alterar" class="access-dropdown-item">
+                        <i class="fas fa-upload"></i>Alterar Foto
+                    </button>
+                    <button id="profile-edit-dropdown-remover" class="access-dropdown-item danger">
+                        <i class="fas fa-trash-alt"></i>Remover Foto
+                    </button>
                 </div>
-                <div class="profile-info-group">
-                    <label>Nome de Usuário:</label>
+            </div>
+            <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
+            <p id="profile-upload-status" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+        </div>
+        <div class="profile-info-grid">
+            
+            <div class="profile-field-container">
+                <label>Nome de Usuário:</label>
+                <div class="profile-info-group editable-group">
                     <span id="profile-name-span">${displayNameValue || 'Não definido'}</span>
                     <button id="profile-name-edit-btn" class="profile-edit-pencil-btn" title="Alterar Nome">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
                 </div>
+            </div>
+            
+            <div class="profile-field-container">
+                <label>Nome de Funcionário:</label>
                 <div class="profile-info-group">
-                    <label>Nome de Funcionário:</label>
                     <span style="text-transform: uppercase;">${username}</span>
                 </div>
+            </div>
+            
+            <div class="profile-field-container">
+                <label>Área:</label>
                 <div class="profile-info-group">
-                    <label>Área:</label>
                     <span>${areaValue}</span>
                 </div>
-                
+            </div>
+            
+            <div class="profile-field-container">
+                <label>Função:</label>
                 <div class="profile-info-group">
-                    <label>Função:</label>
                     <span>${roleValue}</span>
                 </div>
-                </div>
-
-            <div id="tab-security" class="profile-tab-content hidden">
-                
-                <h4>Alterar Senha</h4>
-                <p id="profile-password-status" class="hub-form-status hidden"></p>
-                <form id="password-change-form" class="password-change-form">
-                    <div class="modal-input-group">
-                        <label for="profile-current-pass">Senha Atual:</label>
-                        <input type="password" id="profile-current-pass" class="hub-modal-input">
-                    </div>
-                    <div class="modal-input-group">
-                        <label for="profile-new-pass">Nova Senha:</label>
-                        <input type="password" id="profile-new-pass" class="hub-modal-input">
-                    </div>
-                    <div class="modal-input-group">
-                        <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
-                        <input type="password" id="profile-confirm-pass" class="hub-modal-input">
-                    </div>
-                    <button type="button" id="profile-password-save-btn" class="button-full-width btn-success">Salvar</button>
-                </form>
             </div>
+        </div>
+        </div>
 
-            <div id="tab-activity" class="profile-tab-content hidden">
-                
-                <h4>Últimos Agendamentos</h4>
-                <ul id="profile-activity-list" class="profile-activity-list">
-                    <li class="no-activity">Carregando...</li>
-                </ul>
-                
-                <h4 style="margin-top: 25px;">Dashboard Mais Acessado</h4>
-                <ul id="profile-dashboard-list" class="profile-activity-list">
-                    <li class="no-activity">Carregando...</li>
-                </ul>
+    <div id="tab-security" class="profile-tab-content hidden">
+        
+        <h4>Alterar Senha</h4>
+
+        <p id="profile-password-status" class="hub-form-status hidden"></p>
+
+        <form id="password-change-form" class="password-change-form">
+            <div class="modal-input-group">
+                <label for="profile-current-pass">Senha Atual:</label>
+                <input type="password" id="profile-current-pass" class="hub-modal-input">
             </div>
-        `;
+            <div class="modal-input-group">
+                <label for="profile-new-pass">Nova Senha:</label>
+                <input type="password" id="profile-new-pass" class="hub-modal-input">
+            </div>
+            <div class="modal-input-group">
+                <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
+                <input type="password" id="profile-confirm-pass" class="hub-modal-input">
+            </div>
+            <button type="button" id="profile-password-save-btn" class="button-full-width btn-success">Salvar</button>
+        </form>
+    </div>
+
+    <div id="tab-activity" class="profile-tab-content hidden">
+        
+        <h4>Últimos Agendamentos</h4>
+        <ul id="profile-activity-list" class="profile-activity-list">
+            <li class="no-activity">Carregando...</li>
+        </ul>
+        
+        <h4 style="margin-top: 25px;">Dashboard Mais Acessado</h4>
+        <ul id="profile-dashboard-list" class="profile-activity-list">
+            <li class="no-activity">Carregando...</li>
+        </ul>
+    </div>
+`;
 
         modalBody.innerHTML = tabsHtml + contentHtml;
 
@@ -1098,6 +1113,12 @@ function openEditNameModal(currentName) {
     function handleSaveName() {
         const newDisplayName = editNameInput.value.trim() || null;
         editNameSaveBtn.disabled = true;
+
+        if (newDisplayName && newDisplayName.length > 16) {
+            alert("Erro: O Nome de Usuário não pode ter mais de 16 caracteres.");
+            editNameSaveBtn.disabled = false;
+            return;
+        }
     
         fetch('/api/profile/update-details', {
             method: 'POST',
@@ -1233,29 +1254,18 @@ function openEditNameModal(currentName) {
     }
 
     function createConnectionItem(system, iconSrc, systemName, connectionData) {
-        const item = document.createElement('div');
-        
-        let itemClass = 'connection-item';
-        if (system === 'sap' || system === 'bw') {
-            itemClass += ' connection-item-padded';
-        }
-        item.className = itemClass;
+        const item = document.createElement('li');
+        item.className = 'connection-item';
+        item.dataset.system = system;
 
-        let userDisplay = 'Não conectada';
-        let removeBtnHtml = '';
-
-        if (connectionData) {
-            userDisplay = `Usuário: ${connectionData.user}`;
-            removeBtnHtml = `
-                <button class="connection-remove-btn" data-system="${system}" title="Remover Conexão">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            `;
-        }
+        const connectionStatus = connectionData ? 'conectado' : 'não conectado';
+        const userDisplay = connectionData ? `Usuário: ${connectionData.user}` : 'Não conectado';
+        const removeBtnHtml = connectionData ? 
+            `<button class="connection-remove-btn" data-system="${system}" title="Remover conexão"><i class="fas fa-trash-alt"></i></button>` : 
+            '';
 
         const iconClass = (system === 'tableau') ? 'connection-icon tableau-icon' : 'connection-icon';
         
-        // --- INÍCIO DA MODIFICAÇÃO ---
         let iconHtml = '';
         if (system === 'sap') {
             iconHtml = `
@@ -1268,19 +1278,18 @@ function openEditNameModal(currentName) {
                 <img src="/static/icones/tableaublack_logo.png" alt="Tableau Logo" class="${iconClass} logo-dark">
             `;
         } else {
-            // (Fallback para BW)
             iconHtml = `<img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">`;
         }
-        // --- FIM DA MODIFICAÇÃO ---
-
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Icone e Texto na mesma Coluna) ---
         item.innerHTML = `
-            ${iconHtml}
             <div class="connection-details">
-                <strong>${systemName}</strong>
-                <span>${userDisplay}</span>
+                ${iconHtml}
+                <span class="connection-user-text">${userDisplay}</span>
             </div>
             ${removeBtnHtml}
         `;
+        // --- FIM DA MODIFICAÇÃO ---
 
         if (connectionData) {
             item.querySelector('.connection-remove-btn').addEventListener('click', handleRemoveConnection);

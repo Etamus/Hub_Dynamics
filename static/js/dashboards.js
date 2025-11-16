@@ -374,6 +374,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+        const dashboardsSearchInput = document.getElementById('dashboards-search-input');
+    if (dashboardsSearchInput) {
+    function handleDashboardSearch() {
+    const searchInput = document.getElementById('dashboards-search-input');
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    // 1. --- Lógica de Reset Limpa (Voltar ao Estado Inicial) ---
+    if (searchTerm === '') {
+        // Seleciona TODOS os botões de área e view em TODOS os sistemas
+        const allSystemButtons = document.querySelectorAll('.area-button, .view-button');
+        
+        // Remove a propriedade de display inline que o filtro adicionou (display: none/block)
+        allSystemButtons.forEach(button => {
+            button.style.removeProperty('display');
+        });
+
+        // Restaura o estado paginado (hiding buttons > 4)
+        updateLookerPagination(); 
+        
+        return; 
+    }
+    // --- FIM DA LÓGICA DE RESET ---
+
+    // 2. --- Lógica de Filtragem (Se há termo) ---
+    // Seleciona TODOS os botões que estão em containers visíveis/ativos
+    const activeButtons = document.querySelectorAll('.dashboard-options:not(.hidden) .area-button, .dashboard-options:not(.hidden) .view-button');
+
+    activeButtons.forEach(button => {
+        const name = button.textContent.toLowerCase();
+
+        // Determina o display correto (view buttons são inline-block, area buttons são block)
+        const displayType = button.classList.contains('view-button') ? 'inline-block' : 'block';
+
+        if (name.includes(searchTerm)) {
+            // Aplica a regra de exibição
+            button.style.display = displayType; 
+        } else {
+            // Esconde
+            button.style.display = 'none'; 
+        }
+    });
+}
+
+    dashboardsSearchInput.addEventListener('keyup', handleDashboardSearch);
+}
     
     // =================================================================
     // ===== FIM: NOVAS FUNÇÕES DA PAGINAÇÃO LOOKER =====
@@ -712,4 +758,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTab = document.querySelector(`.main-nav-tabs .nav-tab[data-page="${pageKey}"]`);
     if (currentTab) {
         currentTab.classList.add('active');
+    }
+
+    const dashboardsSearchInput = document.getElementById('dashboards-search-input');
+    if (dashboardsSearchInput) {
+        function handleDashboardSearch() {
+    const searchInput = document.getElementById('dashboards-search-input');
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    // --- NOVO RESET DE PESQUISA ---
+    if (searchTerm === '') {
+        // 1. Seleciona TODOS os botões de Área (genérico) e View
+        const allAreaButtonsGen = document.querySelectorAll('.area-selection-container .area-button');
+        const allViewButtons = document.querySelectorAll('.view-button');
+        
+        // 2. Limpa o display style de TODOS os botões de área genéricos
+        allAreaButtonsGen.forEach(button => { 
+            // Garante que TODOS os botões de área (Looker, Tableau, etc)
+            // tenham seu estilo inline removido para voltarem ao padrão CSS.
+            button.style.display = ''; 
+        });
+        
+        // 3. Limpa o display style de TODOS os botões de view
+        allViewButtons.forEach(button => { 
+            button.style.display = ''; 
+        });
+
+        // 4. CHAVE: Reativa a lógica de paginação *apenas* para os botões Looker.
+        // Isso re-esconde os botões Looker que excedem o limite da página atual (4).
+        updateLookerPagination(); 
+        
+        return; 
+    }
+    // --- FIM DA MODIFICAÇÃO ---
+
+    // Filtra todos os botões que estão visíveis no momento (Áreas ou Dashboards)
+    const activeButtons = document.querySelectorAll('.dashboard-options:not(.hidden) .area-button, .dashboard-options:not(.hidden) .view-button');
+
+    activeButtons.forEach(button => {
+        const name = button.textContent.toLowerCase();
+
+        // Determina o display correto (view buttons são inline-block, area buttons são block)
+        const displayType = button.classList.contains('view-button') ? 'inline-block' : 'block';
+
+        if (name.includes(searchTerm)) {
+            button.style.display = displayType; 
+        } else {
+            button.style.display = 'none'; 
+        }
+    });
+}
+
+        dashboardsSearchInput.addEventListener('keyup', handleDashboardSearch);
     }
