@@ -41,6 +41,19 @@
         }
       })();
     </script>
+        <script>
+            // Define o atributo de idioma o mais cedo possível
+            (function() {
+                try {
+                    const storedUser = localStorage.getItem('hubUsername') || '_default';
+                    const savedLanguage = localStorage.getItem(`hubLanguage_${storedUser}`) || localStorage.getItem('hubLanguage_default') || 'pt';
+                    document.documentElement.setAttribute('lang', savedLanguage === 'en' ? 'en' : 'pt-br');
+                    document.documentElement.dataset.hubLang = savedLanguage;
+                } catch (error) {
+                    document.documentElement.setAttribute('lang', 'pt-br');
+                }
+            })();
+        </script>
     
     <div class="top-header">
         <div class="logo-title">
@@ -206,7 +219,7 @@
             </div>
             <div class="settings-body" id="config-body">
                 <div class="about-section">
-                    <p><strong>Versão Atual:</strong> v4.4</p>
+                    <p><strong>Versão Atual:</strong> v1.5.3</p>
                     <p><strong>Responsáveis pelo Projeto:</strong></p>
                     <ul>
                         <li>Mateus Lopes (<a href="https://github.com/Etamus" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
@@ -217,42 +230,43 @@
                 <div class="devlog-container">
                     <label>Histórico de Versões</label>
                     <ul>
-                        <li><strong>v4.4:</strong> Lançamento do novo design de janelas do Hub</li>
-                        <li><strong>v4.2:</strong> Layout alterado por completo, melhorias de perfil e correções</li>
-                        <li><strong>v4.0.9:</strong> Melhoria de layout e nova seleção de tela nas páginas</li>
-                        <li><strong>v4.0.8:</strong> Melhorias no Drive F: Online e alterações nos icones das páginas</li>
-                        <li><strong>v4.0.6:</strong> Novo perfil de usuário e correção de "alert" da janela de registro</li>
-                        <li><strong>v4.0.3:</strong> Correção de icones e melhoria do modo escuro</li>
-                        <li><strong>v4.0.2:</strong> Adição de novas lógicas de "@media" para atualização do modo mobile</li>
-                        <li><strong>v3.0.9:</strong> Adicionado login para Tableau no Dashboards e correção da quebra de linha do Chatbot</li>
-                        <li><strong>v3.0.7:</strong> Barra de pesquisa aprimorada e novo preview na página de automações</li>
-                        <li><strong>v3.0.4:</strong> Atualização da lógica e prompt do Chatbot</li>
-                        <li><strong>v3.0.3:</strong> Melhoria no desbloqueio de usuário e informações do drive F:</li>
-                        <li><strong>v3.0.1:</strong> Adicionado botão de criação de usuário na tela de administração</li>
-                        <li><strong>v3.0:</strong> Janela de administração aprimorada e correções de problemas</li>
-                        <li><strong>v2.9.2:</strong> Melhoria de layout da página incial e lógica da barra de pesquisa</li>
-                        <li><strong>v2.9:</strong> Novo Chatbot com integração de inteligência artificial</li>
-                        <li><strong>v2.6:</strong> Melhorias no Agendador de Tarefas</li>
-                        <li><strong>v2.4:</strong> Novo layout, funcionalidades e correções gerais</li>
-                        <li><strong>v2.0:</strong> Melhorias no registro, tela de administração e lógica dos perfis</li>
-                        <li><strong>v1.9:</strong> Novo registro de usuário, consulta e sistema de perfis</li>
-                        <li><strong>v1.8.4:</strong> Mudanças de placeholders e ajustes de icones no agendamento de tarefas</li>
-                        <li><strong>v1.8.2:</strong> Melhorias no perfil de usuário do hub</li>
-                        <li><strong>v1.8:</strong> Agendador de tarefas aprimorado e correções de estrutura</li>
-                        <li><strong>v1.7:</strong> Acesso de usuário, conexões e melhorias na página de automatizações</li>
-                        <li><strong>v1.5:</strong> Qualidade de vida, correções de instabilidade e melhorias nas páginas</li>
-                        <li><strong>v1.1.4:</strong> Adicionado Barra de Pesquisa na Página Inicial</li>
-                        <li><strong>v1.1.2:</strong> Adição de apresentações 'Processo de devolução' ao Library</li>
-                        <li><strong>v1.1.1:</strong> Adição de arquivos 'google apresentações' ao Library. Adição do label data 'Gardem'.</li>
-                        <li><strong>v1.1.0:</strong> Início da preparação para port mobile.</li>
-                        <li><strong>v1.1:</strong> Adição de label referenciando a qual indicador o dashboard atende.</li>
-                        <li><strong>v1.0.9:</strong> Adição de preview aos dashboards pendentes</li>
-                        <li><strong>v1.0.7:</strong> Correção: Oculta o chatbot ao visualizar dashboards do Looker para evitar sobreposição</li>
-                        <li><strong>v1.0.6:</strong> Correção: Adiciona sistema de paginação e preview latera com etiquetas</li>
-                        <li><strong>v1.0.5:</strong> Correção do servidor_unico.py</li>
-                        <li><strong>v1.0.2:</strong> Remoção de Arquivos Desnecessários</li>
-                        <li><strong>v1.0.1:</strong> Atualizações Gerais e Novos Aprimoramentos</li>
-                        <li><strong>v1.0:</strong> Atualização Inicial</li>
+                        <li><strong>v1.5.3:</strong> Readequação do número da versão atual e atualização do layout de janelas</li>
+                        <li><strong>v1.4.8:</strong> Lançamento do novo design de janelas do Hub</li>
+                        <li><strong>v1.3.3:</strong> Layout alterado por completo, melhorias de perfil e correções</li>
+                        <li><strong>v1.2.8:</strong> Melhoria de layout e nova seleção de tela nas páginas</li>
+                        <li><strong>v1.2.3:</strong> Melhorias no Drive F: Online e alterações nos icones das páginas</li>
+                        <li><strong>v1.2.1:</strong> Novo perfil de usuário e correção de "alert" da janela de registro</li>
+                        <li><strong>v1.1.9:</strong> Correção de icones e melhoria do modo escuro</li>
+                        <li><strong>v1.1.7:</strong> Adição de novas lógicas de "@media" para atualização do modo mobile</li>
+                        <li><strong>v1.1.0:</strong> Adicionado login para Tableau no Dashboards e correção da quebra de linha do Chatbot</li>
+                        <li><strong>v1.0.5:</strong> Barra de pesquisa aprimorada e novo preview na página de automações</li>
+                        <li><strong>v1.0.2:</strong> Atualização da lógica e prompt do Chatbot</li>
+                        <li><strong>v1.0.0:</strong> Melhoria no desbloqueio de usuário e informações do drive F:</li>
+                        <li><strong>v0.9.5:</strong> Adicionado botão de criação de usuário na tela de administração</li>
+                        <li><strong>v0.9.0:</strong> Janela de administração aprimorada e correções de problemas</li>
+                        <li><strong>v0.8.9:</strong> Melhoria de layout da página incial e lógica da barra de pesquisa</li>
+                        <li><strong>v0.8.7:</strong> Novo Chatbot com integração de inteligência artificial</li>
+                        <li><strong>v0.7.7:</strong> Melhorias no Agendador de Tarefas</li>
+                        <li><strong>v0.7.5:</strong> Novo layout, funcionalidades e correções gerais</li>
+                        <li><strong>v0.7.0:</strong> Melhorias no registro, tela de administração e lógica dos perfis</li>
+                        <li><strong>v0.6.0:</strong> Novo registro de usuário, consulta e sistema de perfis</li>
+                        <li><strong>v0.5.0:</strong> Mudanças de placeholders e ajustes de icones no agendamento de tarefas</li>
+                        <li><strong>v0.4.9:</strong> Melhorias no perfil de usuário do hub</li>
+                        <li><strong>v0.4.7:</strong> Agendador de tarefas aprimorado e correções de estrutura</li>
+                        <li><strong>v0.4.5:</strong> Acesso de usuário, conexões e melhorias na página de automatizações</li>
+                        <li><strong>v0.3.5:</strong> Qualidade de vida, correções de instabilidade e melhorias nas páginas</li>
+                        <li><strong>v0.3.0:</strong> Adicionado Barra de Pesquisa na Página Inicial</li>
+                        <li><strong>v0.2.5:</strong> Adição de apresentações 'Processo de devolução' ao Library</li>
+                        <li><strong>v0.2.4:</strong> Adição de arquivos 'google apresentações' ao Library. Adição do label data 'Gardem'.</li>
+                        <li><strong>v0.2.3:</strong> Início da preparação para port mobile.</li>
+                        <li><strong>v0.2.2:</strong> Adição de label referenciando a qual indicador o dashboard atende.</li>
+                        <li><strong>v0.2.1:</strong> Adição de preview aos dashboards pendentes</li>
+                        <li><strong>v0.1.6:</strong> Correção: Oculta o chatbot ao visualizar dashboards do Looker para evitar sobreposição</li>
+                        <li><strong>v0.1.5:</strong> Correção: Adiciona sistema de paginação e preview latera com etiquetas</li>
+                        <li><strong>v0.1.4:</strong> Correção do servidor_unico.py</li>
+                        <li><strong>v0.1.3:</strong> Remoção de Arquivos Desnecessários</li>
+                        <li><strong>v0.1.2:</strong> Atualizações Gerais e Novos Aprimoramentos</li>
+                        <li><strong>v0.1.0:</strong> Atualização Inicial</li>
                     </ul>
                 </div>
             </div>
@@ -334,11 +348,6 @@
             </div>
         </div>
     </div>
-
-    <div class="settings-modal-overlay" id="stats-overlay">
-        <div class="settings-modal" id="stats-modal-content" style="max-width: 600px;">
-            </div>
-    </div>
 
     <div class="settings-modal-overlay" id="edit-name-overlay">
         <div class="settings-modal" style="max-width: 400px;">
@@ -441,43 +450,75 @@
 </div>
     
     <div class="settings-modal-overlay" id="admin-overlay">
-        <div class="settings-modal" style="max-width: 800px;">
-            <div class="settings-header">
-                <h2>Administração</h2>
-                <button class="settings-close-btn" id="admin-close-btn">&times;</button>
-            </div>
-            
-            <div class="scheduler-queue-tabs" style="padding-left: 20px;">
-                <span id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">Solicitações</span>
-                <span id="tab-admin-users" class="scheduler-tab" data-tab="users">Usuários</span>
-                <span id="tab-admin-dashboards" class="scheduler-tab" data-tab="dashboards">Dashboards</span>
-                <span id="tab-admin-automations" class="scheduler-tab" data-tab="automations">Automações</span>
-            </div>
+        <div class="settings-modal admin-modal">
+            <div class="admin-modal-grid">
+                <aside class="admin-sidebar">
+                    <div class="scheduler-queue-tabs admin-sidebar-nav" role="tablist">
+                        <button id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">
+                            <i class="fas fa-inbox"></i>
+                            <span>Solicitações</span>
+                            <span class="admin-tab-badge hidden" id="admin-requests-count">0</span>
+                        </button>
+                        <button id="tab-admin-users" class="scheduler-tab" data-tab="users">
+                            <i class="fas fa-users"></i>
+                            <span>Usuários</span>
+                        </button>
+                        <button id="tab-admin-dashboards" class="scheduler-tab" data-tab="dashboards">
+                            <i class="fas fa-display"></i>
+                            <span>Dashboards</span>
+                        </button>
+                        <button id="tab-admin-automations" class="scheduler-tab" data-tab="automations">
+                            <i class="fas fa-robot"></i>
+                            <span>Automações</span>
+                        </button>
+                    </div>
+                    <div class="admin-sidebar-footer">
+                        <button class="admin-close-btn" id="admin-close-btn">
+                            Fechar
+                        </button>
+                    </div>
+                </aside>
+                <section class="admin-panel">
+                    <div class="admin-panel-card">
+                        <header class="admin-panel-header">
+                            <div>
+                                <h3 id="admin-active-title">Solicitações</h3>
+                                <p id="admin-active-description">Acompanhe pedidos pendentes e responda com rapidez.</p>
+                            </div>
+                            <div id="admin-search-container" class="admin-search-container hidden">
+                                <div id="admin-search-input-wrapper" class="admin-search-input-wrapper">
+                                    <i class="fas fa-search admin-search-icon"></i>
+                                    <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Pesquisar...">
+                                </div>
+                            </div>
+                        </header>
+                        <div class="admin-panel-body">
+                            <div id="admin-requests-tab" class="admin-panel-section">
+                                <div id="admin-list-container" class="admin-panel-surface"></div>
+                            </div>
+                            
+                            <div id="admin-users-tab" class="admin-panel-section hidden">
+                                <div id="admin-user-list-container" class="admin-panel-surface"></div>
+                            </div>
 
-            <div id="admin-requests-tab" class="settings-body" style="padding: 20px 30px 30px;">
-                <div id="admin-list-container">
+                            <div id="admin-dashboards-tab" class="admin-panel-section hidden">
+                                <button class="admin-add-btn" id="admin-add-dashboard-btn">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Novo</span>
+                                </button>
+                                <div id="admin-dashboards-list" class="admin-panel-surface admin-cms-list"></div>
+                            </div>
+                            
+                            <div id="admin-automations-tab" class="admin-panel-section hidden">
+                                <button class="admin-add-btn" id="admin-add-automation-btn">
+                                    <i class="fas fa-robot"></i>
+                                    <span>Novo</span>
+                                </button>
+                                <div id="admin-automations-list" class="admin-panel-surface admin-cms-list"></div>
+                            </div>
+                        </div>
                     </div>
-            </div>
-            
-            <div id="admin-users-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
-                <div id="admin-user-list-container">
-                    </div>
-            </div>
-
-            <div id="admin-dashboards-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
-                <button class="button btn-success" id="admin-add-dashboard-btn" style="width: 130px; margin-bottom: 20px;">
-                    Adicionar
-                </button>
-                <div id="admin-dashboards-list" class="admin-cms-list">
-                    </div>
-            </div>
-            
-            <div id="admin-automations-tab" class="settings-body hidden" style="padding: 20px 30px 30px;">
-                <button class="button btn-success" id="admin-add-automation-btn" style="width: 130px; margin-bottom: 20px;">
-                    Adicionar
-                </button>
-                <div id="admin-automations-list" class="admin-cms-list">
-                    </div>
+                </section>
             </div>
         </div>
     </div>

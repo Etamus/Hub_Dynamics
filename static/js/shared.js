@@ -1,3 +1,433 @@
+const HUB_SUPPORTED_LANGUAGES = ['pt', 'en'];
+const HUB_I18N_ENTRIES = {
+    'app.title': { pt: 'Hub Spare Parts', en: 'Hub Spare Parts' },
+    'header.subtitle': { pt: 'Selecione a ferramenta que deseja utilizar', en: 'Select the tool you want to use' },
+    'search.placeholder': { pt: 'Pesquisar ferramenta...', en: 'Search for a tool...' },
+    'search.label': { pt: 'Pesquisar ferramenta', en: 'Search tool' },
+    'button.about': { pt: 'Sobre', en: 'About' },
+    'button.settings': { pt: 'Configurações', en: 'Settings' },
+    'button.fullscreen': { pt: 'Tela Cheia', en: 'Fullscreen' },
+    'button.access': { pt: 'Acesso', en: 'Access' },
+    'button.logout': { pt: 'Deslogar', en: 'Sign out' },
+    'aria.automations': { pt: 'Automações. Execute robôs para tarefas de SAP, BW e extração de relatórios.', en: 'Automations. Run bots for SAP, BW, and report extraction tasks.' },
+    'aria.dashboards': { pt: 'Dashboards. Acesse o portal com os dashboards do Looker Studio e Tableau.', en: 'Dashboards. Access the portal with Looker Studio and Tableau dashboards.' },
+    'aria.drive': { pt: 'Drive (F:) Online. Navegue pelas pastas da rede sem necessidade de uso da VPN.', en: 'Drive (F:) Online. Browse the network folders without needing the VPN.' },
+    'card.automation.title': { pt: 'Automações', en: 'Automations' },
+    'card.automation.description': { pt: 'Execute robôs para tarefas de SAP, BW e extração de relatórios.', en: 'Run bots for SAP, BW, and report extraction tasks.' },
+    'card.requestAccess': { pt: 'Solicite para ter acesso.', en: 'Request access.' },
+    'card.loginAccess': { pt: 'Faça login para ter acesso.', en: 'Log in to gain access.' },
+    'card.dashboards.title': { pt: 'Dashboards', en: 'Dashboards' },
+    'card.dashboards.description': { pt: 'Acesse o portal com os dashboards do Looker Studio e Tableau.', en: 'Access the portal with Looker Studio and Tableau dashboards.' },
+    'card.drive.title': { pt: 'Drive (F:) Online', en: 'Drive (F:) Online' },
+    'card.drive.description': { pt: 'Navegue pelas pastas da rede sem necessidade de uso da VPN.', en: 'Browse the network folders without needing the VPN.' },
+    'quickLinks.title': { pt: 'Acesso Rápido', en: 'Quick Access' },
+    'modal.settings.title': { pt: 'Configurações', en: 'Settings' },
+    'settings.menuTitle': { pt: 'Menu Principal', en: 'Main Menu' },
+    'settings.appearance': { pt: 'Aparência', en: 'Appearance' },
+    'settings.theme.light': { pt: 'Claro', en: 'Light' },
+    'settings.theme.dark': { pt: 'Escuro', en: 'Dark' },
+    'settings.theme.system': { pt: 'Sistema', en: 'System' },
+    'settings.theme.lightTitle': { pt: 'Modo Claro', en: 'Light Mode' },
+    'settings.theme.darkTitle': { pt: 'Modo Escuro', en: 'Dark Mode' },
+    'settings.theme.systemTitle': { pt: 'Padrão do Sistema', en: 'System Default' },
+    'settings.cards.label': { pt: 'Quantidade de Cards', en: 'Card Quantity' },
+    'settings.cards.option4': { pt: '4 Espaços', en: '4 Slots' },
+    'settings.cards.option6': { pt: '6 Espaços', en: '6 Slots' },
+    'settings.cards.option8': { pt: '8 Espaços', en: '8 Slots' },
+    'settings.cards.clear': { pt: 'Limpar Cards', en: 'Clear Cards' },
+    'settings.clearCardsConfirm': { pt: 'Tem certeza que deseja limpar todos os cards do Acesso Rápido?', en: 'Are you sure you want to clear all Quick Access cards?' },
+    'modal.about.title': { pt: 'Sobre', en: 'About' },
+    'about.version': { pt: 'Versão Atual:', en: 'Current Version:' },
+    'about.owners': { pt: 'Responsáveis pelo Projeto:', en: 'Project Owners:' },
+    'about.changelog': { pt: 'Histórico de Versões', en: 'Version History' },
+    'modal.profile.title': { pt: 'Minha Conta', en: 'My Account' },
+    'profile.tab.profile': { pt: 'Perfil', en: 'Profile' },
+    'profile.tab.security': { pt: 'Segurança', en: 'Security' },
+    'profile.tab.activity': { pt: 'Atividade', en: 'Activity' },
+    'profile.tab.settings': { pt: 'Configurações', en: 'Settings' },
+    'profile.displayNameLabel': { pt: 'Nome de Exibição', en: 'Display Name' },
+    'profile.loginLabel': { pt: 'Login de Funcionário', en: 'Employee Login' },
+    'profile.permissions.label': { pt: 'Permissões', en: 'Permissions' },
+    'profile.permissions.description': { pt: 'Permitir acesso a dados de terceiros.', en: 'Allow access to third-party data.' },
+    'profile.dropdown.changePhoto': { pt: 'Alterar Foto', en: 'Change Photo' },
+    'profile.dropdown.removePhoto': { pt: 'Remover Foto', en: 'Remove Photo' },
+    'actions.chooseImage': { pt: 'Escolher Imagem', en: 'Choose Image' },
+    'profile.security.heading': { pt: 'Alterar Senha', en: 'Change Password' },
+    'profile.password.current': { pt: 'Senha Atual:', en: 'Current Password:' },
+    'profile.password.new': { pt: 'Nova Senha:', en: 'New Password:' },
+    'profile.password.confirm': { pt: 'Confirmar Nova Senha:', en: 'Confirm New Password:' },
+    'profile.activity.heading': { pt: 'Últimos Agendamentos', en: 'Latest Schedules' },
+    'profile.activity.loading': { pt: 'Carregando...', en: 'Loading...' },
+    'common.loading': { pt: 'Carregando...', en: 'Loading...' },
+    'profile.language.label': { pt: 'Idioma', en: 'Language' },
+    'profile.language.option.pt': { pt: 'Português', en: 'Portuguese' },
+    'profile.language.option.en': { pt: 'Inglês', en: 'English' },
+    'profile.language.statusApplying': { pt: 'Aplicando idioma...', en: 'Applying language...' },
+    'profile.language.statusApplied': { pt: 'Idioma aplicado. Salve para manter.', en: 'Language applied. Save to keep it.' },
+    'profile.language.statusSaved': { pt: 'Preferências de idioma salvas.', en: 'Language preferences saved.' },
+    'profile.language.statusError': { pt: 'Não foi possível aplicar o idioma.', en: 'Unable to apply the language.' },
+    'profile.image.invalidType': { pt: 'Apenas arquivos PNG ou JPG são permitidos.', en: 'Only PNG or JPG files are allowed.' },
+    'profile.image.removeCommunicationError': { pt: 'Erro de comunicação ao remover imagem.', en: 'Communication error while removing the image.' },
+    'actions.saveChanges': { pt: 'Salvar Alterações', en: 'Save Changes' },
+    'actions.discard': { pt: 'Descartar', en: 'Discard' },
+    'actions.savePassword': { pt: 'Salvar Senha', en: 'Save Password' },
+    'actions.close': { pt: 'Fechar', en: 'Close' },
+    'actions.clearCards': { pt: 'Limpar Cards', en: 'Clear Cards' },
+    'actions.removeImage': { pt: 'Remover Imagem', en: 'Remove Image' },
+    'actions.login': { pt: 'Entrar', en: 'Sign in' },
+    'actions.consult': { pt: 'Consultar', en: 'Check' },
+    'actions.save': { pt: 'Salvar', en: 'Save' },
+    'actions.showPassword': { pt: 'Mostrar senha', en: 'Show password' },
+    'actions.hidePassword': { pt: 'Ocultar senha', en: 'Hide password' },
+    'form.selectPlaceholder': { pt: 'Selecione...', en: 'Select...' },
+    'modal.access.title': { pt: 'Acesso ao Hub', en: 'Hub Access' },
+    'form.userLabel': { pt: 'Usuário:', en: 'User:' },
+    'form.passwordLabel': { pt: 'Senha:', en: 'Password:' },
+    'modal.connections.title': { pt: 'Minhas Conexões', en: 'My Connections' },
+    'profile.preview.alt': { pt: 'Prévia do Perfil', en: 'Profile Preview' },
+    'profile.avatar.alt': { pt: 'Foto de Perfil', en: 'Profile Photo' },
+    'alt.preview.automations': { pt: 'Preview Automações', en: 'Automations Preview' },
+    'alt.preview.dashboards': { pt: 'Preview Dashboards', en: 'Dashboards Preview' },
+    'alt.preview.drive': { pt: 'Preview Drive', en: 'Drive Preview' },
+    'modal.editName.title': { pt: 'Alterar Nome', en: 'Change Name' },
+    'modal.register.title': { pt: 'Solicitar Acesso', en: 'Request Access' },
+    'tabs.register.form': { pt: 'Preenchimento', en: 'Application' },
+    'tabs.register.consult': { pt: 'Consulta', en: 'Status' },
+    'register.loginLabel': { pt: 'Login de Funcionário:', en: 'Employee Login:' },
+    'register.areaLabel': { pt: 'Área:', en: 'Area:' },
+    'register.roleLabel': { pt: 'Função:', en: 'Role:' },
+    'register.button.submit': { pt: 'Solicitar', en: 'Request' },
+    'register.success': { pt: 'Sua solicitação foi enviada!', en: 'Your request has been sent!' },
+    'register.keepToken': { pt: 'Guarde este token para consultar seu status:', en: 'Keep this token to check your status:' },
+    'consult.tokenPrompt': { pt: 'Insira seu Token de Acesso:', en: 'Enter your Access Token:' },
+    'consult.statusTitle': { pt: 'Status da Solicitação:', en: 'Request Status:' },
+    'consult.newPasswordLabel': { pt: 'Defina sua nova senha:', en: 'Set your new password:' },
+    'admin.tab.requests': { pt: 'Solicitações', en: 'Requests' },
+    'admin.tab.users': { pt: 'Usuários', en: 'Users' },
+    'admin.tab.dashboards': { pt: 'Dashboards', en: 'Dashboards' },
+    'admin.tab.automations': { pt: 'Automações', en: 'Automations' },
+    'admin.active.description': { pt: 'Acompanhe pedidos pendentes e responda com rapidez.', en: 'Track pending requests and respond quickly.' },
+    'actions.new': { pt: 'Novo', en: 'New' },
+    'profile.displayName.tooLong': { pt: 'O Nome de Exibição não pode ter mais de 16 caracteres.', en: 'The display name cannot exceed 16 characters.' },
+    'profile.displayName.saved': { pt: 'Nome de exibição salvo.', en: 'Display name saved.' },
+    'profile.language.selectLabel': { pt: 'Selecione o idioma de exibição.', en: 'Select the display language.' },
+    'profile.dropdown.title': { pt: 'Alterar foto', en: 'Change photo' },
+    'chatbot.placeholder': { pt: 'Digite o que precisa...', en: 'Type what you need...' },
+    'chatbot.greeting': { pt: 'Olá! Sou o Hub Assistant. Como posso ajudar?', en: "Hi! I'm the Hub Assistant. How can I help?" },
+    'chatbot.typing': { pt: 'Digitando...', en: 'Typing...' },
+    'chatbot.connectionError': { pt: 'Não foi possível conectar ao assistente. Verifique sua conexão.', en: 'Could not connect to the assistant. Please check your connection.' },
+    'profile.permissions.toggle': { pt: 'Permitir acesso a dados de terceiros.', en: 'Allow access to third-party data.' }
+    ,'nav.restrictedExecutor': { pt: 'Acesso restrito a Executores', en: 'Access restricted to Executors' }
+    ,'nav.loginRequiredDrive': { pt: 'Faça login para acessar o Drive', en: 'Log in to access Drive' }
+    ,'button.scheduler': { pt: 'Agendador', en: 'Scheduler' }
+    ,'button.backToHub': { pt: 'Voltar ao Hub', en: 'Back to Hub' }
+    ,'search.automation.placeholder': { pt: 'Buscar automação...', en: 'Search automation...' }
+    ,'subtitle.automation': { pt: 'Selecione o sistema para executar uma tarefa', en: 'Select the system to run a task' }
+    ,'modal.subtitle.login': { pt: 'Insira suas credenciais para logar.', en: 'Enter your credentials to sign in.' }
+    ,'button.login': { pt: 'Logar', en: 'Sign in' }
+    ,'button.addConnection': { pt: 'Adicionar Conexão', en: 'Add Connection' }
+    ,'confirm.logout.title': { pt: 'Deseja deslogar?', en: 'Do you want to sign out?' }
+    ,'button.no': { pt: 'Não', en: 'No' }
+    ,'button.yes': { pt: 'Sim', en: 'Yes' }
+    ,'button.download.inactive': { pt: 'Arquivo não encontrado.', en: 'File not found.' }
+    ,'search.dashboard.placeholder': { pt: 'Buscar dashboard...', en: 'Search dashboard...' }
+    ,'subtitle.dashboards': { pt: 'Selecione a plataforma para visualizar um relatório', en: 'Select the platform to view a report' }
+    ,'button.backToAreas': { pt: 'Voltar para Áreas', en: 'Back to Areas' }
+    ,'pagination.prev': { pt: 'Anterior', en: 'Previous' }
+    ,'pagination.next': { pt: 'Próxima', en: 'Next' }
+    ,'pagination.pageInfo': { pt: 'Página {current} de {total}', en: 'Page {current} of {total}' }
+    ,'subtitle.drive': { pt: 'Navegue pelas pastas da rede', en: 'Browse the network folders' }
+    ,'label.path': { pt: 'Caminho:', en: 'Path:' }
+    ,'table.header.name': { pt: 'Nome', en: 'Name' }
+    ,'table.header.modified': { pt: 'Modificado em', en: 'Modified on' }
+    ,'table.header.size': { pt: 'Tamanho', en: 'Size' }
+    ,'search.drive.placeholder': { pt: 'Buscar nesta pasta...', en: 'Search this folder...' }
+    ,'about.devlog.v44': { pt: 'Lançamento do novo design de janelas do Hub', en: 'Launch of the new Hub window design' }
+    ,'about.devlog.v42': { pt: 'Layout alterado por completo, melhorias de perfil e correções', en: 'Layout completely revamped with profile improvements and fixes' }
+    ,'about.devlog.v409': { pt: 'Melhoria de layout e nova seleção de tela nas páginas', en: 'Layout improvements and new screen selection across the pages' }
+    ,'about.devlog.v408': { pt: 'Melhorias no Drive F: Online e alterações nos icones das páginas', en: 'Drive F: Online improvements and updated icons across pages' }
+    ,'about.devlog.v406': { pt: 'Novo perfil de usuário e correção de "alert" da janela de registro', en: 'New user profile and fix for the registration window alert' }
+    ,'about.devlog.v403': { pt: 'Correção de icones e melhoria do modo escuro', en: 'Icon fixes and dark mode improvements' }
+    ,'about.devlog.v402': { pt: 'Adição de novas lógicas de "@media" para atualização do modo mobile', en: 'Added new @media logic to refresh the mobile mode' }
+    ,'about.devlog.v309': { pt: 'Adicionado login para Tableau no Dashboards e correção da quebra de linha do Chatbot', en: 'Added Tableau login inside Dashboards and fixed the chatbot line break' }
+    ,'about.devlog.v307': { pt: 'Barra de pesquisa aprimorada e novo preview na página de automações', en: 'Improved search bar and new preview on the automations page' }
+    ,'about.devlog.v304': { pt: 'Atualização da lógica e prompt do Chatbot', en: 'Chatbot logic and prompt update' }
+    ,'about.devlog.v303': { pt: 'Melhoria no desbloqueio de usuário e informações do drive F:', en: 'Improvements to user unlocking and Drive F: information' }
+    ,'about.devlog.v301': { pt: 'Adicionado botão de criação de usuário na tela de administração', en: 'Added user creation button on the administration screen' }
+    ,'about.devlog.v30': { pt: 'Janela de administração aprimorada e correções de problemas', en: 'Enhanced admin window and bug fixes' }
+    ,'about.devlog.v292': { pt: 'Melhoria de layout da página incial e lógica da barra de pesquisa', en: 'Homepage layout improvements and search bar logic updates' }
+    ,'about.devlog.v29': { pt: 'Novo Chatbot com integração de inteligência artificial', en: 'New chatbot with artificial intelligence integration' }
+    ,'about.devlog.v26': { pt: 'Melhorias no Agendador de Tarefas', en: 'Task scheduler improvements' }
+    ,'about.devlog.v24': { pt: 'Novo layout, funcionalidades e correções gerais', en: 'New layout, features, and general fixes' }
+    ,'about.devlog.v20': { pt: 'Melhorias no registro, tela de administração e lógica dos perfis', en: 'Registration, admin screen, and profile logic improvements' }
+    ,'about.devlog.v19': { pt: 'Novo registro de usuário, consulta e sistema de perfis', en: 'New user registration, query, and profile system' }
+    ,'about.devlog.v184': { pt: 'Mudanças de placeholders e ajustes de icones no agendamento de tarefas', en: 'Placeholder changes and icon tweaks in the task scheduler' }
+    ,'about.devlog.v182': { pt: 'Melhorias no perfil de usuário do hub', en: 'Hub user profile improvements' }
+    ,'about.devlog.v18': { pt: 'Agendador de tarefas aprimorado e correções de estrutura', en: 'Task scheduler enhancements and structure fixes' }
+    ,'about.devlog.v17': { pt: 'Acesso de usuário, conexões e melhorias na página de automatizações', en: 'User access, connections, and automations page improvements' }
+    ,'about.devlog.v15': { pt: 'Qualidade de vida, correções de instabilidade e melhorias nas páginas', en: 'Quality-of-life updates, stability fixes, and page improvements' }
+    ,'about.devlog.v1114': { pt: 'Adicionado Barra de Pesquisa na Página Inicial', en: 'Added a search bar to the home page' }
+    ,'about.devlog.v1112': { pt: 'Adição de apresentações "Processo de devolução" ao Library', en: 'Added “Return process” presentations to the Library' }
+    ,'about.devlog.v1111': { pt: 'Adição de arquivos "google apresentações" ao Library. Adição do label data "Gardem".', en: 'Added Google Slides files to the Library and the “Gardem” data label.' }
+    ,'about.devlog.v1110': { pt: 'Início da preparação para port mobile.', en: 'Started preparing the mobile port.' }
+    ,'about.devlog.v11': { pt: 'Adição de label referenciando a qual indicador o dashboard atende.', en: 'Added a label showing which indicator each dashboard serves.' }
+    ,'about.devlog.v109': { pt: 'Adição de preview aos dashboards pendentes', en: 'Added previews to pending dashboards' }
+    ,'about.devlog.v107': { pt: 'Correção: Oculta o chatbot ao visualizar dashboards do Looker para evitar sobreposição', en: 'Fix: Hide the chatbot when viewing Looker dashboards to avoid overlap' }
+    ,'about.devlog.v106': { pt: 'Correção: Adiciona sistema de paginação e preview latera com etiquetas', en: 'Fix: Added pagination and a side preview with labels' }
+    ,'about.devlog.v105': { pt: 'Correção do servidor_unico.py', en: 'Fix for servidor_unico.py' }
+    ,'about.devlog.v102': { pt: 'Remoção de Arquivos Desnecessários', en: 'Removed unnecessary files' }
+    ,'about.devlog.v101': { pt: 'Atualizações Gerais e Novos Aprimoramentos', en: 'General updates and new enhancements' }
+    ,'about.devlog.v10': { pt: 'Atualização Inicial', en: 'Initial update' }
+};
+
+(function initializeHubI18n() {
+    const ATTRIBUTE_CONFIG = [
+        { attr: 'placeholder', datasetKey: 'i18nPlaceholderKey' },
+        { attr: 'title', datasetKey: 'i18nTitleKey' },
+        { attr: 'aria-label', datasetKey: 'i18nAriaLabelKey' },
+        { attr: 'alt', datasetKey: 'i18nAltKey' }
+    ];
+    const reverseIndex = {};
+    const textNodeKeyCache = new WeakMap();
+    let currentLanguage = detectInitialLanguage();
+    let observer = null;
+    let domReady = document.readyState !== 'loading';
+    let isTranslating = false;
+
+    HUB_SUPPORTED_LANGUAGES.forEach(lang => {
+        reverseIndex[lang] = {};
+    });
+
+    Object.entries(HUB_I18N_ENTRIES).forEach(([key, value]) => {
+        HUB_SUPPORTED_LANGUAGES.forEach(lang => {
+            const phrase = value[lang];
+            if (phrase) {
+                reverseIndex[lang][normalizeText(phrase)] = key;
+            }
+        });
+    });
+
+    setDocumentLanguage(currentLanguage);
+
+    if (!domReady) {
+        document.addEventListener('DOMContentLoaded', () => {
+            domReady = true;
+            applyLanguageToDocument();
+            startObserver();
+        });
+    } else {
+        applyLanguageToDocument();
+        startObserver();
+    }
+
+    patchDialogs();
+
+    function normalizeText(value) {
+        return (value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function detectInitialLanguage() {
+        try {
+            const storedUser = localStorage.getItem('hubUsername') || '_default';
+            return localStorage.getItem(`hubLanguage_${storedUser}`) || localStorage.getItem('hubLanguage_default') || document.documentElement.dataset.hubLang || 'pt';
+        } catch (err) {
+            return 'pt';
+        }
+    }
+
+    function saveLanguage(lang) {
+        try {
+            const storedUser = localStorage.getItem('hubUsername') || '_default';
+            localStorage.setItem(`hubLanguage_${storedUser}`, lang);
+            localStorage.setItem('hubLanguage_default', lang);
+        } catch (err) {
+            console.error('Não foi possível salvar o idioma.', err);
+        }
+    }
+
+    function setDocumentLanguage(lang) {
+        document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'pt-br');
+        document.documentElement.dataset.hubLang = lang;
+        document.body && (document.body.dataset.hubLanguage = lang);
+    }
+
+    function getTranslation(key, lang) {
+        const entry = HUB_I18N_ENTRIES[key];
+        if (!entry) return null;
+        return entry[lang] || entry['pt'] || null;
+    }
+
+    function findKeyFromValue(value) {
+        const normalized = normalizeText(value);
+        if (!normalized) return null;
+        for (const lang of HUB_SUPPORTED_LANGUAGES) {
+            if (reverseIndex[lang][normalized]) {
+                return reverseIndex[lang][normalized];
+            }
+        }
+        return null;
+    }
+
+    function translateTextNode(node, lang) {
+        if (!node || !node.parentElement) return;
+        if (node.parentElement.closest('[data-i18n-ignore="true"]')) return;
+        const parentTag = node.parentElement.tagName;
+        if (parentTag === 'SCRIPT' || parentTag === 'STYLE') return;
+        let key = textNodeKeyCache.get(node);
+        if (!key) {
+            key = findKeyFromValue(node.textContent);
+            if (key) {
+                textNodeKeyCache.set(node, key);
+            }
+        }
+        if (!key) return;
+        const translated = getTranslation(key, lang);
+        if (translated && node.textContent !== translated) {
+            node.textContent = translated;
+        }
+    }
+
+    function translateAttributes(root, lang) {
+        if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+        const elements = root.querySelectorAll('*');
+        elements.forEach(el => {
+            if (el.closest('[data-i18n-ignore="true"]')) return;
+            if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+            ATTRIBUTE_CONFIG.forEach(({ attr, datasetKey }) => {
+                let key = el.dataset[datasetKey];
+                if (!key) {
+                    const attrValue = attr === 'placeholder' ? el.getAttribute(attr) : el.getAttribute(attr);
+                    if (!attrValue) return;
+                    key = findKeyFromValue(attrValue);
+                    if (!key) return;
+                    el.dataset[datasetKey] = key;
+                }
+                const translated = getTranslation(key, lang);
+                if (translated) {
+                    el.setAttribute(attr, translated);
+                }
+            });
+        });
+    }
+
+    function translateTextNodes(root, lang) {
+        if (!root) return;
+        const walker = document.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode(node) {
+                    if (!node || !node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                    if (!node.parentElement) return NodeFilter.FILTER_REJECT;
+                    if (node.parentElement.closest('[data-i18n-ignore="true"]')) return NodeFilter.FILTER_REJECT;
+                    const tag = node.parentElement.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+        let current = walker.nextNode();
+        while (current) {
+            translateTextNode(current, lang);
+            current = walker.nextNode();
+        }
+    }
+
+    function translateTree(root, lang) {
+        if (!root) return;
+        if (root.nodeType === Node.TEXT_NODE) {
+            translateTextNode(root, lang);
+            return;
+        }
+        translateTextNodes(root, lang);
+        translateAttributes(root, lang);
+    }
+
+    function applyLanguageToDocument(options = {}) {
+        if (!document.body) return Promise.resolve(currentLanguage);
+        isTranslating = true;
+        document.body.classList.add('language-updating');
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                translateTree(document.body, currentLanguage);
+                isTranslating = false;
+                document.body.classList.remove('language-updating');
+                if (!options.silent) {
+                    document.dispatchEvent(new CustomEvent('hub:language-changed', { detail: { language: currentLanguage } }));
+                }
+                resolve(currentLanguage);
+            });
+        });
+    }
+
+    function startObserver() {
+        if (observer || !document.body) return;
+        observer = new MutationObserver((mutations) => {
+            if (isTranslating) return;
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        translateTextNode(node, currentLanguage);
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        translateTree(node, currentLanguage);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    function setLanguage(lang, options = {}) {
+        const targetLang = HUB_SUPPORTED_LANGUAGES.includes(lang) ? lang : 'pt';
+        currentLanguage = targetLang;
+        setDocumentLanguage(targetLang);
+        if (options.persist !== false) {
+            saveLanguage(targetLang);
+        }
+        if (domReady && document.body) {
+            return applyLanguageToDocument({ silent: options.silent }).then(() => targetLang);
+        }
+        return Promise.resolve(targetLang);
+    }
+
+    function getLanguage() {
+        return currentLanguage;
+    }
+
+    function translateText(value, lang = currentLanguage) {
+        if (!value) return value;
+        const key = findKeyFromValue(value);
+        if (!key) return value;
+        return getTranslation(key, lang) || value;
+    }
+
+    function t(key, fallback) {
+        const translated = getTranslation(key, currentLanguage);
+        if (translated) return translated;
+        return fallback || HUB_I18N_ENTRIES[key]?.pt || key;
+    }
+
+    function patchDialogs() {
+        if (typeof window === 'undefined') return;
+        ['alert', 'confirm', 'prompt'].forEach(method => {
+            const original = window[method];
+            if (!original) return;
+            window[method] = function patchedDialog(message, ...rest) {
+                const finalMessage = typeof message === 'string' ? translateText(message) : message;
+                return original.call(window, finalMessage, ...rest);
+            };
+        });
+    }
+
+    window.hubI18n = {
+        getLanguage,
+        setLanguage,
+        t,
+        translateText,
+        applyLanguage: () => domReady ? applyLanguageToDocument() : Promise.resolve(currentLanguage),
+    };
+})();
+
 // --- 1. LÓGICA DE TEMA GLOBAL (DEFINIÇÃO) ---
 // Esta função agora está no escopo global, acessível por outros scripts.
 function applyGlobalTheme(theme) {

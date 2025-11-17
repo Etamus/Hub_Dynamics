@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let cropper = null; // Instância do Cropper.js
     let selectedFile = null; // Arquivo original selecionado
     let currentUploadExtension = null; // Extensão do arquivo original
+    const translate = (key, fallback) => (window.hubI18n && typeof hubI18n.t === 'function')
+        ? hubI18n.t(key, fallback)
+        : (fallback || key);
 
      // --- CÓDIGO ADICIONADO: Índice de Busca Universal ---
     let searchableIndex = [];
@@ -128,10 +131,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminUserListContainer = document.getElementById('admin-user-list-container');
     const adminDashboardsList = document.getElementById('admin-dashboards-list');
     const adminAutomationsList = document.getElementById('admin-automations-list');
+    const adminRequestsBadge = document.getElementById('admin-requests-count');
+    const adminActiveTitle = document.getElementById('admin-active-title');
+    const adminActiveDescription = document.getElementById('admin-active-description');
+    const adminSearchContainerElement = document.getElementById('admin-search-container');
+    const adminSearchInputField = document.getElementById('admin-search-input');
     
     // Botões de Adicionar Admin
     const adminAddAutomationBtn = document.getElementById('admin-add-automation-btn');
     const adminAddDashboardBtn = document.getElementById('admin-add-dashboard-btn');
+    let pendingRequestsCount = 0;
+
+    if (adminSearchInputField) {
+        adminSearchInputField.addEventListener('keyup', handleAdminSearch);
+    }
 
     // --- CÓDIGO ADICIONADO: Função para construir o Índice de Busca ---
     function buildSearchIndex() {
@@ -185,6 +198,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- FIM DA ADIÇÃO ---
 
+    function applySavedAutomationOrder() {
+        if (!currentHubUser) return;
+        const savedOrder = sessionStorage.getItem(`sortedAutomations_${currentHubUser}`);
+        if (!savedOrder) return;
+        try {
+            const savedObj = JSON.parse(savedOrder);
+            const savedKeys = Object.keys(savedObj);
+            if (savedKeys.length === 0) return;
+
+            const reordered = {};
+            savedKeys.forEach(key => {
+                if (globalCmsAutomations[key]) {
+                    reordered[key] = globalCmsAutomations[key];
+                }
+            });
+            Object.keys(globalCmsAutomations).forEach(key => {
+                if (!reordered[key]) {
+                    reordered[key] = globalCmsAutomations[key];
+                }
+            });
+
+            globalCmsAutomations = reordered;
+        } catch (err) {
+            console.error('Falha ao aplicar ordem salva das automações', err);
+            sessionStorage.removeItem(`sortedAutomations_${currentHubUser}`);
+        }
+    }
+
 
     // --- CÓDIGO NOVO: Função para carregar os dados do CMS e construir o índice ---
     function loadSearchData() {
@@ -195,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (automationsLoaded && dashboardsLoaded) {
             // Se os dados já estão aqui (do cache da sessão), apenas construa o índice
+            applySavedAutomationOrder();
             buildSearchIndex();
         } else {
             // Se não, busca os dados do servidor
@@ -204,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.status === 'sucesso') {
                     globalCmsDashboards = data.dashboards;
                     globalCmsAutomations = data.automations;
+                    applySavedAutomationOrder();
                 }
             })
             .catch(err => {
@@ -282,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
     aboutBtn.addEventListener('click', () => { aboutOverlay.classList.add('visible'); });
     aboutCloseBtn.addEventListener('click', () => { aboutOverlay.classList.remove('visible'); });
     aboutOverlay.addEventListener('mousedown', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
-    document.getElementById('stats-overlay').addEventListener('mousedown', (e) => { if (e.target === document.getElementById('stats-overlay')) { closeStatsModal(); } });
     countOptions.forEach(option => { option.addEventListener('click', () => { applyCountSetting(option.dataset.count); }); });
     clearRecentsBtn.addEventListener('click', clearRecents);
     
@@ -431,9 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
     profileImgThumb.src = currentProfileUrl;
     
     if (username) {
-        accessDropdown.style.minWidth = '200px';
+        accessDropdown.style.minWidth = '170px';
     } else {
-        accessDropdown.style.minWidth = '180px';
+        accessDropdown.style.minWidth = '160px';
     }
 
     if (username) {
@@ -442,13 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             adminButton = `<button class="access-dropdown-item" id="access-admin-btn"><i class="fas fa-user-shield"></i>Administração</button>`;
         }
 
-        const nameToDisplay = displayName || username;
-
         accessDropdown.innerHTML = `
-            <div class="access-dropdown-header">
-                <strong>${nameToDisplay}</strong>
-                <span>${area || 'N/A'}</span>
-            </div>
             <button class="access-dropdown-item" id="access-profile-btn">
                 <i class="fas fa-user"></i>Minha Conta
             </button>
@@ -692,72 +728,6 @@ function uploadCroppedImage(formData) {
     });
 }
 
-function openStatsModal(currentHubUser) {
-    const statsOverlay = document.getElementById('stats-overlay');
-    const statsModal = document.getElementById('stats-modal-content');
-    if (!statsOverlay || !statsModal) return;
-
-    // (Req 1: Aplica Z-index para sobrepor o modal de Perfil)
-    statsOverlay.style.zIndex = '1200';
-
-    // (Req 2, 4, 5: Injeta o HTML minimalista com o rodapé)
-    statsModal.innerHTML = `
-        <div class="settings-body" style="padding: 25px; padding-bottom: 15px;">
-            <h4 style="margin-top: 5px; text-align: left;">Dashboards Mais Acessados</h4>
-            <ul id="stats-dashboard-list" class="profile-activity-list new-design">
-                <li class="no-activity">Carregando...</li>
-            </ul>
-        </div>
-        <div class="profile-form-footer" id="stats-footer">
-            <button class="button btn-cancel" id="stats-close-footer-btn">Fechar</button>
-        </div>
-    `;
-
-    const dashListEl = statsModal.querySelector('#stats-dashboard-list');
-
-    // (Lógica dos Top 4)
-    const countStorageKey = `dashboardAccessCounts_${currentHubUser || '_guest'}`;
-    const counts = JSON.parse(localStorage.getItem(countStorageKey)) || {};
-    const lookup = JSON.parse(localStorage.getItem(getStorageKey('recentDashboards'))) || [];
-    const sortedIds = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-    
-    const items = sortedIds.map(id => {
-        const dashboardData = lookup.find(d => d.id === id);
-        if (dashboardData) {
-            return { ...dashboardData, count: counts[id], href: `/dashboards?open=${id}` };
-        }
-        return null;
-    }).filter(Boolean).slice(0, 4); // Pega o Top 4
-
-    // (Renderiza)
-    if (typeof renderProfileActivityList === 'function') {
-        renderProfileActivityList(dashListEl, items, 'dashboards');
-    } else {
-        dashListEl.innerHTML = '<li class="no-activity">Erro ao carregar renderizador.</li>';
-    }
-
-    // (Req 4: Adiciona listener ao novo botão de fechar)
-    statsModal.querySelector('#stats-close-footer-btn').addEventListener('click', closeStatsModal);
-    
-    // (Abre o modal)
-    statsOverlay.classList.add('visible');
-}
-
-/**
- * (Req 1) ATUALIZADO: Fecha o NOVO modal de estatísticas.
- */
-function closeStatsModal() {
-    const statsOverlay = document.getElementById('stats-overlay');
-    if (!statsOverlay) return;
-
-    statsOverlay.classList.remove('visible');
-    statsOverlay.style.zIndex = '';
-    
-    // Limpa o conteúdo para economizar memória e evitar IDs duplicados
-    const statsModal = document.getElementById('stats-modal-content');
-    statsModal.innerHTML = '';
-}
-
     // (Req 3 & 4) NOVO: Helper para renderizar listas no modal
     function renderProfileActivityList(container, items, type) {
         container.innerHTML = '';
@@ -874,9 +844,6 @@ function closeStatsModal() {
         </div>
         
         <div class="profile-header-actions">
-            <button class="profile-header-btn" id="profile-stats-btn" title="Estatísticas">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </button>
             <button class="profile-header-btn" id="profile-signout-btn" title="Deslogar">
                 <i class="fas fa-sign-out-alt"></i> Deslogar
             </button>
@@ -909,7 +876,7 @@ function closeStatsModal() {
             <div class="form-row"> 
                 <div class="form-group">
                     <label for="profile-full-name">Nome de Exibição</label>
-                    <input type="text" id="profile-full-name" class="profile-input" value="${displayName || ''}" placeholder="Seu Nome de Exibição" maxlength="16">
+                    <input type="text" id="profile-full-name" class="profile-input" value="${displayName || ''}" placeholder="Defina um nome..." maxlength="16">
                 </div>
                 <div class="form-group">
                     <label for="profile-username">Login de Funcionário</label>
@@ -921,7 +888,7 @@ function closeStatsModal() {
             <hr class="form-divider">
             
             <div class="form-group">
-                <label>Personalização</label>
+                <label>Permissões</label>
                 <div class="form-group-inline">
                     <div class="toggle-switch">
                         <input type="checkbox" id="toggle-terceiros" class="toggle-input">
@@ -958,15 +925,30 @@ function closeStatsModal() {
         <form id="password-change-form" class="password-change-form form-row">
             <div class="form-group">
                 <label for="profile-current-pass">Senha Atual:</label>
-                <input type="password" id="profile-current-pass" class="profile-input">
+                <div class="password-input-wrapper">
+                    <input type="password" id="profile-current-pass" class="profile-input">
+                    <button type="button" class="password-toggle-btn" data-target="profile-current-pass" aria-label="${translate('actions.showPassword', 'Mostrar senha')}" title="${translate('actions.showPassword', 'Mostrar senha')}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="profile-new-pass">Nova Senha:</label>
-                <input type="password" id="profile-new-pass" class="profile-input" maxlength="16">
+                <div class="password-input-wrapper">
+                    <input type="password" id="profile-new-pass" class="profile-input" maxlength="16">
+                    <button type="button" class="password-toggle-btn" data-target="profile-new-pass" aria-label="${translate('actions.showPassword', 'Mostrar senha')}" title="${translate('actions.showPassword', 'Mostrar senha')}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="profile-confirm-pass">Confirmar Nova Senha:</label>
-                <input type="password" id="profile-confirm-pass" class="profile-input" maxlength="16">
+                <div class="password-input-wrapper">
+                    <input type="password" id="profile-confirm-pass" class="profile-input" maxlength="16">
+                    <button type="button" class="password-toggle-btn" data-target="profile-confirm-pass" aria-label="${translate('actions.showPassword', 'Mostrar senha')}" title="${translate('actions.showPassword', 'Mostrar senha')}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             </form>
     `;
@@ -981,45 +963,234 @@ function closeStatsModal() {
 
     // (HTML de Configurações - SEM o botão)
     const settingsHTML = `
-    <h4 style="margin-top: 5px;">Menu Principal</h4>
+    <h4 style="margin-top: 5px;">${translate('settings.menuTitle', 'Menu Principal')}</h4>
         <div class="setting-group form-group" style="padding: 0;">
-            <label>Quantidade de Cards</label>
+            <label>${translate('settings.cards.label', 'Quantidade de Cards')}</label>
             <div class="count-selector" style="justify-content: flex-start;">
                 <div class="setting-option" data-count="4">
-                    <span>4 Espaços</span>
+                    <span>${translate('settings.cards.option4', '4 Espaços')}</span>
                 </div>
                 <div class="setting-option" data-count="6">
-                    <span>6 Espaços</span>
+                    <span>${translate('settings.cards.option6', '6 Espaços')}</span>
                 </div>
                 <div class="setting-option" data-count="8">
-                    <span>8 Espaços</span>
+                    <span>${translate('settings.cards.option8', '8 Espaços')}</span>
                 </div>
             </div>
             </div>
+        <div class="setting-group form-group language-settings" style="padding: 0;">
+            <label>${translate('profile.language.label', 'Idioma')}</label>
+            <div class="language-selector">
+                <select id="profile-language-select" class="profile-input" aria-label="${translate('profile.language.label', 'Idioma')}">
+                    <option value="pt">${translate('profile.language.option.pt', 'Português')}</option>
+                    <option value="en">${translate('profile.language.option.en', 'Inglês')}</option>
+                </select>
+            </div>
+            <p class="helper-text">${translate('profile.language.selectLabel', 'Selecione o idioma de exibição.')}</p>
+            <p id="profile-language-status" class="hub-form-status hidden" aria-live="polite"></p>
+        </div>
     `;
     
     modal.querySelector('#tab-security').innerHTML = securityHTML;
     modal.querySelector('#tab-activity').innerHTML = activityHTML;
     modal.querySelector('#tab-settings').innerHTML = settingsHTML; 
-    
-    
-    // --- 4. Helper para salvar o Nome de Exibição ---
-    const handleSaveName = () => {
-        // (Req: Pega o modal e o status)
-        const modal = profileOverlay.querySelector('.settings-modal');
-        const statusEl = modal.querySelector('#profile-name-status');
-        const newDisplayName = modal.querySelector('#profile-full-name').value.trim() || null;
-        
-        statusEl.className = 'hub-form-status hidden'; // Limpa status
 
-        if (newDisplayName && newDisplayName.length > 16) {
-             // (Req: Usa o status em vez de alert)
-             statusEl.textContent = "O Nome de Exibição não pode ter mais de 16 caracteres.";
-             statusEl.className = 'hub-form-status error visible';
-             return;
+    let profileLanguageSelect = modal.querySelector('#profile-language-select');
+    const profileLanguageStatus = modal.querySelector('#profile-language-status');
+    let pendingLanguagePreference = (window.hubI18n && typeof hubI18n.getLanguage === 'function') ? hubI18n.getLanguage() : 'pt';
+    let languageStatusTimeout = null;
+
+    const profileTabState = {
+        initialDisplayName: (displayName || '').trim(),
+        pendingDisplayName: (displayName || '').trim(),
+        dirty: false
+    };
+    const settingsTabState = {
+        initialLanguage: pendingLanguagePreference,
+        pendingLanguage: pendingLanguagePreference,
+        dirty: false
+    };
+    const securityTabState = { dirty: false };
+    const securityInputs = {
+        current: modal.querySelector('#profile-current-pass'),
+        newPass: modal.querySelector('#profile-new-pass'),
+        confirm: modal.querySelector('#profile-confirm-pass')
+    };
+    const passwordStatusEl = modal.querySelector('#profile-password-status');
+    const passwordToggleButtons = modal.querySelectorAll('.password-toggle-btn');
+
+    const getPasswordToggleLabel = (visible) => visible
+        ? translate('actions.hidePassword', 'Ocultar senha')
+        : translate('actions.showPassword', 'Mostrar senha');
+
+    passwordToggleButtons.forEach(btn => {
+        const targetId = btn.dataset.target;
+        const input = targetId ? modal.querySelector(`#${targetId}`) : null;
+        if (!input) {
+            btn.disabled = true;
+            return;
+        }
+        btn.setAttribute('aria-pressed', 'false');
+        btn.addEventListener('click', () => {
+            const willShow = input.type === 'password';
+            input.type = willShow ? 'text' : 'password';
+            btn.setAttribute('aria-pressed', willShow ? 'true' : 'false');
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = willShow ? 'fas fa-eye-slash' : 'fas fa-eye';
+            }
+            const label = getPasswordToggleLabel(willShow);
+            btn.setAttribute('aria-label', label);
+            btn.setAttribute('title', label);
+        });
+    });
+
+    const closeProfileModal = () => profileOverlay.classList.remove('visible');
+    const getActiveProfileTabId = () => {
+        const activeLink = modal.querySelector('.profile-nav-link.active');
+        return activeLink ? activeLink.dataset.tab : 'tab-profile';
+    };
+
+    const applyFooterButtonConfig = ({ primary, secondary }) => {
+        const footer = modal.querySelector('.profile-form-footer');
+        if (!footer) return;
+        footer.style.display = 'flex';
+
+        if (primary) {
+            const saveBtn = footer.querySelector('#profile-save-btn');
+            if (saveBtn) {
+                const newBtn = saveBtn.cloneNode(true);
+                newBtn.textContent = primary.text ?? newBtn.textContent;
+                newBtn.className = primary.className ?? newBtn.className;
+                newBtn.style.display = primary.display ?? 'block';
+                newBtn.disabled = !!primary.disabled;
+                if (primary.onClick) {
+                    newBtn.addEventListener('click', primary.onClick);
+                }
+                saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+            }
         }
 
-        fetch('/api/profile/update-details', {
+        if (secondary) {
+            const discardBtn = footer.querySelector('#profile-discard-btn');
+            if (discardBtn) {
+                const newBtn = discardBtn.cloneNode(true);
+                newBtn.textContent = secondary.text ?? newBtn.textContent;
+                newBtn.className = secondary.className ?? newBtn.className;
+                if (secondary.display) {
+                    newBtn.style.display = secondary.display;
+                } else {
+                    newBtn.style.display = 'block';
+                }
+                newBtn.disabled = !!secondary.disabled;
+                if (secondary.onClick) {
+                    newBtn.addEventListener('click', secondary.onClick);
+                }
+                discardBtn.parentNode.replaceChild(newBtn, discardBtn);
+            }
+        }
+    };
+
+    const setProfileDirtyFlag = (dirty) => {
+        profileTabState.dirty = dirty;
+        configureProfileFooterButtons();
+    };
+
+    const resetProfileDisplayNameField = () => {
+        const modalInstance = profileOverlay.querySelector('.settings-modal');
+        if (!modalInstance) return;
+        const nameField = modalInstance.querySelector('#profile-full-name');
+        const statusEl = modalInstance.querySelector('#profile-name-status');
+        if (statusEl) {
+            statusEl.className = 'hub-form-status hidden';
+        }
+        if (nameField) {
+            const restoredValue = profileTabState.initialDisplayName || '';
+            nameField.value = restoredValue;
+            profileTabState.pendingDisplayName = restoredValue;
+            nameField.dispatchEvent(new Event('input'));
+        } else {
+            setProfileDirtyFlag(false);
+        }
+    };
+
+    const setSettingsDirtyFlag = (dirty) => {
+        settingsTabState.dirty = dirty;
+        configureSettingsFooterButtons();
+    };
+
+    const setSecurityDirtyFlag = (dirty) => {
+        securityTabState.dirty = dirty;
+        configureSecurityFooterButtons();
+    };
+
+    const clearSecurityFields = (resetStatus = true) => {
+        Object.values(securityInputs).forEach(input => {
+            if (input) input.value = '';
+        });
+        if (resetStatus && passwordStatusEl) {
+            passwordStatusEl.textContent = '';
+            passwordStatusEl.className = 'hub-form-status hidden';
+        }
+        setSecurityDirtyFlag(false);
+    };
+
+    const evaluateSecurityDirtyState = () => {
+        const hasValue = Object.values(securityInputs).some(input => input && input.value.trim() !== '');
+        setSecurityDirtyFlag(hasValue);
+    };
+
+    const showLanguageStatus = (variant, key, autoHide = false) => {
+        if (!profileLanguageStatus) return;
+        const message = key ? translate(key, '') : '';
+        if (!message) {
+            profileLanguageStatus.textContent = '';
+            profileLanguageStatus.className = 'hub-form-status hidden';
+            return;
+        }
+        profileLanguageStatus.textContent = message;
+        const variantClass = variant === 'error' ? 'error' : variant === 'info' ? 'info' : 'success';
+        profileLanguageStatus.className = `hub-form-status ${variantClass} visible`;
+        if (autoHide) {
+            clearTimeout(languageStatusTimeout);
+            languageStatusTimeout = setTimeout(() => {
+                profileLanguageStatus.className = 'hub-form-status hidden';
+            }, 3000);
+        }
+    };
+
+    if (profileLanguageSelect) {
+        profileLanguageSelect.value = pendingLanguagePreference;
+        profileLanguageSelect.addEventListener('change', () => {
+            const selectedLang = profileLanguageSelect.value;
+            pendingLanguagePreference = selectedLang;
+            settingsTabState.pendingLanguage = selectedLang;
+            showLanguageStatus(null, null);
+            setSettingsDirtyFlag(selectedLang !== settingsTabState.initialLanguage);
+        });
+    }
+
+    function handleProfileTabSave() {
+        const modal = profileOverlay.querySelector('.settings-modal');
+        if (!modal) return Promise.resolve(false);
+        const statusEl = modal.querySelector('#profile-name-status');
+        const nameField = modal.querySelector('#profile-full-name');
+        if (!statusEl || !nameField) {
+            console.error('Elementos de nome não encontrados no modal de perfil.');
+            return Promise.resolve(false);
+        }
+        const newDisplayName = nameField.value.trim() || null;
+        profileTabState.pendingDisplayName = nameField.value.trim();
+
+        statusEl.className = 'hub-form-status hidden';
+
+        if (newDisplayName && newDisplayName.length > 16) {
+            statusEl.textContent = translate('profile.displayName.tooLong', 'O Nome de Exibição não pode ter mais de 16 caracteres.');
+            statusEl.className = 'hub-form-status error visible';
+            return Promise.resolve(false);
+        }
+
+        return fetch('/api/profile/update-details', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ display_name: newDisplayName })
@@ -1028,101 +1199,215 @@ function closeStatsModal() {
         .then(data => {
             if (data.status === 'sucesso') {
                 currentHubDisplayName = data.display_name;
+                profileTabState.initialDisplayName = (data.display_name || '').trim();
+                profileTabState.pendingDisplayName = profileTabState.initialDisplayName;
+                setProfileDirtyFlag(false);
                 updateAccessDropdown(currentHubUser, currentProfileUrl, currentHubArea, currentHubRole, currentHubDisplayName);
                 modal.querySelector('.profile-user-info h2').innerHTML = `${currentHubDisplayName || username} <i class="fas fa-check-circle" style="color: #007bff; font-size: 1rem;" title="Usuário Verificado"></i>`;
-                
-                // (Req: Usa o status em vez de alert)
-                statusEl.textContent = "Nome de exibição salvo.";
+
+                statusEl.textContent = translate('profile.displayName.saved', 'Nome de exibição salvo.');
                 statusEl.className = 'hub-form-status success visible';
-            } else {
-                // (Req: Usa o status em vez de alert)
-                statusEl.textContent = data.mensagem;
-                statusEl.className = 'hub-form-status error visible';
+                return true;
             }
-            
-            // (Esconde a mensagem depois de 3 segundos)
+
+            statusEl.textContent = data.mensagem;
+            statusEl.className = 'hub-form-status error visible';
+            return false;
+        })
+        .finally(() => {
             setTimeout(() => {
-                if(statusEl) { // Verifica se o modal ainda existe
+                if (statusEl) {
                     statusEl.className = 'hub-form-status hidden';
                 }
             }, 3000);
         });
-    };
+    }
 
-    // --- 5. (Req 1, 3, 4) Helper para atualizar os botões do rodapé ---
-    function updateFooterButtons(activeTabId) {
-        const footer = modal.querySelector('.profile-form-footer');
-        const footerDiscardBtn = modal.querySelector('#profile-discard-btn');
-        const footerSaveBtn = modal.querySelector('#profile-save-btn');
+    function handleSaveSettings() {
+        showLanguageStatus('info', 'profile.language.statusApplying');
+        const selectedLang = settingsTabState.pendingLanguage || pendingLanguagePreference || 'pt';
+        const applyPromise = window.hubI18n && typeof hubI18n.setLanguage === 'function'
+            ? hubI18n.setLanguage(selectedLang, { persist: true })
+            : Promise.resolve(selectedLang);
 
-        // Clona os botões para remover listeners antigos
-        const newSaveBtn = footerSaveBtn.cloneNode(true);
-        footerSaveBtn.parentNode.replaceChild(newSaveBtn, footerSaveBtn);
-        
-        const newDiscardBtn = footerDiscardBtn.cloneNode(true);
-        footerDiscardBtn.parentNode.replaceChild(newDiscardBtn, footerDiscardBtn);
+        return applyPromise
+            .then(() => {
+                pendingLanguagePreference = selectedLang;
+                settingsTabState.initialLanguage = selectedLang;
+                setSettingsDirtyFlag(false);
+                showLanguageStatus('success', 'profile.language.statusSaved', true);
+                return true;
+            })
+            .catch(() => {
+                showLanguageStatus('error', 'profile.language.statusError');
+                return false;
+            });
+    }
 
-        // Ação padrão: Descartar = Fechar
-        newDiscardBtn.onclick = () => profileOverlay.classList.remove('visible');
+    function handleChangePassword() {
+        const modal = profileOverlay.querySelector('.settings-modal');
+        if (!modal) return Promise.resolve(false);
+        const btn = modal.querySelector('#profile-save-btn');
+        const currentPass = securityInputs.current;
+        const newPass = securityInputs.newPass;
+        const confirmPass = securityInputs.confirm;
 
-        switch (activeTabId) {
-            case 'tab-profile':
-                footer.style.display = 'flex'; // Garante que está visível
-                newSaveBtn.textContent = 'Salvar Alterações';
-                newSaveBtn.className = 'button btn-save'; // Preto
-                newSaveBtn.disabled = false;
-                newSaveBtn.style.display = 'block';
-                newSaveBtn.onclick = handleSaveName; 
+        if (!btn || !currentPass || !newPass || !confirmPass || !passwordStatusEl) {
+            console.error('Erro: Elementos do formulário de senha não encontrados.');
+            return Promise.resolve(false);
+        }
 
-                newDiscardBtn.textContent = 'Descartar';
-                newDiscardBtn.className = 'button btn-cancel'; // Cinza
-                newDiscardBtn.style.display = 'block';
-                break;
+        passwordStatusEl.className = 'hub-form-status hidden';
 
-            case 'tab-security':
-                footer.style.display = 'flex'; 
-                newSaveBtn.textContent = 'Salvar Senha';
-                newSaveBtn.className = 'button btn-save'; // (Req 2: Preto)
-                newSaveBtn.disabled = false;
-                newSaveBtn.style.display = 'block';
-                newSaveBtn.onclick = handleChangePassword; 
+        if (newPass.value !== confirmPass.value) {
+            passwordStatusEl.textContent = 'A nova senha e a confirmação não correspondem.';
+            passwordStatusEl.className = 'hub-form-status error visible';
+            return Promise.resolve(false);
+        }
+        if (newPass.value.length < 4) {
+            passwordStatusEl.textContent = 'A nova senha deve ter pelo menos 4 caracteres.';
+            passwordStatusEl.className = 'hub-form-status error visible';
+            return Promise.resolve(false);
+        }
+        if (newPass.value.length > 16) {
+            passwordStatusEl.textContent = 'A nova senha não pode ter mais de 16 caracteres.';
+            passwordStatusEl.className = 'hub-form-status error visible';
+            return Promise.resolve(false);
+        }
 
-                newDiscardBtn.textContent = 'Descartar';
-                newDiscardBtn.className = 'button btn-cancel'; // Cinza
-                newDiscardBtn.style.display = 'block';
-                break;
+        btn.disabled = true;
+        return fetch('/api/profile/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_pass: currentPass.value,
+                new_pass: newPass.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            passwordStatusEl.textContent = data.mensagem;
+            if (data.status === 'sucesso') {
+                passwordStatusEl.className = 'hub-form-status success visible';
+                clearSecurityFields(false);
+                return true;
+            }
 
-            case 'tab-settings':
-                footer.style.display = 'flex'; 
-                newSaveBtn.textContent = 'Fechar'; // (Req 4: Texto)
-                newSaveBtn.className = 'button btn-cancel'; // (Req 4: Cinza)
-                newSaveBtn.disabled = false;
-                newSaveBtn.style.display = 'block';
-                newSaveBtn.onclick = () => profileOverlay.classList.remove('visible'); 
+            passwordStatusEl.className = 'hub-form-status error visible';
+            return false;
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
+    }
 
-                newDiscardBtn.textContent = 'Limpar Cards'; // (Req 4: Texto)
-                newDiscardBtn.className = 'button btn-danger-outline'; // (Req 4: Estilo)
-                newDiscardBtn.style.display = 'block';
-                newDiscardBtn.onclick = () => {
-                    if (confirm("Tem certeza que deseja limpar todos os cards do Acesso Rápido?")) {
+    function configureProfileFooterButtons(force = false) {
+        if (!force && getActiveProfileTabId() !== 'tab-profile') return;
+        applyFooterButtonConfig({
+            primary: profileTabState.dirty
+                ? {
+                    text: translate('actions.saveChanges', 'Salvar Alterações'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: () => handleProfileTabSave()
+                }
+                : {
+                    text: translate('actions.close', 'Fechar'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: closeProfileModal
+                },
+            secondary: {
+                text: translate('actions.discard', 'Descartar'),
+                className: 'button btn-cancel',
+                display: 'block',
+                onClick: () => resetProfileDisplayNameField()
+            }
+        });
+    }
+
+    function configureSecurityFooterButtons(force = false) {
+        if (!force && getActiveProfileTabId() !== 'tab-security') return;
+        applyFooterButtonConfig({
+            primary: securityTabState.dirty
+                ? {
+                    text: translate('actions.savePassword', 'Salvar Senha'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: () => handleChangePassword()
+                }
+                : {
+                    text: translate('actions.close', 'Fechar'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: closeProfileModal
+                },
+            secondary: {
+                text: translate('actions.discard', 'Descartar'),
+                className: 'button btn-cancel',
+                display: 'block',
+                onClick: () => clearSecurityFields()
+            }
+        });
+    }
+
+    function configureSettingsFooterButtons(force = false) {
+        if (!force && getActiveProfileTabId() !== 'tab-settings') return;
+        applyFooterButtonConfig({
+            primary: settingsTabState.dirty
+                ? {
+                    text: translate('actions.saveChanges', 'Salvar Alterações'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: () => handleSaveSettings()
+                }
+                : {
+                    text: translate('actions.close', 'Fechar'),
+                    className: 'button btn-save',
+                    display: 'block',
+                    onClick: closeProfileModal
+                },
+            secondary: {
+                text: translate('actions.clearCards', 'Limpar Cards'),
+                className: 'button btn-danger-outline',
+                display: 'block',
+                onClick: () => {
+                    const confirmMessage = translate('settings.clearCardsConfirm', 'Tem certeza que deseja limpar todos os cards do Acesso Rápido?');
+                    if (confirm(confirmMessage)) {
                         clearRecents();
                     }
-                }; 
+                }
+            }
+        });
+    }
+
+    function configureActivityFooterButtons() {
+        applyFooterButtonConfig({
+            primary: {
+                text: translate('actions.close', 'Fechar'),
+                className: 'button btn-save',
+                display: 'block',
+                onClick: closeProfileModal
+            },
+            secondary: {
+                display: 'none'
+            }
+        });
+    }
+
+    function updateFooterButtons(activeTabId) {
+        switch (activeTabId) {
+            case 'tab-profile':
+                configureProfileFooterButtons(true);
                 break;
-
-            case 'tab-activity':
+            case 'tab-security':
+                configureSecurityFooterButtons(true);
+                break;
+            case 'tab-settings':
+                configureSettingsFooterButtons(true);
+                break;
             default:
-                // (Req 1: Mostrar apenas o botão "Fechar" na aba Atividade)
-                footer.style.display = 'flex';
-                // O botão "Salvar" vira o botão "Fechar"
-                newSaveBtn.textContent = 'Fechar';
-                newSaveBtn.className = 'button btn-cancel'; // Estilo cinza
-                newSaveBtn.disabled = false;
-                newSaveBtn.style.display = 'block';
-                newSaveBtn.onclick = () => profileOverlay.classList.remove('visible');
-
-                // Esconde o botão "Descartar"
-                newDiscardBtn.style.display = 'none'; 
+                configureActivityFooterButtons();
                 break;
         }
     }
@@ -1168,25 +1453,42 @@ function closeStatsModal() {
     });
     
     const nameInput = modal.querySelector('#profile-full-name');
+    const profileNameHeading = modal.querySelector('.profile-user-info h2');
+    const updateHeadingLive = () => {
+        if (!profileNameHeading) return;
+        const liveValue = nameInput ? nameInput.value.trim() : '';
+        const displayValue = liveValue || currentHubDisplayName || nameToDisplay || username;
+        profileNameHeading.innerHTML = `${displayValue} <i class="fas fa-check-circle" style="color: #007bff; font-size: 1rem;" title="Usuário Verificado"></i>`;
+    };
+
     if (nameInput) {
         nameInput.addEventListener('input', () => {
             const statusEl = modal.querySelector('#profile-name-status');
             if (statusEl) {
                 statusEl.className = 'hub-form-status hidden';
             }
+            profileTabState.pendingDisplayName = nameInput.value.trim();
+            setProfileDirtyFlag(profileTabState.pendingDisplayName !== profileTabState.initialDisplayName);
+            updateHeadingLive();
         });
     }
+
+    Object.values(securityInputs).forEach(input => {
+        if (input) {
+            input.addEventListener('input', () => {
+                if (passwordStatusEl) {
+                    passwordStatusEl.className = 'hub-form-status hidden';
+                }
+                evaluateSecurityDirtyState();
+            });
+        }
+    });
+    evaluateSecurityDirtyState();
+    updateHeadingLive();
 
     // (Listeners do Header do Modal)
     modal.querySelector('#profile-signout-btn').addEventListener('click', handleHubLogout);
     
-    // (Req 3: Habilita o botão Estatísticas)
-    const statsBtn = modal.querySelector('#profile-stats-btn');
-    statsBtn.classList.remove('disabled-feature');
-    statsBtn.addEventListener('click', () => {
-        openStatsModal(currentHubUser);
-    });
-
     // (Listeners de Upload de Foto)
     const profileEditBtn = modal.querySelector('#profile-edit-btn');
     const profileEditDropdown = modal.querySelector('#profile-edit-dropdown');
@@ -1220,7 +1522,7 @@ function closeStatsModal() {
         const fileNameParts = file.name.split('.');
         currentUploadExtension = fileNameParts.length > 1 ? fileNameParts.pop().toLowerCase() : 'jpg';
         if (!['png', 'jpg', 'jpeg'].includes(currentUploadExtension)) {
-            alert("Apenas arquivos PNG ou JPG são permitidos.");
+            alert(translate('profile.image.invalidType', 'Apenas arquivos PNG ou JPG são permitidos.'));
             newFileInput.value = null; return;
         }
         selectedFile = file;
@@ -1238,6 +1540,18 @@ function closeStatsModal() {
             }
         });
     });
+
+    // Persistência do toggle de permissões
+    const permissionsToggle = modal.querySelector('#toggle-terceiros');
+    if (permissionsToggle) {
+        const permissionsToggleKey = getStorageKey('permissionsToggle');
+        const savedPermissionsState = localStorage.getItem(permissionsToggleKey);
+        permissionsToggle.checked = savedPermissionsState === 'true';
+
+        permissionsToggle.addEventListener('change', () => {
+            localStorage.setItem(permissionsToggleKey, permissionsToggle.checked ? 'true' : 'false');
+        });
+    }
     
     // --- 7. Define o estado inicial do Footer ---
     updateFooterButtons('tab-profile'); // Define o estado inicial para a aba "Perfil"
@@ -1271,7 +1585,7 @@ function handleRemoveProfileImage(username, displayName) {
         }
     })
     .catch(() => {
-        alert("Erro de comunicação ao remover imagem.");
+        alert(translate('profile.image.removeCommunicationError', 'Erro de comunicação ao remover imagem.'));
         if (profileRemoverBtn) {
             profileRemoverBtn.disabled = false; // Reabilita se falhar
         }
@@ -1321,7 +1635,7 @@ function handleRemoveProfileImage(username, displayName) {
 
         // Verifica o tipo de arquivo
         if (!['png', 'jpg', 'jpeg'].includes(currentUploadExtension)) {
-            profileUploadStatus.textContent = "Apenas arquivos PNG ou JPG são permitidos.";
+            profileUploadStatus.textContent = translate('profile.image.invalidType', 'Apenas arquivos PNG ou JPG são permitidos.');
             profileFileInput.value = null; // Limpa o input
             return;
         }
@@ -1367,7 +1681,7 @@ profileRemoveBtn.addEventListener('click', () => {
         }
     })
     .catch(() => {
-        profileUploadStatus.textContent = "Erro de comunicação ao remover imagem.";
+    profileUploadStatus.textContent = translate('profile.image.removeCommunicationError', 'Erro de comunicação ao remover imagem.');
         profileRemoveBtn.disabled = false; // Reabilita se falhar
     });
 });
@@ -1855,8 +2169,9 @@ fetch('/api/hub/check-session')
             const userTabPanel = document.getElementById('admin-users-tab');
             if (userTabPanel) {
                 const buttonHtml = `
-                    <button class="button btn-success" id="admin-add-user-btn">
-                        Adicionar
+                    <button class="admin-add-btn" id="admin-add-user-btn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Novo</span>
                     </button>
                 `;
                 // Insere o botão (ele será movido pelo showAdminTab)
@@ -1896,20 +2211,8 @@ fetch('/api/hub/check-session')
         }
         // --- FIM DA MODIFICAÇÃO ---
 
-        if (!document.getElementById('admin-search-container')) {
-            const tabsContainer = adminOverlay.querySelector('.scheduler-queue-tabs');
-            if (tabsContainer) {
-                const searchHtml = `
-                    <div id="admin-search-container" class="admin-search-container hidden">
-                        <div id="admin-search-input-wrapper" class="admin-search-input-wrapper">
-                            <i class="fas fa-search admin-search-icon"></i>
-                            <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Pesquisar nome...">
-                        </div>
-                    </div>
-                `;
-                tabsContainer.insertAdjacentHTML('afterend', searchHtml);
-                document.getElementById('admin-search-input').addEventListener('keyup', handleAdminSearch);
-            }
+        if (adminSearchInputField) {
+            adminSearchInputField.value = '';
         }
 
         adminListContainer.innerHTML = '<p class="no-requests">Carregando solicitações...</p>';
@@ -1928,6 +2231,8 @@ fetch('/api/hub/check-session')
                 renderAdminRequests(data.requests);
             } else {
                 adminListContainer.innerHTML = `<p class="no-requests">Erro: ${data.mensagem}</p>`;
+                pendingRequestsCount = 0;
+                updateRequestsBadge(0);
             }
         });
         
@@ -1965,6 +2270,7 @@ fetch('/api/hub/check-session')
                     }
                     if (!automationsLoaded) {
                         globalCmsAutomations = data.automations;
+                        applySavedAutomationOrder();
                     }
                     renderAdminDashboards();
                     renderAdminAutomations();
@@ -1977,9 +2283,21 @@ fetch('/api/hub/check-session')
     }
 
     // SUBSTITUA a função renderAdminRequests por esta:
+function updateRequestsBadge(count) {
+    if (!adminRequestsBadge) return;
+    if (count > 0) {
+        adminRequestsBadge.textContent = count;
+        adminRequestsBadge.classList.remove('hidden');
+    } else {
+        adminRequestsBadge.classList.add('hidden');
+    }
+}
+
 function renderAdminRequests(requests) {
     adminListContainer.innerHTML = '';
     const tokens = Object.keys(requests);
+    pendingRequestsCount = tokens.length;
+    updateRequestsBadge(pendingRequestsCount);
     
     if (tokens.length === 0) {
         adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
@@ -2060,9 +2378,11 @@ function renderAdminRequests(requests) {
             item.remove();
             
             // Verifica se a lista ficou vazia
-            if (adminListContainer.children.length === 0) {
-                 adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
-            }
+          if (adminListContainer.children.length === 0) {
+              adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
+          }
+          pendingRequestsCount = Math.max(0, pendingRequestsCount - 1);
+          updateRequestsBadge(pendingRequestsCount);
         } else {
             alert(data.mensagem);
             e.target.disabled = false;
@@ -2110,9 +2430,11 @@ function handleAdminReject(e) {
             item.remove();
             
             // Verifica se a lista ficou vazia
-            if (adminListContainer.children.length === 0) {
-                 adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
-            }
+          if (adminListContainer.children.length === 0) {
+              adminListContainer.innerHTML = '<p class="no-requests">Nenhuma solicitação pendente.</p>';
+          }
+          pendingRequestsCount = Math.max(0, pendingRequestsCount - 1);
+          updateRequestsBadge(pendingRequestsCount);
         } else {
             alert(data.mensagem);
             e.target.disabled = false;
@@ -2147,6 +2469,25 @@ function handleAdminReject(e) {
 // --- NOVA LÓGICA: ADMIN - GERENCIAR USUÁRIOS ---
     
     // Função para trocar as abas do modal de Admin
+    const adminTabCopy = {
+        requests: {
+            title: 'Solicitações',
+            description: 'Gerencie pedidos pendentes e responda com rapidez.'
+        },
+        users: {
+            title: 'Usuários',
+            description: 'Atualize perfis, redefina senhas e controle permissões.'
+        },
+        dashboards: {
+            title: 'Dashboards',
+            description: 'Organize o catálogo e mantenha os links atualizados.'
+        },
+        automations: {
+            title: 'Automações',
+            description: 'Organize o catálogo e seus caminhos de execução.'
+        }
+    };
+
     function showAdminTab(tabName) {
         // Esconde todos os painéis
         adminRequestsTab.classList.add('hidden');
@@ -2160,8 +2501,8 @@ function handleAdminReject(e) {
         tabAdminDashboards.classList.remove('active');
         tabAdminAutomations.classList.remove('active');
 
-        const searchContainer = document.getElementById('admin-search-container');
-        const searchInput = document.getElementById('admin-search-input');
+    const searchContainer = adminSearchContainerElement;
+    const searchInput = adminSearchInputField;
         
         // (Req 1) Referencia o novo botão de usuário
         const adminAddUserBtn = document.getElementById('admin-add-user-btn');
@@ -2232,6 +2573,14 @@ function handleAdminReject(e) {
         }
         
         handleAdminSearch();
+
+        if (adminActiveTitle && adminActiveDescription) {
+            const copy = adminTabCopy[tabName];
+            if (copy) {
+                adminActiveTitle.textContent = copy.title;
+                adminActiveDescription.textContent = copy.description;
+            }
+        }
     }
     
     // Listeners das Abas de Admin
@@ -2714,8 +3063,6 @@ function handleAdminReject(e) {
             item.dataset.key = key; // Usa a Chave (Nome) como ID
 
             const keyNameValue = auto.isNew ? '' : key;
-            const upDisabled = (index === 0) ? 'disabled' : '';
-            const downDisabled = (index === keys.length - 1) ? 'disabled' : '';
 
             item.innerHTML = `
                 <div class="admin-cms-main">
@@ -2724,18 +3071,11 @@ function handleAdminReject(e) {
                         <div class="details"><strong>Sistema:</strong> ${auto.type.toUpperCase()} | <strong>Macro:</strong> ${auto.macro || 'N/A'}</div>
                     </div>
                     <div class="admin-cms-actions">
-                        
-                        <div class="admin-reorder-controls">
-                            <button class="button admin-move-btn admin-move-up-btn" title="Mover para Cima" ${upDisabled} data-key="${key}">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                            <button class="button admin-move-btn admin-move-down-btn" title="Mover para Baixo" ${downDisabled} data-key="${key}">
-                                <i class="fas fa-arrow-down"></i>
-                            </button>
-                        </div>
-
                         <button class="button btn-warning admin-auto-edit-btn">Editar</button>
                         <button class="button btn-danger admin-auto-delete-btn">Excluir</button>
+                        <button class="admin-drag-handle" title="Arrastar para reordenar" data-key="${key}">
+                            <i class="fas fa-grip-vertical"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="admin-cms-edit-form hidden">
@@ -2760,7 +3100,7 @@ function handleAdminReject(e) {
                     </div>
                     
                     <div class="modal-input-group">
-                        <label>Caminho do Preview (Ex: /static/gifs/preview.gif):</label>
+                        <label>Caminho do Preview:</label>
                         <input type="text" class="hub-modal-input edit-auto-gif" value="${auto.gif || ''}">
                     </div>
                     <div class="modal-input-group">
@@ -2786,12 +3126,109 @@ function handleAdminReject(e) {
         });
 
         // Adiciona Listeners
-        adminAutomationsList.querySelectorAll('.admin-move-up-btn').forEach(b => b.addEventListener('click', handleAutomationMove));
-        adminAutomationsList.querySelectorAll('.admin-move-down-btn').forEach(b => b.addEventListener('click', handleAutomationMove));
         adminAutomationsList.querySelectorAll('.admin-auto-edit-btn').forEach(b => b.addEventListener('click', showCmsEditForm));
         adminAutomationsList.querySelectorAll('.admin-auto-cancel-btn').forEach(b => b.addEventListener('click', hideCmsEditForm));
         adminAutomationsList.querySelectorAll('.admin-auto-save-btn').forEach(b => b.addEventListener('click', handleAutomationSave));
         adminAutomationsList.querySelectorAll('.admin-auto-delete-btn').forEach(b => b.addEventListener('click', handleAutomationDelete));
+        adminAutomationsList.querySelectorAll('.admin-drag-handle').forEach(handle => attachAutomationDragHandle(handle));
+        adminAutomationsList.querySelectorAll('.admin-cms-card').forEach(card => setupAutomationDragCard(card));
+    }
+
+    let automationDragAllowed = false;
+    let automationDragSourceKey = null;
+
+    function attachAutomationDragHandle(handle) {
+        handle.addEventListener('pointerdown', (event) => {
+            if (event.button !== undefined && event.button !== 0) return;
+            automationDragAllowed = true;
+        });
+    }
+
+    document.addEventListener('pointerup', () => {
+        automationDragAllowed = false;
+    });
+
+    function setupAutomationDragCard(card) {
+        card.setAttribute('draggable', 'true');
+        card.addEventListener('dragstart', handleAutomationDragStart);
+        card.addEventListener('dragover', handleAutomationDragOver);
+        card.addEventListener('drop', handleAutomationDrop);
+        card.addEventListener('dragend', handleAutomationDragEnd);
+    }
+
+    function handleAutomationDragStart(e) {
+        if (!automationDragAllowed) {
+            e.preventDefault();
+            return;
+        }
+        automationDragSourceKey = e.currentTarget.dataset.key;
+        e.currentTarget.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', automationDragSourceKey);
+    }
+
+    function handleAutomationDragOver(e) {
+        if (!automationDragSourceKey) return;
+        e.preventDefault();
+        const target = e.currentTarget;
+        if (target.dataset.key === automationDragSourceKey) return;
+
+        const draggingCard = adminAutomationsList.querySelector('.admin-cms-card.dragging');
+        if (!draggingCard) return;
+
+        const bounding = target.getBoundingClientRect();
+        const offset = e.clientY - bounding.top;
+        const shouldInsertBefore = offset < bounding.height / 2;
+
+        if (shouldInsertBefore) {
+            adminAutomationsList.insertBefore(draggingCard, target);
+        } else {
+            adminAutomationsList.insertBefore(draggingCard, target.nextSibling);
+        }
+    }
+
+    function handleAutomationDrop(e) {
+        e.preventDefault();
+    }
+
+    function handleAutomationDragEnd(e) {
+        e.currentTarget.classList.remove('dragging');
+        automationDragAllowed = false;
+        automationDragSourceKey = null;
+        persistAutomationOrderFromDom();
+    }
+
+    function persistAutomationOrderFromDom() {
+        const currentOrder = Object.keys(globalCmsAutomations);
+        const domOrder = Array.from(adminAutomationsList.querySelectorAll('.admin-cms-card'))
+            .map(card => card.dataset.key);
+
+        if (domOrder.length !== currentOrder.length) {
+            renderAdminAutomations();
+            return;
+        }
+
+        let changed = false;
+        for (let i = 0; i < domOrder.length; i++) {
+            if (domOrder[i] !== currentOrder[i]) {
+                changed = true;
+                break;
+            }
+        }
+
+        if (!changed) {
+            renderAdminAutomations();
+            return;
+        }
+
+        const reordered = {};
+        domOrder.forEach(key => {
+            reordered[key] = globalCmsAutomations[key];
+        });
+
+        globalCmsAutomations = reordered;
+        saveCmsData('automations');
+        renderAdminAutomations();
     }
 
     // Botão Adicionar (Automação) - CORRIGIDO
@@ -2829,39 +3266,6 @@ function handleAdminReject(e) {
             adminAutomationsList.scrollTop = 0;
         }
     });
-
-    function handleAutomationMove(e) {
-        const btn = e.currentTarget;
-        const keyToMove = btn.dataset.key;
-        // -1 para "Cima", 1 para "Baixo"
-        const direction = btn.classList.contains('admin-move-up-btn') ? -1 : 1; 
-
-        let keys = Object.keys(globalCmsAutomations);
-        const index = keys.indexOf(keyToMove);
-
-        if (index === -1) return; // Chave não encontrada
-
-        const newIndex = index + direction;
-
-        // Verifica os limites (não deve mover o primeiro para cima, nem o último para baixo)
-        if (newIndex < 0 || newIndex >= keys.length) {
-            return;
-        }
-
-        // Realiza a troca no array de chaves
-        [keys[index], keys[newIndex]] = [keys[newIndex], keys[index]];
-
-        // Reconstrói o objeto global com a nova ordem
-        const newGlobalCms = {};
-        for (const key of keys) {
-            newGlobalCms[key] = globalCmsAutomations[key];
-        }
-        globalCmsAutomations = newGlobalCms;
-
-        // Salva a nova ordem no servidor e re-renderiza a lista
-        saveCmsData('automations');
-        renderAdminAutomations();
-    }
 
     function handleAutomationSave(e) {
         const item = e.target.closest('.admin-cms-card');
@@ -3034,7 +3438,7 @@ function handleAdminReject(e) {
                                 <input type="text" class="hub-modal-input edit-dash-url" value="${item.url}">
                             </div>
                             <div class="modal-input-group">
-                                <label>Caminho do Preview (Ex: /static/gifs/preview.gif):</label>
+                                <label>Caminho do Preview:</label>
                                 <input type="text" class="hub-modal-input edit-dash-gif" value="${item.gif || ''}">
                             </div>
                             <div class="modal-input-group">

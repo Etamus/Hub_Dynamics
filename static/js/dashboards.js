@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewImage = document.getElementById('preview-image');
     const previewDescription = document.getElementById('preview-description');
     const previewTagsContainer = document.getElementById('preview-tags-container');
+    const translate = (key, fallback, vars = {}) => {
+        const base = (window.hubI18n && typeof hubI18n.t === 'function') ? hubI18n.t(key, fallback) : (fallback || key);
+        return base.replace(/\{(\w+)\}/g, (match, token) => (token in vars ? vars[token] : match));
+    };
     // --- ADICIONAR: Seletores da Paginação Looker ---
     const lookerPaginationControls = document.getElementById('looker-pagination');
     const lookerPrevPage = document.getElementById('looker-prev-page');
@@ -336,7 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lookerPaginationControls) return; // Segurança
         
         // Atualiza o texto
-        lookerPageInfo.textContent = `Página ${lookerCurrentPage} de ${lookerTotalPages}`;
+        lookerPageInfo.textContent = translate('pagination.pageInfo', `Página ${lookerCurrentPage} de ${lookerTotalPages}`, {
+            current: lookerCurrentPage,
+            total: lookerTotalPages
+        });
 
         // Habilita/Desabilita botões
         lookerPrevPage.disabled = (lookerCurrentPage === 1);

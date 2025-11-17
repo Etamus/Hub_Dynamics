@@ -1,3 +1,11 @@
+.admin-add-btn + .admin-cms-list {
+    margin-top: 12px;
+}
+
+#admin-add-dashboard-btn,
+#admin-add-automation-btn {
+    margin-bottom: 12px;
+}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
 body {
@@ -596,6 +604,25 @@ body.theme-dark .logo-dark {
     border-color: #c82333;
 }
 
+.settings-modal-overlay#admin-overlay .button.btn-success {
+    background-color: #111;
+    border: 1px solid #000;
+    color: #fff;
+}
+.settings-modal-overlay#admin-overlay .button.btn-success:hover {
+    background-color: #000;
+    border-color: #000;
+}
+.settings-modal-overlay#admin-overlay .admin-reject-save-btn {
+    background-color: #111;
+    border: 1px solid #000;
+    color: #fff;
+}
+.settings-modal-overlay#admin-overlay .admin-reject-save-btn:hover {
+    background-color: #000;
+    border-color: #000;
+}
+
 /* ============================================= */
 
 @media (max-width: 768px) {
@@ -820,8 +847,8 @@ body.theme-dark .logo-dark {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: 0 4px 15px var(--shadow-color);
-    min-width: 200px;
-    padding: 8px; /* <-- Verifique se está 5px */
+    min-width: 170px;
+    padding: 6px 4px 6px 8px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
@@ -862,19 +889,20 @@ body.theme-dark .logo-dark {
 .header-tools .access-dropdown-item {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
-    padding: 12px 12px;
+    padding: 10px 12px;
     
     /* REMOVENDO EFEITO DE BACKGROUND INDESEJADO */
     background: none !important; /* Força que não tenha fundo */
     
     border: none;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-primary-color);
     cursor: pointer;
     box-sizing: border-box;
     border-radius: 4px;
+    white-space: nowrap;
 
     /* ANIMAÇÃO: Adiciona uma transição suave para escala/cor */
     transition: color 0.2s ease, transform 0.2s ease; 
@@ -898,7 +926,7 @@ body.theme-dark .logo-dark {
     transform: scale(1.1); /* Um aumento leve no ícone também */
 }
 .header-tools .access-dropdown-item i {
-    font-size: 0.9rem; /* <-- Ícone do mesmo tamanho da fonte */
+    font-size: 0.9rem; /* <-- Ícone acompanha ajuste de fonte */
     margin-right: 10px;
     width: 15px;
     text-align: center;
@@ -1170,15 +1198,283 @@ body.theme-dark .logo-dark {
 }
 
 /* --- ESTILOS DO MODAL DE ADMIN (REVISÃO COMPLETA) --- */
+
+/* Layout principal inspirado no modal "Minha Conta" */
+.admin-modal {
+    padding: 0;
+    background: transparent;
+    max-width: 960px !important;
+}
+
+.admin-modal-grid {
+    display: flex;
+    background: transparent;
+    border-radius: 32px;
+    overflow: hidden;
+    min-height: 560px;
+}
+
+.admin-sidebar {
+    width: 180px;
+    background: var(--bg-color);
+    border-right: 1px solid var(--border-color);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.admin-sidebar-header {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.admin-sidebar-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: var(--card-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    box-shadow: inset 0 0 0 1px var(--border-color);
+}
+
+.admin-sidebar-header p {
+    margin: 0;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary-color);
+}
+
+.admin-sidebar-header span {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary-color);
+}
+
+.admin-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-sidebar-nav.scheduler-queue-tabs {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.admin-sidebar-nav .scheduler-tab {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary-color);
+    font-weight: 600;
+    border-radius: 16px;
+    padding: 12px 16px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-sidebar-nav .scheduler-tab i {
+    font-size: 1rem;
+}
+
+.admin-tab-badge {
+    margin-left: auto;
+    background: var(--accent-color);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.admin-sidebar-nav .scheduler-tab.active {
+    background: var(--card-bg-color);
+    color: var(--text-primary-color);
+    box-shadow: inset 0 0 0 1px var(--border-color);
+}
+
+.admin-sidebar-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    line-height: 1.4;
+}
+
+.admin-sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.admin-panel {
+    flex: 1;
+    background: var(--card-bg-color);
+    padding: 48px 56px;
+}
+
+.admin-panel-card {
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.admin-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 12px;
+}
+
+.admin-panel-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--text-primary-color);
+}
+
+.admin-panel-header p {
+    margin: 4px 0 0;
+    color: var(--text-secondary-color);
+    font-size: 0.95rem;
+}
+
+.admin-panel-body {
+    flex: 1;
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.admin-panel-section {
+    flex: 1;
+}
+
+.admin-panel-surface {
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    padding: 0;
+    min-height: 320px;
+}
+
+
+.admin-close-btn {
+    border: none;
+    width: auto;
+    min-width: 0;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background-color: #0f0f0f;
+    color: #fff;
+    box-shadow: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-close-btn:hover {
+    background-color: #1b1b1b;
+}
+
+.admin-add-btn {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary-color);
+    border-radius: 16px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-panel-section > .admin-add-btn {
+    margin: 12px 0 18px;
+}
+
+.admin-add-btn i {
+    font-size: 0.85rem;
+    margin-right: 6px;
+}
+
+.admin-add-btn:hover {
+    background: var(--card-bg-color);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.admin-footer-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+}
+
+@media (max-width: 1024px) {
+    .admin-modal-grid {
+        flex-direction: column;
+    }
+    .admin-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 32px 32px 0 0;
+    }
+    .admin-panel {
+        padding: 32px;
+    }
+    .admin-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .admin-panel-header .admin-search-container {
+        width: 100%;
+        justify-content: stretch;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-sidebar-nav .scheduler-tab {
+        font-size: 0.95rem;
+    }
+    .admin-panel {
+        padding: 24px;
+    }
+    .admin-panel-body {
+        padding: 24px 0;
+    }
+}
+
 #admin-list-container {
     max-height: 70vh;
     overflow-y: auto;
-    padding: 10px; /* Padding sutil para a rolagem */
-    background-color: var(--bg-color); /* Fundo sutil */
-    border-radius: 8px;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Espaço entre os cards de solicitação */
+    gap: 12px;
 }
 
 .admin-request-card {
@@ -1349,9 +1645,9 @@ body.theme-dark .logo-dark {
 #admin-users-tab #admin-user-list-container {
     max-height: 70vh;
     overflow-y: auto;
-    padding: 10px;
-    background-color: var(--bg-color);
-    border-radius: 8px;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1543,9 +1839,9 @@ body.theme-dark .logo-dark {
 .admin-cms-list {
     max-height: 54vh;
     overflow-y: auto;
-    padding: 10px;
-    background-color: var(--bg-color);
-    border-radius: 8px;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1647,61 +1943,53 @@ body.theme-dark .logo-dark {
     font-size: 0.9rem;
 }
 /* Novo container para os botões de mover */
-.admin-reorder-controls {
-    display: flex;
-    gap: 5px; /* Espaço entre os botões de seta */
-    border-right: 1px solid var(--border-color); /* Linha divisória */
-    padding-right: 10px;
-    margin-right: 5px;
-}
-
-/* Estilo dos botões de mover */
-.admin-move-btn {
-    padding: 8px 10px !important; /* Mais apertado */
-    font-size: 0.9rem !important;
-    min-width: 40px !important; /* Largura mínima */
-    
-    /* Cor de fundo neutra */
-    background-color: var(--bg-color);
-    color: var(--text-tertiary-color);
-    border: 1px solid var(--border-color);
-}
-
-.admin-move-btn:hover:not(:disabled) {
-    background-color: var(--border-color);
-    color: var(--accent-color);
-}
-
-.admin-move-btn:disabled {
-    background-color: var(--bg-color);
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: var(--text-secondary-color);
-}
-
-/* Ajusta o espaçamento geral das ações */
 .admin-cms-actions {
-    gap: 5px; /* Reduz o gap geral */
+    gap: 10px;
+    align-items: center;
 }
-/* --- NOVOS ESTILOS: Barra de Pesquisa Admin (Layout do Hub) --- */
-.admin-search-container {
-    /* (Req 2) Layout Flex para alinhar input e botão */
+
+.admin-drag-handle {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary-color);
+    cursor: grab;
+    padding: 6px 10px;
+    border-radius: 12px;
+    transition: color 0.2s ease, background 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px; /* Espaço entre a barra e o botão */
-    
-    /* (Req 1) Margem inferior reduzida e padding ajustado */
-    padding: -5px 30px 15px 30px; 
-    background-color: var(--card-bg-color);
+    font-size: 1rem;
+}
+
+.admin-drag-handle:hover {
+    color: var(--accent-color);
+    background: var(--card-bg-color);
+}
+
+.admin-drag-handle:active {
+    cursor: grabbing;
+    color: var(--accent-color);
+}
+
+.admin-cms-card.dragging {
+    opacity: 0.6;
+}
+/* --- NOVOS ESTILOS: Barra de Pesquisa Admin (Layout do Hub) --- */
+.admin-search-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 0;
+    background-color: transparent;
 }
 /* (Req 2) Wrapper para o Input e Ícone */
 .admin-search-input-wrapper {
     position: relative;
-    width: 100%; /* Ocupa o espaço disponível */
-    max-width: 500px; /* Limita a largura máxima (igual ao hub) */
-    
-    flex-shrink: 1; /* Permite que ela encolha se necessário */
+    width: 100%;
+    max-width: 440px;
+    flex-shrink: 1;
 }
 
 .admin-search-icon {
@@ -1721,7 +2009,7 @@ body.theme-dark .logo-dark {
     border: 1px solid var(--border-color);
     font-family: 'Poppins', sans-serif;
     box-sizing: border-box;
-    background-color: var(--bg-color);
+    background-color: var(--card-bg-color);
     color: var(--text-primary-color);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     position: relative;
@@ -1735,14 +2023,16 @@ body.theme-dark .logo-dark {
 }
 
 /* (Req 2) Estiliza os botões "Adicionar" quando movidos */
-.admin-search-container .button {
+.admin-search-container .admin-add-btn {
     flex-shrink: 0; /* Impede que o botão encolha */
     margin: 0; /* Remove a margem padrão */
     display: none; /* Oculto por padrão (JS controla a exibição) */
     min-width: 50px;
     max-width: 110px; 
-    margin-top: 20px;
+    margin-top: 13px;
     justify-content: center; 
+    height: 44px;
+    padding: 0 18px;
 }
 
 /* Mensagem de "Nenhum resultado" (oculta por padrão) */
@@ -1765,7 +2055,7 @@ body.theme-dark .logo-dark {
 
 /* (Req 1) Quando a aba Usuários estiver ativa, o wrapper de input encolhe */
 .admin-search-container.users-active #admin-search-input-wrapper {
-    max-width: 500px;
+    max-width: 440px;
     width: 100%;
     flex-grow: 1; /* Permite crescer */
     flex-shrink: 1; /* Permite encolher */
@@ -2106,9 +2396,10 @@ body.theme-dark .logo-dark {
 /* (Req 2) Dropdown de Edição de Foto (copiado do .access-dropdown) */
 .profile-edit-dropdown {
     position: absolute;
-    top: 100%; /* Abaixo do wrapper da foto */
-    right: -10px; /* Desloca um pouco para a direita */
-    z-index: 1200; /* Acima do modal */
+    top: calc(100% + 10px); /* Surge logo abaixo do botão de câmera */
+    left: calc(100% - 42px); /* Alinha a borda esquerda com o botão (38px largura + 4px de afastamento) */
+    right: auto;
+    z-index: 1200;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -2117,13 +2408,13 @@ body.theme-dark .logo-dark {
     padding: 8px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateY(-6px);
     transition: all 0.2s ease;
 }
 .profile-edit-dropdown.visible {
     opacity: 1;
     visibility: visible;
-    transform: translateY(5px); /* Aparece 5px abaixo */
+    transform: translateY(0);
 }
 
 /* (Req 2) Copiando estilos genéricos para os botões do dropdown */
@@ -2210,6 +2501,36 @@ body.theme-dark .logo-dark {
 }
 #tab-security h4 {
     margin-top: 5px;
+}
+#tab-security .password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+#tab-security .password-input-wrapper .profile-input {
+    padding-right: 44px;
+}
+#tab-security .password-toggle-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 32px;
+}
+#tab-security .password-toggle-btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+#tab-security .password-toggle-btn i {
+    font-size: 1rem;
 }
 #tab-activity h4 {
     margin-top: 5px;
@@ -2349,8 +2670,8 @@ body.theme-dark .logo-dark {
     text-overflow: ellipsis;
 }
 #profile-overlay .settings-modal {
-  max-width: 720px;
-  width: 90%;
+    max-width: 660px;
+    width: 88%;
   padding: 0;
   background-color: transparent;
   box-shadow: none;
@@ -2381,8 +2702,8 @@ body.theme-dark .logo-dark {
 }
 
 .profile-avatar {
-  width: 90px;
-  height: 90px;
+    width: 110px;
+    height: 110px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--border-color);
@@ -2390,10 +2711,10 @@ body.theme-dark .logo-dark {
 
 .profile-camera-btn {
   position: absolute;
-  bottom: 6px;
-  right: 6px;
-  width: 32px;
-  height: 32px;
+    bottom: 4px;
+    right: 4px;
+    width: 38px;
+    height: 38px;
   background-color: var(--accent-color);
   color: white;
   border-radius: 50%;
@@ -2401,7 +2722,7 @@ body.theme-dark .logo-dark {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+    font-size: 1rem;
   cursor: pointer;
   transition: transform .2s ease, background-color .2s ease;
   z-index: 10;
@@ -2413,26 +2734,27 @@ body.theme-dark .logo-dark {
 }
 
 .profile-edit-dropdown {
-  position: absolute;
-  top: 95px;
-  left: 95px;
-  z-index: 1200;
-  background-color: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 15px var(--shadow-color);
-  min-width: 180px;
-  padding: 8px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all .2s ease;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: calc(100% - 42px);
+    right: auto;
+    z-index: 1200;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    min-width: 180px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all .2s ease;
 }
 
 .profile-edit-dropdown.visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .profile-edit-dropdown .access-dropdown-item {
@@ -2564,6 +2886,8 @@ body.theme-dark .logo-dark {
   padding: 15px 30px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-color);
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .profile-nav-link {
@@ -2668,8 +2992,22 @@ body.theme-dark .logo-dark {
 .input-check-icon {
   position: absolute;
   right: 15px;
-  top: 45px;
+    top: 69%;
+    transform: translateY(-50%);
   color: #28a745;
+    line-height: 1;
+}
+
+#tab-profile .form-row {
+    margin-bottom: 12px;
+}
+
+#tab-profile .form-row .form-group {
+    margin-bottom: 18px;
+}
+
+#tab-profile hr.form-divider {
+    margin: 18px 0 20px;
 }
 
 hr.form-divider {
@@ -2885,6 +3223,35 @@ body.theme-dark .profile-form-footer .btn-save:hover {
   font-weight: 500;
 }
 
+#tab-settings .language-settings .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+#tab-settings .language-settings select {
+    width: 220px;
+    max-width: 100%;
+}
+
+#tab-settings .language-settings .helper-text {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+}
+
+#tab-settings #profile-language-status.hub-form-status {
+    width: 200px;
+    text-align: center;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+#tab-settings #profile-language-status.hub-form-status.visible {
+    display: inline-flex;
+}
+
 #tab-settings .button-danger {
   margin-left: 0;
   margin-right: 0;
@@ -3020,92 +3387,6 @@ body.theme-dark #cropper-footer .btn-save:hover {
     margin-left: 0;
     margin-right: auto;
     box-sizing: border-box; 
-}
-#stats-overlay .settings-modal {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    /* (Req: Remove o padding do modal para o body e footer se alinharem) */
-    padding: 0; 
-}
-
-/* (Estiliza o corpo como o card principal) */
-#stats-overlay .settings-body {
-    background: var(--card-bg-color);
-    /* (Arredonda apenas o topo) */
-    border-radius: 12px 12px 0 0; 
-    border: 1px solid var(--border-color);
-    border-bottom: none; /* (A borda de baixo fica no footer) */
-    padding: 25px;
-    padding-bottom: 15px;
-    text-align: left;
-    position: relative; /* (Necessário para o botão 'X' se for usado) */
-}
-
-#stats-overlay .settings-body h4 {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--text-primary-color);
-    padding-left: 0;
-    margin-top: 5px;
-}
-#stats-overlay .profile-activity-list.new-design .profile-activity-item {
-    border: none;
-    background: transparent;
-    padding: 0;
-    margin-bottom: 8px; /* (Mantém o espaçamento entre os botões) */
-}
-/* (Estiliza o footer do modal) */
-#stats-overlay .profile-form-footer {
-    /* (Copiado do modal de perfil) */
-    padding: 20px 30px;
-    border-top: 1px solid var(--border-color);
-    background-color: var(--bg-color);
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    /* (Arredonda apenas a base) */
-    border-radius: 0 0 12px 12px; 
-    /* (Garante que a borda e sombra se alinhem) */
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 10px 40px var(--shadow-color-hover);
-    margin-top: -1px; /* (Puxa para cima para cobrir a borda do body) */
-}
-#stats-overlay .profile-form-footer .button {
-    padding: 10px 20px;
-    font-size: 0.9rem;
-    width: auto;
-}
-
-/* (Estiliza os botões de dashboard) */
-#stats-overlay .profile-activity-list.new-design {
-    max-width: 100%;
-    max-height: 400px;
-    background-color: transparent; /* (O fundo já é branco) */
-    border: none; /* (Remove a borda da lista) */
-}
-#stats-overlay .profile-activity-list.new-design a.profile-dashboard-item {
-    /* (Req: A borda própria do botão é mantida, mas a sombra é removida) */
-    /* border: none; (REMOVIDO) */
-    box-shadow: none; /* (REMOVIDO) */
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-#stats-overlay .profile-activity-list.new-design .no-activity {
-    border: none;
-    background-color: var(--bg-color);
-}
-#stats-overlay .profile-activity-list.new-design a.profile-dashboard-item:hover {
-    transform: translateY(-2px);
-    box-shadow: none; /* (REMOVIDO) */
-    background-color: var(--bg-color);
-}
-#stats-overlay .profile-activity-list.new-design .no-activity {
-    /* (Estilo de "vazio" sem a borda tracejada) */
-    background-color: transparent;
-    border: none;
-    padding: 20px;
 }
 @media (max-width: 768px) {
   #profile-overlay .settings-modal {

@@ -1,38 +1,38 @@
 {
   "Base M\u00e3e": {
-    "type": "sap",
-    "macro": "Org_relatorio_diario",
     "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Input di\u00e1rio P\u00c7's.xlsm",
     "gif": "/static/gifs/motherbase_preview.gif",
-    "text": "Respons\u00e1vel por consolidar todos os dados de ordens inversas, alimentando a base de dados principal para permitir o monitoramento e a an\u00e1lise do ciclo de devolu\u00e7\u00e3o.",
+    "macro": "Org_relatorio_diario",
     "tags": "Returns,Monitoring,Scheduling,Daily",
-    "width": null
-  },
-  "Outlook": {
+    "text": "Respons\u00e1vel por consolidar todos os dados de ordens inversas, alimentando a base de dados principal para permitir o monitoramento e a an\u00e1lise do ciclo de devolu\u00e7\u00e3o.",
     "type": "sap",
-    "macro": "EnviarEmails",
-    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm",
-    "gif": "/static/gifs/outlook_preview.gif",
-    "text": "Calcula a previs\u00e3o do faturamento l\u00edquido de devolu\u00e7\u00f5es para o fechamento do m\u00eas e formata os dados em um relat\u00f3rio.",
-    "tags": "Returns,Report,Delivery,Weekly",
     "width": null
   },
   "Cancelamento Aging": {
-    "type": "sap",
-    "macro": "cancelar_fora_prazo",
     "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Cria\u00e7\u00e3o Aging.xlsm",
     "gif": "/static/gifs/aging_preview.gif",
-    "text": "Executa uma varredura para identificar e cancelar automaticamente todas as ordens que ultrapassaram o prazo de aging.",
+    "macro": "cancelar_fora_prazo",
     "tags": "Returns,Routine,Monthly",
+    "text": "Executa uma varredura para identificar e cancelar automaticamente todas as ordens que ultrapassaram o prazo de aging.",
+    "type": "sap",
+    "width": null
+  },
+  "Outlook": {
+    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm",
+    "gif": "/static/gifs/outlook_preview.gif",
+    "macro": "EnviarEmails",
+    "tags": "Returns,Report,Delivery,Weekly",
+    "text": "Calcula a previs\u00e3o do faturamento l\u00edquido de devolu\u00e7\u00f5es para o fechamento do m\u00eas e formata os dados em um relat\u00f3rio.",
+    "type": "sap",
     "width": null
   },
   "Relat\u00f3rio Pe\u00e7as": {
-    "type": "bw",
-    "macro": null,
     "arquivo": null,
     "gif": "/static/gifs/bwreport_preview.gif",
-    "text": "Gera um relat\u00f3rio detalhado do processo de devolu\u00e7\u00e3o. Esses dados servem como fonte auxiliar para complementar e validar as informa\u00e7\u00f5es da Base M\u00e3e.",
+    "macro": null,
     "tags": "Data,Report,Daily",
+    "text": "Gera um relat\u00f3rio detalhado do processo de devolu\u00e7\u00e3o. Esses dados servem como fonte auxiliar para complementar e validar as informa\u00e7\u00f5es da Base M\u00e3e.",
+    "type": "bw",
     "width": null
   }
 }

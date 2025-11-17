@@ -29,6 +29,18 @@
         }
       })();
     </script>
+    <script>
+      (function() {
+        try {
+          const storedUser = localStorage.getItem('hubUsername') || '_default';
+          const savedLanguage = localStorage.getItem(`hubLanguage_${storedUser}`) || localStorage.getItem('hubLanguage_default') || 'pt';
+          document.documentElement.setAttribute('lang', savedLanguage === 'en' ? 'en' : 'pt-br');
+          document.documentElement.dataset.hubLang = savedLanguage;
+        } catch (error) {
+          document.documentElement.setAttribute('lang', 'pt-br');
+        }
+      })();
+    </script>
 
     <div class="main-nav-tabs">
         
@@ -96,7 +108,7 @@
             </ul>
     </div>
     
-    <script src="/static/js/drive.js" defer></script>
-    <script src="/static/js/shared.js" defer></script>
+  <script src="/static/js/shared.js" defer></script>
+  <script src="/static/js/drive.js" defer></script>
 </body>
 </html>
