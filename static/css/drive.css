@@ -1,13 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600&display=swap');
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     /* ALTERADO: Usando variáveis */
     background-color: var(--bg-color);
     color: var(--text-primary-color);
     margin: 0;
     padding: 20px;
-    padding-top: 120px;
+    padding-top: 40px;
     box-sizing: border-box;
     display: flex;
     justify-content: flex-start; /* ALTERADO de 'center' */
@@ -132,7 +132,7 @@ body {
 
 /* --- ADICIONAR: Estilos de Título/Subtítulo --- */
 .main-title { 
-    font-family: 'Poppins', sans-serif; /* ADICIONADO */
+    font-family: 'Poppins', 'Inter', BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* ADICIONADO */
     font-size: 3rem; 
     font-weight: 700; 
     margin: 0 0 10px 0; 
@@ -140,7 +140,7 @@ body {
     text-align: center;
 }
 .subtitle { 
-    font-family: 'Poppins', sans-serif; /* ADICIONADO */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* ADICIONADO */
     font-size: 1.2rem; 
     color: var(--text-secondary-color); 
     margin-bottom: 50px;
@@ -218,35 +218,6 @@ body {
     text-align: left; /* (Mudou de 'right' para 'left') */
     /* --- FIM DA MODIFICAÇÃO --- */
 }
-.drive-search-container {
-    position: relative;
-    flex-shrink: 0; /* Não deixa a barra encolher */
-    width: 300px;
-}
-.drive-search-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary-color);
-}
-#drive-search-input {
-    width: 100%;
-    padding: 8px 15px 8px 40px; /* Padding menor */
-    font-size: 0.9rem;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    font-family: 'Poppins', sans-serif;
-    box-sizing: border-box;
-    background-color: var(--card-bg-color);
-    color: var(--text-primary-color);
-    transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-#drive-search-input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    background-color: var(--card-bg-color);
-}
 @media (max-width: 768px) {
     body {
         /* (Req 3) Aumenta o padding para "descer" o título */
@@ -286,9 +257,6 @@ body {
         gap: 10px;
         padding-bottom: 10px; /* Ajuste do padding */
     }
-    .drive-search-container {
-        width: 100%; /* Busca ocupa 100% */
-    }
     #breadcrumbs-container {
         text-align: center; /* Centraliza o "Caminho:" */
         padding-bottom: 5px;
@@ -304,12 +272,21 @@ body.theme-dark .file-list-header .file-size-header {
     border-left-color: var(--text-primary-color);
 }
 .nav-tab.disabled {
-    pointer-events: none; /* Desabilita o clique */
-    opacity: 0.6;
-    background-color: var(--bg-color);
+    pointer-events: none;
     cursor: not-allowed;
+    opacity: 0.75;
+    background-color: rgba(15, 23, 42, 0.08);
+    color: var(--text-tertiary-color);
+    box-shadow: none;
+}
+
+body.theme-dark .nav-tab.disabled {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.65;
 }
 
 .nav-tab.disabled i {
     filter: grayscale(100%);
+    color: inherit;
 }

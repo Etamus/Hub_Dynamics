@@ -203,7 +203,9 @@ def automacao():
         macros=automations,
         initial_zv62n_file=initial_zv62n_file,
         is_hub_logged_in=session.get('username'),
-        role=profile_data['role'] # <-- ADICIONADO
+        role=profile_data['role'], # <-- ADICIONADO
+        profile_image=profile_data['profile_image'],
+        profile_username=profile_data['username']
     )
 
 @app.route('/dashboards')
@@ -218,7 +220,9 @@ def dashboards():
         'dashboards.html', 
         is_hub_logged_in=session.get('username'),
         dashboards_data=dashboards_data,
-        role=profile_data['role'] # <-- ADICIONADO
+        role=profile_data['role'], # <-- ADICIONADO
+        profile_image=profile_data['profile_image'],
+        profile_username=profile_data['username']
     )
 
 @app.route('/drive')
@@ -227,7 +231,13 @@ def drive():
     profile_data = get_user_profile_data()
     # --- FIM DA MODIFICAÇÃO ---
     
-    return render_template('drive.html', is_hub_logged_in=session.get('username'), role=profile_data['role']) # <-- ADICIONADO
+    return render_template(
+        'drive.html', 
+        is_hub_logged_in=session.get('username'), 
+        role=profile_data['role'],
+        profile_image=profile_data['profile_image'],
+        profile_username=profile_data['username']
+    ) # <-- ADICIONADO
 
 
 # --- ROTAS DE API (DRIVE) ---

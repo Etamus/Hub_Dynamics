@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CÓDIGO ALTERADO: Seletores da Busca Universal ---
     const hubCardsContainer = document.getElementById('hub-cards-container');
     const searchDropdown = document.getElementById('search-dropdown-results')
+    const searchDropdownBody = document.getElementById('search-dropdown-body');
 
     // --- Seletores do Header e Acesso ---
     const accessBtn = document.getElementById('access-btn');
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const translate = (key, fallback) => (window.hubI18n && typeof hubI18n.t === 'function')
         ? hubI18n.t(key, fallback)
         : (fallback || key);
+    const isHubPage = document.body.classList.contains('hub-page');
 
      // --- CÓDIGO ADICIONADO: Índice de Busca Universal ---
     let searchableIndex = [];
@@ -38,13 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Seletores dos Modais ---
     const settingsBtn = document.getElementById('settings-btn');
     const settingsOverlay = document.getElementById('settings-overlay');
-    const settingsCloseBtn = document.getElementById('settings-close-btn');
-    const themeOptions = document.querySelectorAll('.theme-option');
     const aboutBtn = document.getElementById('about-btn');
     const aboutOverlay = document.getElementById('about-overlay');
-    const aboutCloseBtn = document.getElementById('about-close-btn');
+    const aboutFooterCloseBtn = document.getElementById('about-footer-close');
     const countOptions = document.querySelectorAll('.count-selector .setting-option');
-    const clearRecentsBtn = document.getElementById('clear-recents-btn');
+    const settingsFooterCloseBtn = document.getElementById('settings-footer-close');
+    const settingsLanguageSelect = document.getElementById('settings-language-select');
+    const settingsLanguageHint = document.getElementById('settings-language-hint');
+    const settingsLanguageStatus = document.getElementById('settings-language-status');
+    let settingsLanguageStatusTimer = null;
     
     // Modal de Login do Hub
     const hubLoginOverlay = document.getElementById('hub-login-overlay');
@@ -56,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal de Conexões
     const connectionsOverlay = document.getElementById('connections-overlay');
-    const connectionsCloseBtn = document.getElementById('connections-close-btn');
+    const connectionsFooterCloseBtn = document.getElementById('connections-footer-close');
     const connectionsListContainer = document.getElementById('connections-list-container');
     
     // Modal de Perfil
@@ -136,6 +140,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminActiveDescription = document.getElementById('admin-active-description');
     const adminSearchContainerElement = document.getElementById('admin-search-container');
     const adminSearchInputField = document.getElementById('admin-search-input');
+
+    const overlayIdsToDetach = [
+        'settings-overlay',
+        'about-overlay',
+        'hub-login-overlay',
+        'connections-overlay',
+        'profile-overlay',
+        'cropper-overlay',
+        'edit-name-overlay',
+        'register-overlay',
+        'admin-overlay'
+    ];
+    overlayIdsToDetach.forEach(id => {
+        const overlayEl = document.getElementById(id);
+        if (overlayEl && overlayEl.parentElement !== document.body) {
+            document.body.appendChild(overlayEl);
+        }
+    });
     
     // Botões de Adicionar Admin
     const adminAddAutomationBtn = document.getElementById('admin-add-automation-btn');
@@ -148,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CÓDIGO ADICIONADO: Função para construir o Índice de Busca ---
     function buildSearchIndex() {
+        if (!isHubPage || !searchDropdownBody) return;
         searchableIndex = []; // Reseta o índice
 
 
@@ -159,14 +182,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: card.querySelector('h2').textContent,
                     description: card.querySelector('p').textContent,
                     href: card.href,
-                    icon: card.querySelector('i.fas').className
+                    icon: card.querySelector('i.fas').className,
+                    origin: card.querySelector('h2').textContent.trim()
                 });
             }
         });
 
 
         // 2. Adiciona os Dashboards do JSON
-        for (const systemKey in globalCmsDashboards) {
+    for (const systemKey in globalCmsDashboards) {
             const system = globalCmsDashboards[systemKey];
             for (const areaKey in system.areas) {
                 const area = system.areas[areaKey];
@@ -177,7 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         description: item.text,
                         tags: (item.tags || '').replace(/,/g, ' '), // Substitui vírgulas por espaços
                         href: `/dashboards?open=${item.id}`,
-                        icon: 'fas fa-chart-pie' // Ícone padrão de dashboard
+                        icon: 'fas fa-chart-pie', // Ícone padrão de dashboard
+                        origin: 'Dashboards'
                     });
                 });
             }
@@ -192,14 +217,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: `Automação ${auto.type.toUpperCase()}: ${auto.macro || ''}`,
                 tags: `${auto.type} automação`,
                 href: `/automacao?open=${autoName.replace(/\s+/g, '-')}`, // URL amigável
-                icon: 'fas fa-robot' // Ícone de automação
+                icon: 'fas fa-robot', // Ícone de automação
+                origin: 'Automações'
             });
         }
     }
     // --- FIM DA ADIÇÃO ---
 
     function applySavedAutomationOrder() {
-        if (!currentHubUser) return;
+        if (!isHubPage || !currentHubUser) return;
         const savedOrder = sessionStorage.getItem(`sortedAutomations_${currentHubUser}`);
         if (!savedOrder) return;
         try {
@@ -229,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CÓDIGO NOVO: Função para carregar os dados do CMS e construir o índice ---
     function loadSearchData() {
+        if (!isHubPage) return;
         // 1. Verifica se os dados já foram carregados (pelo sessionStorage, por exemplo)
         const automationsLoaded = Object.keys(globalCmsAutomations).length > 0;
         const dashboardsLoaded = Object.keys(globalCmsDashboards).length > 0;
@@ -263,28 +290,121 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function applyTheme(theme) {
         applyGlobalTheme(theme); 
-        themeOptions.forEach(opt => {
+        document.querySelectorAll('.theme-option').forEach(opt => {
             opt.classList.toggle('active', opt.dataset.theme === theme);
         });
         localStorage.setItem('hubTheme', theme);
     }
 
-    function applyCountSetting(count, context = document) { // (Adiciona 'context = document')
-    const numericCount = parseInt(count) || 4;
-    
-    // (Usa 'context.querySelectorAll' para procurar apenas dentro do modal certo)
-    const optionsToUpdate = context.querySelectorAll('.count-selector .setting-option'); 
-    
-    optionsToUpdate.forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.count == numericCount);
-    });
-    
-    // (A lógica de salvar e renderizar permanece global)
-    if (context === document) {
+    function initializeThemeOptions(scope = document) {
+        const options = scope.querySelectorAll('.theme-option');
+        if (!options.length) return;
+        const savedTheme = localStorage.getItem('hubTheme') || 'light';
+        options.forEach(option => {
+            option.classList.toggle('active', option.dataset.theme === savedTheme);
+            if (!option.dataset.themeBound) {
+                option.dataset.themeBound = 'true';
+                option.addEventListener('click', () => {
+                    applyTheme(option.dataset.theme);
+                });
+            }
+        });
+    }
+
+    function getCurrentLanguagePreference() {
+        try {
+            if (window.hubI18n && typeof hubI18n.getLanguage === 'function') {
+                return window.hubI18n.getLanguage();
+            }
+        } catch (error) {
+            console.warn('Não foi possível obter o idioma atual.', error);
+        }
+        return document.documentElement?.dataset?.hubLang || document.documentElement?.lang || 'pt';
+    }
+
+    function updateSettingsLanguageStatus(variant, messageKey) {
+        if (!settingsLanguageStatus) return;
+        const fallbackMessages = {
+            'profile.language.statusApplying': 'Aplicando idioma...',
+            'profile.language.statusSaved': 'Idioma atualizado.',
+            'profile.language.statusError': 'Não foi possível aplicar o idioma.'
+        };
+        const message = messageKey ? translate(messageKey, fallbackMessages[messageKey]) : '';
+        let className = 'hub-form-status';
+        if (variant === 'success' || variant === 'error' || variant === 'info') {
+            className += ` ${variant}`;
+        }
+        settingsLanguageStatus.textContent = message;
+        settingsLanguageStatus.className = `${className} ${message ? 'visible' : 'hidden'}`.trim();
+        clearTimeout(settingsLanguageStatusTimer);
+        if (message) {
+            settingsLanguageStatusTimer = setTimeout(() => {
+                settingsLanguageStatus.className = 'hub-form-status hidden';
+            }, 3000);
+        }
+    }
+
+    function applySettingsLanguagePreference(lang) {
+        updateSettingsLanguageStatus('info', 'profile.language.statusApplying');
+        const applyPromise = (window.hubI18n && typeof hubI18n.setLanguage === 'function')
+            ? hubI18n.setLanguage(lang, { persist: true })
+            : Promise.resolve(lang);
+
+        applyPromise
+            .then(() => {
+                updateSettingsLanguageStatus('success', 'profile.language.statusSaved');
+                refreshHubSettingsLanguageUI(lang);
+                broadcastLanguageChange(lang);
+            })
+            .catch(() => {
+                updateSettingsLanguageStatus('error', 'profile.language.statusError');
+            });
+    }
+
+    function applyCountSetting(count, context = document) {
+        const numericCount = parseInt(count) || 4;
+        const contextsToUpdate = new Set([document]);
+        if (context && context !== document) {
+            contextsToUpdate.add(context);
+        }
+
+        contextsToUpdate.forEach(ctx => {
+            if (!ctx || typeof ctx.querySelectorAll !== 'function') return;
+            const optionsToUpdate = ctx.querySelectorAll('.count-selector .setting-option');
+            optionsToUpdate.forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.count == numericCount);
+            });
+        });
+
         localStorage.setItem('hubItemCount', numericCount);
         renderQuickLinks();
     }
-}
+
+    function getLanguageDisplayName(lang) {
+        if (!lang) return translate('settings.language.unknown', 'Idioma indefinido');
+        const normalized = lang.toLowerCase();
+        if (normalized === 'en') {
+            return translate('profile.language.option.en', 'Inglês');
+        }
+        return translate('profile.language.option.pt', 'Português');
+    }
+
+    function refreshHubSettingsLanguageUI(preferredLang = getCurrentLanguagePreference()) {
+        if (settingsLanguageSelect) {
+            settingsLanguageSelect.value = preferredLang;
+        }
+        if (settingsLanguageHint) {
+            const hintLabel = translate('settings.language.currentHint', 'Idioma atual');
+            const languageLabel = getLanguageDisplayName(preferredLang);
+            settingsLanguageHint.textContent = `${hintLabel}: ${languageLabel}`;
+        }
+    }
+
+    function broadcastLanguageChange(lang) {
+        document.dispatchEvent(new CustomEvent('hubLanguageChanged', {
+            detail: { lang }
+        }));
+    }
 
     function clearRecents() {
         localStorage.removeItem(getStorageKey('recentDashboards'));
@@ -310,23 +430,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
     
-    const savedTheme = localStorage.getItem('hubTheme') || 'light';
-    themeOptions.forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.theme === savedTheme);
-    });
+    initializeThemeOptions(document);
 
-    applyCountSetting(localStorage.getItem('hubItemCount') || 4);
+    if (isHubPage) {
+        applyCountSetting(localStorage.getItem('hubItemCount') || 4);
+        refreshHubSettingsLanguageUI();
 
-    // Listeners dos Modais de Configurações e Sobre
-    settingsBtn.addEventListener('click', () => { settingsOverlay.classList.add('visible'); });
-    settingsCloseBtn.addEventListener('click', () => { settingsOverlay.classList.remove('visible'); });
-    settingsOverlay.addEventListener('mousedown', (e) => { if (e.target === settingsOverlay) { settingsOverlay.classList.remove('visible'); } });
-    themeOptions.forEach(option => { option.addEventListener('click', () => { applyTheme(option.dataset.theme); }); });
-    aboutBtn.addEventListener('click', () => { aboutOverlay.classList.add('visible'); });
-    aboutCloseBtn.addEventListener('click', () => { aboutOverlay.classList.remove('visible'); });
-    aboutOverlay.addEventListener('mousedown', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
-    countOptions.forEach(option => { option.addEventListener('click', () => { applyCountSetting(option.dataset.count); }); });
-    clearRecentsBtn.addEventListener('click', clearRecents);
+        if (settingsBtn && settingsOverlay) {
+            settingsBtn.addEventListener('click', () => { 
+                refreshHubSettingsLanguageUI();
+                updateSettingsLanguageStatus();
+                settingsOverlay.classList.add('visible'); 
+            });
+            settingsOverlay.addEventListener('mousedown', (e) => { if (e.target === settingsOverlay) { settingsOverlay.classList.remove('visible'); } });
+        }
+        if (aboutBtn && aboutOverlay) {
+            aboutBtn.addEventListener('click', () => { aboutOverlay.classList.add('visible'); });
+            if (aboutFooterCloseBtn) {
+                aboutFooterCloseBtn.addEventListener('click', () => { aboutOverlay.classList.remove('visible'); });
+            }
+            aboutOverlay.addEventListener('mousedown', (e) => { if (e.target === aboutOverlay) { aboutOverlay.classList.remove('visible'); } });
+        }
+        countOptions.forEach(option => { option.addEventListener('click', () => { applyCountSetting(option.dataset.count); }); });
+        if (settingsFooterCloseBtn && settingsOverlay) {
+            settingsFooterCloseBtn.addEventListener('click', () => { settingsOverlay.classList.remove('visible'); });
+        }
+        if (settingsLanguageSelect) {
+            settingsLanguageSelect.addEventListener('change', () => {
+                applySettingsLanguagePreference(settingsLanguageSelect.value);
+            });
+        }
+        document.addEventListener('hubLanguageChanged', (event) => {
+            const nextLang = (event && event.detail && event.detail.lang) ? event.detail.lang : getCurrentLanguagePreference();
+            refreshHubSettingsLanguageUI(nextLang);
+        });
+    }
     
     
     // --- 2. LÓGICA DE ACESSO RÁPIDO (COM PINS) (MODIFICADO) ---
@@ -360,6 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderQuickLinks() {
+        if (!isHubPage || !quickLinksContainer) return;
         quickLinksContainer.innerHTML = ''; 
         const recents = getRecents();
         const pinned = getPinned();
@@ -403,12 +542,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     renderQuickLinks();
 
-    // --- 3. LÓGICA DA BARRA DE PESQUISA (SUBSTITUÍDA PELA VERSÃO DROPDOWN) ---
-    searchBar.addEventListener('keyup', (e) => {
+    if (isHubPage && searchBar && searchDropdown && searchDropdownBody) {
+        // --- 3. LÓGICA DA BARRA DE PESQUISA (SUBSTITUÍDA PELA VERSÃO DROPDOWN) ---
+        searchBar.addEventListener('keyup', (e) => {
         const searchTerm = e.target.value.toLowerCase();
 
         // Limpa resultados anteriores
-        searchDropdown.innerHTML = '';
+        searchDropdownBody.innerHTML = '';
 
         // Se a barra de pesquisa estiver vazia, esconde o dropdown e sai
         if (searchTerm === "") {
@@ -438,22 +578,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemIcon.className = item.icon;
                 link.appendChild(itemIcon);
                 
-                const text = document.createElement('span');
-                text.textContent = item.name;
-                link.appendChild(text);
-                
-                searchDropdown.appendChild(link);
+                const textWrapper = document.createElement('div');
+                textWrapper.className = 'search-result-content';
+
+                const title = document.createElement('span');
+                title.className = 'search-result-title';
+                title.textContent = item.name;
+                textWrapper.appendChild(title);
+
+                if (item.description) {
+                    const desc = document.createElement('small');
+                    desc.className = 'search-result-desc';
+                    desc.textContent = item.description;
+                    textWrapper.appendChild(desc);
+                }
+
+                link.appendChild(textWrapper);
+
+                const tag = document.createElement('span');
+                tag.className = 'search-result-tag';
+                tag.textContent = item.origin || 'Hub';
+                link.appendChild(tag);
+
+                searchDropdownBody.appendChild(link);
             }
         });
 
         // Mostra mensagem se nenhum resultado for encontrado
         if (itemsFound === 0) {
-            searchDropdown.innerHTML = '<p class="no-results">Nenhum resultado encontrado.</p>';
+            searchDropdownBody.innerHTML = '<p class="no-results">Nenhum resultado encontrado.</p>';
         }
 
         // Mostra o dropdown
         searchDropdown.classList.add('visible');
     });
+
+    // Atalho de teclado Ctrl/Cmd + K para focar na busca
+        document.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                searchBar.focus();
+                searchBar.select();
+            }
+        });
+    }
 
     // ========================================================
     // ===== 4. LÓGICA (ACESSO, LOGIN HUB, PERFIL) ATUALIZADA =====
@@ -473,9 +641,9 @@ document.addEventListener('DOMContentLoaded', () => {
     profileImgThumb.src = currentProfileUrl;
     
     if (username) {
-        accessDropdown.style.minWidth = '170px';
+        accessDropdown.style.minWidth = '200px';
     } else {
-        accessDropdown.style.minWidth = '160px';
+        accessDropdown.style.minWidth = '180px';
     }
 
     if (username) {
@@ -876,7 +1044,7 @@ function uploadCroppedImage(formData) {
             <div class="form-row"> 
                 <div class="form-group">
                     <label for="profile-full-name">Nome de Exibição</label>
-                    <input type="text" id="profile-full-name" class="profile-input" value="${displayName || ''}" placeholder="Defina um nome..." maxlength="16">
+                    <input type="text" id="profile-full-name" class="profile-input" value="${displayName || ''}" placeholder="Digite um nome..." maxlength="16">
                 </div>
                 <div class="form-group">
                     <label for="profile-username">Login de Funcionário</label>
@@ -887,7 +1055,7 @@ function uploadCroppedImage(formData) {
             
             <hr class="form-divider">
             
-            <div class="form-group">
+            <div class="form-group permissions-group">
                 <label>Permissões</label>
                 <div class="form-group-inline">
                     <div class="toggle-switch">
@@ -921,6 +1089,7 @@ function uploadCroppedImage(formData) {
     // (HTML de Segurança - SEM o botão)
     const securityHTML = `
         <h4>Alterar Senha</h4>
+        <p class="profile-section-subtitle">Insira sua senha atual e uma nova senha.</p>
         <p id="profile-password-status" class="hub-form-status hidden"></p>
         <form id="password-change-form" class="password-change-form form-row">
             <div class="form-group">
@@ -955,7 +1124,8 @@ function uploadCroppedImage(formData) {
     
     // (Req 3: HTML de Atividade - SEM Dashboard Mais Acessado)
     const activityHTML = `
-        <h4>Últimos Agendamentos</h4>
+        <h4>Agendamentos</h4>
+        <p class="profile-section-subtitle">Verifique as últimas tarefas agendadas.</p>
         <ul id="profile-activity-list" class="profile-activity-list new-design">
             <li class="no-activity">Carregando...</li>
         </ul>
@@ -963,30 +1133,70 @@ function uploadCroppedImage(formData) {
 
     // (HTML de Configurações - SEM o botão)
     const settingsHTML = `
-    <h4 style="margin-top: 5px;">${translate('settings.menuTitle', 'Menu Principal')}</h4>
         <div class="setting-group form-group" style="padding: 0;">
             <label>${translate('settings.cards.label', 'Quantidade de Cards')}</label>
-            <div class="count-selector" style="justify-content: flex-start;">
-                <div class="setting-option" data-count="4">
-                    <span>${translate('settings.cards.option4', '4 Espaços')}</span>
+            <div class="count-selector">
+                <div class="setting-option card-count-option" data-count="4">
+                    <div class="count-icon grid-4" aria-hidden="true">
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                    </div>
+                    <span class="count-label">${translate('settings.cards.option4', '4 Espaços')}</span>
                 </div>
-                <div class="setting-option" data-count="6">
-                    <span>${translate('settings.cards.option6', '6 Espaços')}</span>
+                <div class="setting-option card-count-option" data-count="6">
+                    <div class="count-icon grid-6" aria-hidden="true">
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                    </div>
+                    <span class="count-label">${translate('settings.cards.option6', '6 Espaços')}</span>
                 </div>
-                <div class="setting-option" data-count="8">
-                    <span>${translate('settings.cards.option8', '8 Espaços')}</span>
+                <div class="setting-option card-count-option" data-count="8">
+                    <div class="count-icon grid-8" aria-hidden="true">
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                        <span class="count-square"></span>
+                    </div>
+                    <span class="count-label">${translate('settings.cards.option8', '8 Espaços')}</span>
                 </div>
             </div>
             </div>
+        <div class="setting-group form-group" style="padding: 0;">
+            <label>${translate('settings.appearance', 'Aparência')}</label>
+            <div class="theme-selector theme-selector-compact">
+                <div class="theme-option" data-theme="light" title="${translate('settings.theme.lightTitle', 'Modo Claro')}">
+                    <i class="fas fa-sun"></i>
+                    <span>${translate('settings.theme.light', 'Claro')}</span>
+                </div>
+                <div class="theme-option" data-theme="dark" title="${translate('settings.theme.darkTitle', 'Modo Escuro')}">
+                    <i class="fas fa-moon"></i>
+                    <span>${translate('settings.theme.dark', 'Escuro')}</span>
+                </div>
+                <div class="theme-option" data-theme="system" title="${translate('settings.theme.systemTitle', 'Padrão do Sistema')}">
+                    <i class="fas fa-desktop"></i>
+                    <span>${translate('settings.theme.system', 'Sistema')}</span>
+                </div>
+            </div>
+        </div>
         <div class="setting-group form-group language-settings" style="padding: 0;">
             <label>${translate('profile.language.label', 'Idioma')}</label>
+            <p class="helper-text language-inline-hint">${translate('profile.language.selectLabel', 'Selecione o idioma de exibição.')}</p>
             <div class="language-selector">
                 <select id="profile-language-select" class="profile-input" aria-label="${translate('profile.language.label', 'Idioma')}">
                     <option value="pt">${translate('profile.language.option.pt', 'Português')}</option>
                     <option value="en">${translate('profile.language.option.en', 'Inglês')}</option>
                 </select>
             </div>
-            <p class="helper-text">${translate('profile.language.selectLabel', 'Selecione o idioma de exibição.')}</p>
             <p id="profile-language-status" class="hub-form-status hidden" aria-live="polite"></p>
         </div>
     `;
@@ -994,6 +1204,7 @@ function uploadCroppedImage(formData) {
     modal.querySelector('#tab-security').innerHTML = securityHTML;
     modal.querySelector('#tab-activity').innerHTML = activityHTML;
     modal.querySelector('#tab-settings').innerHTML = settingsHTML; 
+    initializeThemeOptions(modal);
 
     let profileLanguageSelect = modal.querySelector('#profile-language-select');
     const profileLanguageStatus = modal.querySelector('#profile-language-status');
@@ -1236,6 +1447,10 @@ function uploadCroppedImage(formData) {
                 settingsTabState.initialLanguage = selectedLang;
                 setSettingsDirtyFlag(false);
                 showLanguageStatus('success', 'profile.language.statusSaved', true);
+                broadcastLanguageChange(selectedLang);
+                if (isHubPage) {
+                    refreshHubSettingsLanguageUI(selectedLang);
+                }
                 return true;
             })
             .catch(() => {
@@ -1815,10 +2030,7 @@ function openEditNameModal(currentName) {
         connectionsListContainer.innerHTML = '';
         const sapConn = connections.sap;
         const bwConn = connections.bw;
-        
-        // --- INÍCIO DA MODIFICAÇÃO ---
-        const tableauConn = connections.tableau; 
-        // --- FIM DA MODIFICAÇÃO ---
+        const tableauConn = connections.tableau;
 
         connectionsListContainer.appendChild(
             createConnectionItem('sap', '/static/icones/saplong_logo.png', 'SAP', sapConn)
@@ -1826,19 +2038,9 @@ function openEditNameModal(currentName) {
         connectionsListContainer.appendChild(
             createConnectionItem('bw', '/static/icones/bwhanashort_logo.png', 'BW HANA', bwConn)
         );
-        
-        // --- INÍCIO DA MODIFICAÇÃO ---
-        // (Assumindo que você tem um logo do tableau em /static/icones/)
-        // (Se o caminho estiver errado, ajuste-o aqui)
         connectionsListContainer.appendChild(
-            createConnectionItem('tableau', '/static/icones/tableau_logo.png', 'Tableau', tableauConn) 
+            createConnectionItem('tableau', '/static/icones/tableau_logo.png', 'Tableau', tableauConn)
         );
-        // --- FIM DA MODIFICAÇÃO ---
-
-        // (Atualiza a verificação de "vazio")
-        if (!sapConn && !bwConn && !tableauConn) {
-             connectionsListContainer.innerHTML = '<p class="no-connections">Nenhuma conexão salva.</p>';
-        }
     }
 
     function createConnectionItem(system, iconSrc, systemName, connectionData) {
@@ -1846,14 +2048,7 @@ function openEditNameModal(currentName) {
         item.className = 'connection-item';
         item.dataset.system = system;
 
-        const connectionStatus = connectionData ? 'conectado' : 'não conectado';
-        const userDisplay = connectionData ? `Usuário: ${connectionData.user}` : 'Não conectado';
-        const removeBtnHtml = connectionData ? 
-            `<button class="connection-remove-btn" data-system="${system}" title="Remover conexão"><i class="fas fa-trash-alt"></i></button>` : 
-            '';
-
         const iconClass = (system === 'tableau') ? 'connection-icon tableau-icon' : 'connection-icon';
-        
         let iconHtml = '';
         if (system === 'sap') {
             iconHtml = `
@@ -1861,26 +2056,37 @@ function openEditNameModal(currentName) {
                 <img src="/static/icones/sapblacklong_logo.png" alt="SAP Logo" class="${iconClass} logo-dark">
             `;
         } else if (system === 'tableau') {
-             iconHtml = `
+            iconHtml = `
                 <img src="/static/icones/tableau_logo.png" alt="Tableau Logo" class="${iconClass} logo-light">
                 <img src="/static/icones/tableaublack_logo.png" alt="Tableau Logo" class="${iconClass} logo-dark">
             `;
         } else {
             iconHtml = `<img src="${iconSrc}" alt="${systemName} Logo" class="${iconClass}">`;
         }
-        
-        // --- INÍCIO DA MODIFICAÇÃO (Icone e Texto na mesma Coluna) ---
-        item.innerHTML = `
-            <div class="connection-details">
-                ${iconHtml}
-                <span class="connection-user-text">${userDisplay}</span>
-            </div>
-            ${removeBtnHtml}
-        `;
-        // --- FIM DA MODIFICAÇÃO ---
+
+        const details = document.createElement('div');
+        details.className = 'connection-details';
+        details.insertAdjacentHTML('beforeend', iconHtml);
+
+        const userText = document.createElement('span');
+        userText.className = 'connection-user-text';
+        const labelStrong = document.createElement('strong');
+        labelStrong.textContent = 'Usuário:';
+        userText.appendChild(labelStrong);
+        const userValue = connectionData && connectionData.user ? connectionData.user : 'Não conectado';
+        userText.appendChild(document.createTextNode(` ${userValue}`));
+        details.appendChild(userText);
+
+        item.appendChild(details);
 
         if (connectionData) {
-            item.querySelector('.connection-remove-btn').addEventListener('click', handleRemoveConnection);
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'connection-remove-btn';
+            removeBtn.dataset.system = system;
+            removeBtn.title = 'Remover conexão';
+            removeBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            removeBtn.addEventListener('click', handleRemoveConnection);
+            item.appendChild(removeBtn);
         }
         return item;
     }
@@ -1943,8 +2149,12 @@ function openEditNameModal(currentName) {
     hubPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleHubLogin(); });
     hubLoginSubmitBtn.addEventListener('click', handleHubLogin);
 
-    connectionsCloseBtn.addEventListener('click', closeConnectionsModal);
-    connectionsOverlay.addEventListener('mousedown', (e) => { if (e.target === connectionsOverlay) closeConnectionsModal(); });
+    if (connectionsFooterCloseBtn) {
+        connectionsFooterCloseBtn.addEventListener('click', closeConnectionsModal);
+    }
+    if (connectionsOverlay) {
+        connectionsOverlay.addEventListener('mousedown', (e) => { if (e.target === connectionsOverlay) closeConnectionsModal(); });
+    }
 
     // --- Inicialização da Sessão ---
 fetch('/api/hub/check-session')

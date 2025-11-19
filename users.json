@@ -4,10 +4,7 @@
     "role": "Admin",
     "area": "Log\u00edstica",
     "connections": {
-      "sap": {
-        "user": "dsasd",
-        "pass": "dsadasd"
-      },
+      "sap": null,
       "bw": null,
       "tableau": null
     },

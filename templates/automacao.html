@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/automacao.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link rel="stylesheet" href="/static/css/hub.css">
     <link rel="stylesheet" href="/static/css/shared.css">
+    <link rel="stylesheet" href="/static/css/automacao.css">
 </head>
 <body>
     <script>
@@ -29,74 +31,89 @@
         }
       })();
     </script>
-        <script>
-            (function() {
-                try {
-                    const storedUser = localStorage.getItem('hubUsername') || '_default';
-                    const savedLanguage = localStorage.getItem(`hubLanguage_${storedUser}`) || localStorage.getItem('hubLanguage_default') || 'pt';
-                    document.documentElement.setAttribute('lang', savedLanguage === 'en' ? 'en' : 'pt-br');
-                    document.documentElement.dataset.hubLang = savedLanguage;
-                } catch (error) {
-                    document.documentElement.setAttribute('lang', 'pt-br');
-                }
-            })();
-        </script>
+    <script>
+        (function() {
+            try {
+                const storedUser = localStorage.getItem('hubUsername') || '_default';
+                const savedLanguage = localStorage.getItem(`hubLanguage_${storedUser}`) || localStorage.getItem('hubLanguage_default') || 'pt';
+                document.documentElement.setAttribute('lang', savedLanguage === 'en' ? 'en' : 'pt-br');
+                document.documentElement.dataset.hubLang = savedLanguage;
+            } catch (error) {
+                document.documentElement.setAttribute('lang', 'pt-br');
+            }
+        })();
+    </script>
 
-    <div class="main-nav-tabs">
-        
-        {% if role == 'Executor' %}
-        <a href="/automacao" class="nav-tab" data-page="automacao" title="Automações">
-            <i class="fas fa-robot"></i>
-            <span>Automações</span>
+    <header class="internal-header">
+        <a href="/" class="internal-logo" title="Hub Spare Parts">
+            <img src="/static/icones/hub_logo.png" alt="Hub Spare Parts" class="logo-light">
+            <img src="/static/icones/hub_logo_branco.png" alt="Hub Spare Parts" class="logo-dark">
+            <div class="internal-logo-text">
+                <span>Hub Spare Parts</span>
+                <small>Automações</small>
+            </div>
         </a>
-        {% else %}
-        <div class="nav-tab disabled" title="Acesso restrito a Executores">
-            <i class="fas fa-robot"></i>
-            <span>Automações</span>
+        <div class="internal-header-tools">
+            <a href="/" class="header-icon-btn back-button" title="Voltar ao Hub"><i class="fas fa-home"></i></a>
+            <button id="scheduler-btn" class="header-icon-btn scheduler-button" title="Agendador"><i class="fas fa-clock"></i></button>
+            <button id="logout-btn" class="header-icon-btn logout-button hidden" title="Deslogar"><i class="fas fa-sign-out-alt"></i></button>
+            <div class="access-container">
+                <button id="access-btn" class="access-button" aria-label="Acesso" title="Acesso">
+                    <img id="profile-img" src="{{ profile_image or '/static/icones/default_profile.png' }}" alt="Perfil" class="profile-image-thumb">
+                </button>
+                <div class="access-dropdown" id="access-dropdown"></div>
+            </div>
         </div>
-        {% endif %}
+    </header>
 
-        <a href="/dashboards" class="nav-tab" data-page="dashboards" title="Dashboards">
-            <i class="fas fa-chart-pie"></i>
-            <span>Dashboards</span>
-        </a>
-
-        {% if role == 'Executor' or role == 'Analista' %}
-        <a href="/drive" class="nav-tab" data-page="drive" title="Drive (F:) Online">
-            <i class="fas fa-hdd"></i>
-            <span>Drive</span>
-        </a>
-        {% else %}
-        <div class="nav-tab disabled" title="Faça login para acessar o Drive">
-            <i class="fas fa-hdd"></i>
-            <span>Drive</span>
-        </div>
-        {% endif %}
-        
-    </div>
-
-    <div class="page-header-separator"></div>
-
-    <button id="logout-btn" class="logout-button hidden" title="Deslogar"><i class="fas fa-sign-out-alt"></i></button>
-
-    <button id="scheduler-btn" class="scheduler-button" title="Agendador"><i class="fas fa-clock"></i></button>
-
-    <button id="theme-toggle-btn" class="theme-toggle-button" aria-label="Alternar Tema" title="Alternar Tema">
-        <i class="fas fa-sun"></i> 
-    </button>
-
-    <button id="fullscreen-btn" class="fullscreen-button" title="Tela Cheia"><i class="fas fa-expand"></i></button>
-
-    <a href="/" class="back-button" title="Voltar ao Hub"><i class="fas fa-home"></i></a>
-    
     <div id="status" class="status-box" aria-live="polite"></div>
-    
-    <div class="container">
-        <div class="page-search-container">
-            <i class="fas fa-search page-search-icon"></i>
-            <input type="text" id="automacao-search-input" placeholder="Buscar automação...">
+
+    <section class="internal-search-stack">
+        <div class="tabs-wrapper">
+            <div class="main-nav-tabs">
+                {% if role == 'Executor' %}
+                <a href="/automacao" class="nav-tab active" data-page="automacao" title="Automações">
+                    <i class="fas fa-robot"></i>
+                    <span>Automações</span>
+                </a>
+                {% else %}
+                <div class="nav-tab disabled" title="Acesso restrito a Executores">
+                    <i class="fas fa-robot"></i>
+                    <span>Automações</span>
+                </div>
+                {% endif %}
+
+                <a href="/dashboards" class="nav-tab" data-page="dashboards" title="Dashboards">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboards</span>
+                </a>
+
+                {% if role == 'Executor' or role == 'Analista' %}
+                <a href="/drive" class="nav-tab" data-page="drive" title="Drive Online">
+                    <i class="fas fa-hdd"></i>
+                    <span>Drive Online</span>
+                </a>
+                {% else %}
+                <div class="nav-tab disabled" title="Faça login para acessar o Drive">
+                    <i class="fas fa-hdd"></i>
+                    <span>Drive Online</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        <p class="subtitle" id="main-subtitle"><i class="fas fa-info-circle"></i> <span id="subtitle-text">Selecione o sistema para executar uma tarefa</span></p>
+
+        <div class="page-search-container">
+            <label for="automacao-search-input" class="visually-hidden">Buscar automação</label>
+            <i class="fas fa-search page-search-icon"></i>
+            <input type="text" id="automacao-search-input" class="page-search-input" placeholder="Buscar automação...">
+            <div class="page-search-shortcut-hint" aria-hidden="true">
+                <span class="shortcut-key">Ctrl</span>
+                <span class="shortcut-key">K</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
         
         <div class="system-selector">
             <label>
@@ -207,7 +224,10 @@
         </div>
     </div>
     
+    {% include 'partials/access_modals.html' %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="/static/js/shared.js" defer></script>
+    <script src="/static/js/hub.js" defer></script>
     <script src="/static/js/automacao.js" defer></script>
 </body>
 </html>

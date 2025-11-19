@@ -1,61 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600&display=swap');
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-primary-color);
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     min-height: 100vh;
     margin: 0;
-    padding: 120px 20px 20px 20px;
+    padding: 40px 20px 20px 20px;
     box-sizing: border-box;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.back-button {
-    position: absolute; top: 25px; left: 25px; z-index: 10;
-}
-
-/* Botão de Logout (Ícone mais à esquerda) */
-.logout-button {
-    position: absolute;
-    top: 30px;
-    /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) + 30px (ícone) + 30px (gap) = 220px */
-    right: 215px; 
-    z-index: 10;
-    background: none;
-    border: none;
-    font-size: 1.8rem; /* Padrão (igual ao Hub) */
-    color: var(--text-tertiary-color);
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
+/* Ajustes de hover específicos para ícones do header */
 .logout-button:hover {
     color: #dc3545;
-    transform: scale(1.1);
 }
 
-/* Botão Agendador (Ícone do meio) */
-.scheduler-button {
-    position: absolute;
-    top: 30px;
-    /* Posição: 100px (settings) + 30px (ícone) + 30px (gap) = 160px */
-    right: 155px; 
-    z-index: 10;
-    background: none;
-    border: none;
-    font-size: 1.8rem; /* Padrão (igual ao Hub) */
-    color: var(--text-tertiary-color);
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
 .scheduler-button:hover {
     color: var(--accent-color);
-    transform: scale(1.1);
 }
 
 
@@ -64,6 +30,7 @@ body {
     text-align: center;
     width: 90%;
     max-width: 550px;
+    margin: 20px auto;
 }
 
 .main-title {
@@ -536,7 +503,7 @@ body {
     border-radius: 6px;
     box-sizing: border-box;
     font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -1010,57 +977,21 @@ body:not(.theme-dark) .modal-content .modal-logo.logo-light {
     display: inline-block; 
 }
 .nav-tab.disabled {
-    pointer-events: none; /* Desabilita o clique */
-    opacity: 0.6;
-    background-color: var(--bg-color);
+    pointer-events: none;
     cursor: not-allowed;
+    opacity: 0.75;
+    background-color: rgba(15, 23, 42, 0.08);
+    color: var(--text-tertiary-color);
+    box-shadow: none;
+}
+
+body.theme-dark .nav-tab.disabled {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.65;
 }
 
 .nav-tab.disabled i {
     filter: grayscale(100%);
-}
-.page-search-container {
-    width: 90%;
-    max-width: 450px; /* Largura boa para o centro */
-    margin: 0 auto 10px auto; /* Centraliza horizontalmente e adiciona margem inferior */
-    position: relative;
-    text-align: left;
-    margin-top: 10px;
-}
-
-.page-search-icon {
-    position: absolute;
-    /* --- MODIFICAÇÃO: Alinhar ao Hub --- */
-    left: 20px; /* (Centraliza o ícone com o padding de 50px) */
-    /* --- FIM DA MODIFICAÇÃO --- */
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary-color);
-    font-size: 1.1rem;
-    z-index: 1;
-}
-
-.page-search-container input {
-    width: 100%;
-    /* --- MODIFICAÇÃO: Replicar Padding/Fonte do Hub --- */
-    padding: 15px 20px 15px 50px; /* (Ajustado para 15px top/bottom e 50px left) */
-    font-family: 'Poppins', sans-serif; /* ADICIONADO */
-    /* --- FIM DA MODIFICAÇÃO --- */
-    font-size: 1rem;
-    border-radius: 25px; /* Bordas arredondadas */
-    border: 1px solid var(--border-color);
-    box-sizing: border-box;
-    background-color: var(--card-bg-color);
-    color: var(--text-primary-color);
-    transition: border-color 0.2s ease;
-}
-
-.page-search-container input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-}
-@media (max-width: 768px) {
-.page-search-container {
-    display: none !important;
- }
+    color: inherit;
 }

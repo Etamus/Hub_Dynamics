@@ -1,0 +1,247 @@
+    <div class="settings-modal-overlay" id="hub-login-overlay">
+        <div class="settings-modal" style="max-width: 340px;">
+            <div class="settings-header">
+                <h2>Acesso ao Hub</h2> <button class="settings-close-btn" id="hub-login-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" style="padding: 20px 30px 30px;">
+                <p id="hub-login-error" class="hub-form-error hidden"></p>
+                <div class="modal-input-group" style="margin-bottom: 15px;">
+                    <label for="hub-user">Usuário:</label>
+                    <input type="text" id="hub-user" class="hub-modal-input">
+                </div>
+                <div class="modal-input-group" style="margin-bottom: 25px;">
+                    <label for="hub-pass">Senha:</label>
+                    <input type="password" id="hub-pass" class="hub-modal-input">
+                </div>
+                <button class="button-full-width" id="hub-login-submit-btn">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="connections-overlay">
+        <div class="settings-modal connections-modal">
+            <div class="settings-body connections-modal-body">
+                <div id="connections-list-container"></div>
+            </div>
+            <div class="settings-footer connections-modal-footer">
+                <button class="settings-close-action" id="connections-footer-close">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="profile-overlay">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h2>Minha Conta</h2>
+                <button class="settings-close-btn" id="profile-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" style="padding: 20px 30px 30px; text-align: center;">
+                <img id="profile-preview-img" src="/static/icones/default_profile.png" alt="Prévia do Perfil" class="profile-preview-large">
+                <p class="profile-username-display">Carregando...</p>
+
+                <div class="profile-user-details">
+                    <span id="profile-role-display"></span> | <span id="profile-area-display"></span>
+                </div>
+                <form id="profile-upload-form" enctype="multipart/form-data" style="margin-top: 20px;">
+                    <input type="file" id="profile-file-input" name="file" accept="image/png, image/jpeg" class="visually-hidden"> 
+                    
+                    <label for="profile-file-input" class="button-full-width button-secondary profile-button">
+                        <i class="fas fa-upload"></i> Escolher Imagem
+                    </label>
+
+                    <button type="button" id="profile-remove-btn" class="button-danger profile-button hidden">
+                        <i class="fas fa-trash-alt"></i> Remover Imagem
+                    </button>
+
+                    <p id="profile-upload-status" style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="settings-modal-overlay" id="cropper-overlay">
+        <div class="settings-modal cropper-modal-styling">
+            <div class="settings-body" style="padding: 5px 20px 0;">
+                <button class="settings-close-btn" id="cropper-close-btn" style="position: absolute; top: 15px; right: 20px; z-index: 10;">&times;</button>
+                <div class="cropper-container">
+                    <img id="cropper-image" style="max-width: 100%;" src="" alt="Imagem para Recortar">
+                </div>
+            </div>
+            <div class="profile-form-footer" id="cropper-footer">
+                <button class="button btn-cancel" id="cropper-close-footer-btn">Fechar</button>
+                <button class="button btn-save" id="cropper-save-btn">Recortar e Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="edit-name-overlay">
+        <div class="settings-modal" style="max-width: 400px;">
+            <div class="settings-header">
+                <h2>Alterar Nome</h2>
+                <button class="settings-close-btn" id="edit-name-close-btn">&times;</button>
+            </div>
+            <div class="settings-body" style="padding: 20px 30px 30px;">
+                <div class="modal-input-group">
+                    <label for="edit-name-input">Nome de Usuário:</label>
+                    <input type="text" id="edit-name-input" class="hub-modal-input" maxlength="16">
+                </div>
+                <button id="edit-name-save-btn" class="button-full-width btn-success" style="margin-top: 20px;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-modal-overlay" id="register-overlay">
+    <div class="settings-modal" style="max-width: 450px;">
+        <div class="settings-header">
+            <h2>Solicitar Acesso</h2>
+            <button class="settings-close-btn" id="register-close-btn">&times;</button>
+        </div>
+        <div class="scheduler-queue-tabs" style="padding-left: 20px;">
+            <span id="tab-register" class="scheduler-tab active" data-tab="register">Preenchimento</span>
+            <span id="tab-consult" class="scheduler-tab" data-tab="consult">Consulta</span>
+        </div>
+        
+        <div id="register-tab-content" class="settings-body" style="padding: 10px 30px 30px;">
+            
+            <div id="register-form">
+                <div id="register-fields">
+                    <p id="register-status" class="hub-form-error hidden" style="text-align: center; margin-top: -5px;"></p>
+                    <div class="modal-input-group" style="margin-bottom: 15px;">
+                        <label for="register-user">Login de Funcionário:</label>
+                        <input type="text" id="register-user" class="hub-modal-input" placeholder="Ex: LOPESM21" maxlength="10">
+                    </div>
+                    
+                    <div class="scheduler-datetime-group" style="gap: 15px;">
+                        <div class="modal-input-group" style="margin-bottom: 15px;">
+                            <label for="register-area">Área:</label>
+                            <select id="register-area" class="hub-modal-input">
+                                <option value="" disabled selected hidden>Selecione...</option>
+                                <option value="Logística">Logística</option>
+                                <option value="Comercial">Comercial</option>
+                                <option value="Financeiro">Financeiro</option>
+                                <option value="Jurídico">Jurídico</option>
+                                <option value="Vendas">Vendas</option>
+                            </select>
+                        </div>
+                        <div class="modal-input-group" style="margin-bottom: 15px;">
+                            <label for="register-role">Função:</label>
+                            <select id="register-role" class="hub-modal-input">
+                                <option value="" disabled selected hidden>Selecione...</option>
+                                <option value="Analista">Analista</option>
+                                <option value="Executor">Executor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button id="register-submit-btn" class="button-full-width" style="width: 40%; margin-top: 15px;">Solicitar</button>
+
+                </div>
+
+                <div id="register-token-display" class="hidden" style="text-align: center;">
+                    <p style="color: var(--text-secondary-color); margin-top: -10px;">Sua solicitação foi enviada!</p>
+                    <p style="color: var(--text-primary-color); font-weight: 500;">Guarde este token para consultar seu status:</p>
+                    <div class="token-display" id="token-generated"></div>
+                    </div>
+            </div>
+        </div>
+        
+        <div id="consult-tab-content" class="settings-body hidden" style="padding: 10px 30px 30px;">
+
+            <p id="consult-status-error" class="hub-form-error hidden" style="text-align: center; margin-top: -5px"></p>
+
+            <div class="modal-input-group" style="margin-bottom: 15px;">
+                <label for="consult-token">Insira seu Token de Acesso:</label>
+                <input type="text" id="consult-token" class="hub-modal-input">
+            </div>
+            <button id="consult-token-btn" class="button-full-width" style="width: 40%; margin-top: 30px;">Consultar</button>
+
+            <div id="consult-status-wrapper" class="hidden" style="margin-top: 25px; text-align: left;">
+                <hr style="border-color: var(--border-color); border-top: 0;">
+                <p style="font-weight: 600; color: var(--text-primary-color);">Status da Solicitação:</p>
+                <div class="consult-status-box" id="consult-status-result"></div>
+                <p id="consult-justification" class="hidden" style="font-size: 0.9rem; color: var(--text-secondary-color);"></p>
+                
+                <div id="consult-new-password-section" class="hidden">
+                    <p id="consult-password-error" class="hub-form-error hidden"></p>
+                    <div class="modal-input-group" style="margin-bottom: 15px;">
+                        <label for="consult-new-password">Defina sua nova senha:</label>
+                        <input type="password" id="consult-new-password" class="hub-modal-input" maxlength="20">
+                    </div>
+                    <button id="consult-save-password-btn" class="button-full-width" style="width: 40%; margin-top: 30px;">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="settings-modal-overlay" id="admin-overlay">
+        <div class="settings-modal admin-modal">
+            <div class="admin-modal-grid">
+                <aside class="admin-sidebar">
+                    <div class="scheduler-queue-tabs admin-sidebar-nav" role="tablist">
+                        <button id="tab-admin-requests" class="scheduler-tab active" data-tab="requests">
+                            <i class="fas fa-inbox"></i>
+                            <span>Solicitações</span>
+                            <span class="admin-tab-badge hidden" id="admin-requests-count">0</span>
+                        </button>
+                        <button id="tab-admin-users" class="scheduler-tab" data-tab="users">
+                            <i class="fas fa-users"></i>
+                            <span>Usuários</span>
+                        </button>
+                        <button id="tab-admin-dashboards" class="scheduler-tab" data-tab="dashboards">
+                            <i class="fas fa-display"></i>
+                            <span>Dashboards</span>
+                        </button>
+                        <button id="tab-admin-automations" class="scheduler-tab" data-tab="automations">
+                            <i class="fas fa-robot"></i>
+                            <span>Automações</span>
+                        </button>
+                    </div>
+                    <div class="admin-sidebar-footer">
+                        <button class="admin-close-btn" id="admin-close-btn">
+                            Fechar
+                        </button>
+                    </div>
+                </aside>
+                <section class="admin-panel">
+                    <div class="admin-panel-card">
+                        <header class="admin-panel-header">
+                            <div>
+                                <h3 id="admin-active-title">Solicitações</h3>
+                                <p id="admin-active-description">Acompanhe pedidos pendentes e responda com rapidez.</p>
+                            </div>
+                            <div id="admin-search-container" class="admin-search-container hidden">
+                                <div id="admin-search-input-wrapper" class="admin-search-input-wrapper">
+                                    <i class="fas fa-search admin-search-icon"></i>
+                                    <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Pesquisar...">
+                                </div>
+                            </div>
+                        </header>
+                        <div class="admin-panel-body">
+                            <div id="admin-requests-tab" class="admin-panel-section">
+                                <div id="admin-list-container" class="admin-panel-surface"></div>
+                            </div>
+                            
+                            <div id="admin-users-tab" class="admin-panel-section hidden">
+                                <div id="admin-user-list-container" class="admin-panel-surface"></div>
+                            </div>
+
+                            <div id="admin-dashboards-tab" class="admin-panel-section hidden">
+                                <button class="admin-add-btn" id="admin-add-dashboard-btn">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Novo</span>
+                                </button>
+                                <div id="admin-dashboards-list" class="admin-panel-surface admin-cms-list"></div>
+                            </div>
+                            
+                            <div id="admin-automations-tab" class="admin-panel-section hidden">
+                                <button class="admin-add-btn" id="admin-add-automation-btn">
+                                    <i class="fas fa-robot"></i>
+                                    <span>Novo</span>
+                                </button>
+                                <div id="admin-automations-list" class="admin-panel-surface admin-cms-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>

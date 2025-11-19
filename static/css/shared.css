@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600&display=swap');
+
 /* ============================================= */
 /* ===== VARIÁVEIS GLOBAIS DE TEMA (CLARO/ESCURO) ===== */
 /* ============================================= */
@@ -13,6 +15,101 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --shadow-color-hover: rgba(0, 0, 0, 0.12);
     --shadow-color-light: rgba(0, 0, 0, 0.05);
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-heading: 'Poppins', 'Inter', BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    font-weight: 400;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.page-search-container {
+    position: relative;
+    width: 100%;
+    max-width: 1160px;
+    margin: 45px auto 40px;
+    text-align: left;
+    padding-bottom: 5px;
+}
+
+.page-search-icon {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary-color);
+    font-size: 1.2rem;
+}
+
+.page-search-input {
+    width: 100%;
+    padding: 18px 120px 18px 70px;
+    font-size: 1.05rem;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    font-family: var(--font-body);
+    box-sizing: border-box;
+    background-color: var(--card-bg-color);
+    color: var(--text-primary-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 12px 30px var(--shadow-color-light);
+}
+
+.page-search-input::placeholder {
+    color: var(--text-secondary-color);
+}
+
+.page-search-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.page-search-shortcut-hint {
+    position: absolute;
+    right: 32px;
+    top: 52%;
+    transform: translateY(-60%);
+    display: flex;
+    gap: 6px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    pointer-events: none;
+}
+
+.shortcut-key {
+    background-color: var(--card-bg-color);
+    border-radius: 8px;
+    padding: 3px 8px;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+}
+
+h1, h2, h3, h4, h5, h6,
+.heading-font,
+.logo-title span,
+.section-title,
+.quick-links-section h3 {
+    font-family: var(--font-heading);
+    font-weight: 600;
 }
 
 body.theme-dark {
@@ -177,7 +274,7 @@ body.theme-dark {
     border-radius: 20px;
     padding: 10px 15px;
     font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
 }
 .chat-input:focus {
     outline: none;
@@ -205,42 +302,135 @@ body.theme-dark {
 /* ===== NOVOS ESTILOS DE BOTÕES DE NAVEGAÇÃO ===== */
 /* ============================================= */
 
-/* Botão principal (Voltar ao Hub) */
-.back-button {
-    position: absolute;
-    top: 25px; /* (Era 25px) Alinha com os outros ícones do header */
-    left: 35px;
-    z-index: 10;
-    
-    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-    /* Remove fundo, borda e sombra */
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-
-    /* Remove tamanho fixo */
-    width: auto;
-    height: auto;
-    
-    /* Ajusta o ícone */
-    color: var(--text-tertiary-color);
-    text-decoration: none;
-    font-size: 1.8rem; /* Tamanho maior para o ícone */
-    
-    /* Efeitos */
-    transition: color 0.2s ease, transform 0.2s ease;
-    /* --- FIM DA MODIFICAÇÃO --- */
+/* Cabeçalho compartilhado entre páginas internas */
+.internal-header {
+    width: 90%;
+    max-width: 1160px;
+    margin: 0 auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
 }
 
-.back-button:hover {
-    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-    transform: scale(1.1); /* Efeito de zoom */
+.internal-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.6rem;
+    font-family: var(--font-heading);
+    color: var(--text-primary-color);
+    text-decoration: none;
+}
+
+.internal-logo img {
+    height: 36px;
+}
+
+.internal-logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.internal-logo-text span {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.internal-logo-text small {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    font-weight: 500;
+}
+
+body:not(.theme-dark) .internal-logo .logo-light {
+    display: inline-block;
+}
+body:not(.theme-dark) .internal-logo .logo-dark {
+    display: none;
+}
+body.theme-dark .internal-logo .logo-light {
+    display: none;
+}
+body.theme-dark .internal-logo .logo-dark {
+    display: inline-block;
+}
+
+.internal-header-tools {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.internal-search-stack {
+    width: 90%;
+    max-width: 1160px;
+    margin: -7px auto 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.internal-search-stack .page-search-container {
+    width: 100%;
+    margin: 0;
+}
+
+.tabs-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+}
+
+.header-icon-btn,
+.internal-header-tools a {
+    background: none;
+    border: none;
+    color: var(--text-tertiary-color);
+    font-size: 1.65rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.header-icon-btn:hover,
+.internal-header-tools a:hover {
     color: var(--accent-color);
-    
-    /* Remove efeitos de borda/sombra */
-    border-color: transparent; 
-    box-shadow: none;
-    /* --- FIM DA MODIFICAÇÃO --- */
+    transform: scale(1.1);
+}
+
+.header-icon-btn:focus-visible,
+.internal-header-tools a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+.header-icon-btn .fa-moon {
+    position: relative;
+    left: -4px;
+}
+
+.back-button,
+.fullscreen-button,
+.theme-toggle-button,
+.logout-button,
+.scheduler-button {
+    background: none;
+    border: none;
+    padding: 0;
+    position: static;
+    width: auto;
+    height: auto;
+}
+
+.logout-button.hidden {
+    display: none !important;
 }
 
 /* Botão secundário (Voltar para Áreas em Dashboards) */
@@ -272,50 +462,10 @@ body.theme-dark {
     background-color: var(--card-bg-color);
 }
 
-/* --- CORRIGIDO: Estilo do Botão de Tela Cheia (Páginas Internas) --- */
-.fullscreen-button {
-    position: absolute;
-    top: 30px; /* Padrão (igual ao padding do Hub) */
-    right: 40px; /* Padrão (igual ao padding do Hub) */
-    z-index: 10;
-    
-    /* Aparência (estilo do hub.html) */
-    background: none;
-    border: none;
-    font-size: 1.8rem; /* Padrão (igual ao Hub) */
-    color: var(--text-tertiary-color);
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.fullscreen-button:hover {
-    color: var(--accent-color);
-    transform: scale(1.1); /* Mesmo efeito do hub */
-}
-/* --- NOVO: Botão de Alternar Tema (Páginas Internas) --- */
+/* Botões específicos reutilizam o estilo compartilhado */
+.fullscreen-button,
 .theme-toggle-button {
-    position: absolute;
-    top: 30px; /* Alinhado com o fullscreen-btn */
-    right: 95px; /* Posição à esquerda do botão de tela cheia */
-    z-index: 10;
-    
-    background: none;
-    border: none;
-    font-size: 1.8rem; /* Tamanho do ícone */
-    color: var(--text-tertiary-color); /* Cor padrão */
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.theme-toggle-button:hover {
-    color: var(--accent-color); /* Cor ao passar o mouse */
-    transform: scale(1.1);
-}
-.theme-toggle-button .fa-moon {
-    position: relative;
-    left: -4px; 
+    font-size: 1.65rem;
 }
 /* Estilo do indicador "Digitando..." */
 .bot-message.typing {
@@ -368,23 +518,17 @@ body.theme-dark {
         height: calc(100% - 120px); /* (Altura total - header - input) */
     }
 
-    /* --- Ajuste de Botões Globais --- */
-    .back-button {
-        top: 15px;
-        left: 15px;
-        width: 40px;
-        height: 40px;
+    .internal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
     }
-    .fullscreen-button,
-    .theme-toggle-button,
-    .logout-button,
-    .scheduler-button {
-        top: 20px; /* Alinha todos pelo topo */
+    .internal-header-tools {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
     }
-    .fullscreen-button { right: 15px; }
-    .theme-toggle-button { right: 65px; }
-    .scheduler-button { right: 120px; }
-    .logout-button { right: 170px; }
 }
 body.theme-dark .chat-popup {
     background-color: var(--card-bg-color); /* Fundo do popup */
@@ -465,81 +609,83 @@ body.theme-dark .bot-message.error {
     color: #ffcccc; /* Texto vermelho claro */
     border-color: #dc3545;
 }
-.page-header-separator {
-    position: absolute;
-    /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-    /* (Alinhado com a barra do hub.css (desktop)) */
-    top: 90px;
-    /* --- FIM DA MODIFICAÇÃO --- */
-    
-    left: 0;
-    right: 0;
-    width: 100%;
-    border-bottom: 2px solid var(--border-color);
-    z-index: 5; 
-}
-
-/* Ajuste para Mobile (onde a área do header é menor) */
 @media (max-width: 768px) {
-    .page-header-separator {
-        /* --- INÍCIO DA MODIFICAÇÃO (Req 1) --- */
-        /* (Alinhado com a barra do hub.css (mobile)) */
-        top: 74px;
-        /* --- FIM DA MODIFICAÇÃO --- */
+    .page-search-container {
+        margin: 30px auto;
+        max-width: 92%;
+    }
+
+    .page-search-shortcut-hint {
+        display: none;
     }
 }
 .main-nav-tabs {
-    /* Posicionamento e centralização */
-    position: absolute;
-    top: 23px; /* Alinha no topo do espaço do header */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20; /* Garante que fique acima de todos os outros botões */
-    
-    /* Layout */
-    display: flex;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px var(--shadow-color-light);
-    overflow: hidden;
+    border: 1px solid rgba(17, 25, 40, 0.08);
+    border-radius: 999px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    margin: 0 auto 2px;
+    padding: 6px;
+    position: relative;
+    top: -53px;
+    z-index: 5;
+    backdrop-filter: blur(2px);
+}
+
+body.theme-dark .main-nav-tabs {
+    background-color: rgba(18, 25, 38, 0.92);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.55);
 }
 
 .nav-tab {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 999px;
     text-decoration: none;
     color: var(--text-secondary-color);
     font-weight: 600;
     font-size: 0.95rem;
-    transition: all 0.2s ease;
-    border-right: 1px solid var(--border-color); /* Separador visual */
-}
-
-.nav-tab:last-child {
-    border-right: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .nav-tab:hover {
-    background-color: var(--bg-color);
+    background-color: rgba(15, 23, 42, 0.06);
     color: var(--text-primary-color);
+}
+
+body.theme-dark .nav-tab:hover {
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .nav-tab i {
     color: var(--text-tertiary-color);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+    transition: color 0.2s ease;
 }
 
-/* Estado Ativo (Cor de destaque) */
 .nav-tab.active {
     background-color: var(--accent-color);
-    color: white !important;
+    color: #fff !important;
+    box-shadow: 0 10px 22px rgba(45, 64, 110, 0.35);
 }
 
 .nav-tab.active i {
-    color: white !important;
+    color: #fff !important;
+}
+
+.nav-tab:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 

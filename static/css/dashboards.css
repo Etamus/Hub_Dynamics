@@ -1,7 +1,7 @@
 /* Seus estilos CSS originais permanecem aqui, sem alterações */
 body { 
-    display: flex; justify-content: center; align-items: flex-start; 
-    padding-top: 120px; box-sizing: border-box; overflow-x: hidden; 
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    min-height: 100vh; padding: 40px 20px 40px 20px; box-sizing: border-box; overflow-x: hidden;
     /* ALTERADO: Usando variáveis */
     background-color: var(--bg-color);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -19,7 +19,7 @@ body {
     margin-top: 20px;  
     justify-content: center; gap: 10px; 
 }
-.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: -15px;}
+.dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: -15px; }
 .dashboard-iframe { 
     width: 100%; height: 100%; border: none; border-radius: 16px; 
     /* ALTERADO: Usando variáveis */
@@ -28,7 +28,7 @@ body {
 #selection-screen { display: flex; flex-direction: column; align-items: center; width: 100%; text-align: center; max-width: 550px; max-height: calc(100vh - 100px); }
 .system-selector { 
     display: flex; justify-content: center; align-items: center; 
-    gap: 40px; margin-bottom: 30px; 
+    gap: 40px; margin: 20px 0 30px; 
     /* ALTERADO: Usando variáveis */
     border-bottom: 1px solid var(--border-color); 
     padding-bottom: 30px; width: 100%; max-width: 500px;
@@ -387,56 +387,20 @@ body:not(.theme-dark) .modal-content .modal-logo.logo-light {
 }
 .nav-tab.disabled {
     pointer-events: none; /* Desabilita o clique */
-    opacity: 0.6;
-    background-color: var(--bg-color);
     cursor: not-allowed;
+    opacity: 0.75;
+    background-color: rgba(15, 23, 42, 0.08);
+    color: var(--text-tertiary-color);
+    box-shadow: none;
+}
+
+body.theme-dark .nav-tab.disabled {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.65;
 }
 
 .nav-tab.disabled i {
     filter: grayscale(100%);
-}
-.page-search-container {
-    width: 90%;
-    max-width: 450px; /* Largura boa para o centro */
-    margin: 0 auto 10px auto; /* Centraliza horizontalmente e adiciona margem inferior */
-    position: relative;
-    text-align: left;
-    margin-top: 10px;
-}
-
-.page-search-icon {
-    position: absolute;
-    /* --- MODIFICAÇÃO: Alinhar ao Hub --- */
-    left: 20px; /* (Centraliza o ícone com o padding de 50px) */
-    /* --- FIM DA MODIFICAÇÃO --- */
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary-color);
-    font-size: 1.1rem;
-    z-index: 1;
-}
-
-.page-search-container input {
-    width: 100%;
-    /* --- MODIFICAÇÃO: Replicar Padding/Fonte do Hub --- */
-    padding: 15px 20px 15px 50px; /* (Ajustado para 15px top/bottom e 50px left) */
-    font-family: 'Poppins', sans-serif; /* ADICIONADO */
-    /* --- FIM DA MODIFICAÇÃO --- */
-    font-size: 1rem;
-    border-radius: 25px; /* Bordas arredondadas */
-    border: 1px solid var(--border-color);
-    box-sizing: border-box;
-    background-color: var(--card-bg-color);
-    color: var(--text-primary-color);
-    transition: border-color 0.2s ease;
-}
-
-.page-search-container input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-}
-@media (max-width: 768px) {
-.page-search-container {
-    display: none !important;
- }
+    color: inherit;
 }
