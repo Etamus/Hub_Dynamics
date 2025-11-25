@@ -1,6 +1,6 @@
 # Hub Spare Parts
 
-Portal corporativo em **Flask** que centraliza automações, dashboards, arquivos e fluxos de acesso em uma única experiência responsiva. O Hub abstrai integrações com SAP, BW HANA, macros em Excel e relatórios Looker/Tableau, oferecendo RBAC completo, perfis personalizados e um scheduler persistente.
+Hub corporativo em **Flask** que centraliza automações, dashboards, arquivos e fluxos de acesso em uma única experiência responsiva. O Hub abstrai integrações com SAP, BW HANA, macros em Excel e relatórios Looker/Tableau, oferecendo RBAC completo, perfis personalizados e um scheduler persistente.
 
 ---
 
