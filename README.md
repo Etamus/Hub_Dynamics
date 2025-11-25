@@ -6,7 +6,7 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 
 ---
 
-<img width="1918" height="866" alt="image" src="https://github.com/user-attachments/assets/ac86e2f4-6d51-4e9c-9b97-89a68058c22b" />
+<img width="1919" height="921" alt="{0AE0844E-2FCB-435A-AE3D-5910A1D50077}" src="https://github.com/user-attachments/assets/5314a64e-d9b0-45d0-9383-c8ac72afd08c" />
 
 ---
 
@@ -25,7 +25,7 @@ A aplicação oferece uma interface web unificada com sistema de perfis, permiss
 
 ---
 
-<img width="1280" height="720" alt="Hub Spare Parts - Controle e Automação" src="https://github.com/user-attachments/assets/3637af2f-fd4f-45b2-afdb-e698a8c82eb4" />
+<img width="960" height="540" alt="Staff Supply LTL   Spare Parts - Novembro 2025 (1)" src="https://github.com/user-attachments/assets/785352de-638f-4543-936e-113c7381352e" />
 
 ---
 
