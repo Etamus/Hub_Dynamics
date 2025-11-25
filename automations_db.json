@@ -8,22 +8,22 @@
     "type": "sap",
     "width": null
   },
-  "Cancelamento Aging": {
-    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Cria\u00e7\u00e3o Aging.xlsm",
-    "gif": "/static/gifs/aging_preview.gif",
-    "macro": "cancelar_fora_prazo",
-    "tags": "Returns,Routine,Monthly",
-    "text": "Executa uma varredura para identificar e cancelar automaticamente todas as ordens que ultrapassaram o prazo de aging.",
-    "type": "sap",
-    "width": null
-  },
   "Outlook": {
+    "type": "sap",
+    "macro": "EnviarEmails",
     "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Outlook_Macro.xlsm",
     "gif": "/static/gifs/outlook_preview.gif",
-    "macro": "EnviarEmails",
-    "tags": "Returns,Report,Delivery,Weekly",
     "text": "Calcula a previs\u00e3o do faturamento l\u00edquido de devolu\u00e7\u00f5es para o fechamento do m\u00eas e formata os dados em um relat\u00f3rio.",
+    "tags": "Returns,Report,Delivery,Weekly",
+    "width": null
+  },
+  "Cancelamento Aging": {
     "type": "sap",
+    "macro": "cancelar_fora_prazo",
+    "arquivo": "C:\\Users\\Robo01\\Desktop\\Automacao_Final\\macros\\Cria\u00e7\u00e3o Aging.xlsm",
+    "gif": "/static/gifs/aging_preview.gif",
+    "text": "Executa uma varredura para identificar e cancelar automaticamente todas as ordens que ultrapassaram o prazo de aging.",
+    "tags": "Returns,Routine,Monthly",
     "width": null
   },
   "Relat\u00f3rio Pe\u00e7as": {

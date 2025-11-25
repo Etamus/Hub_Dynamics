@@ -389,8 +389,8 @@ body {
 }
 /* --- NOVO: Estilos do Modal Agendador (Redesign) --- */
 #scheduler-modal-overlay .settings-modal {
-    max-width: 940px;
-    width: min(94%, 940px);
+    max-width: 600px;
+    width: min(90%, 600px);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     box-shadow: 0 12px 40px var(--shadow-color-hover);
@@ -399,17 +399,22 @@ body {
 }
 
 .scheduler-modal-body {
-    padding: 25px 32px 15px;
+    padding: 20px 28px 24px;
 }
 
 .scheduler-body {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     width: 100%;
 }
 
 .scheduler-form {
-    padding: 25px 25px 30px;
+    padding: 18px;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px var(--shadow-color-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 .scheduler-form h3 {
     margin: 0 0 16px 0;
@@ -425,19 +430,23 @@ body {
 }
 
 .scheduler-form .modal-input-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 360px;
 }
 
 /* NOVO: Wrapper para centralizar o botão "Adicionar" */
 .scheduler-button-container {
     text-align: center;
-    margin-top: 40px;
-    margin-bottom: 20px;  
+    margin-top: 28px;
+    margin-bottom: 14px; 
+    width: 100%;
+    max-width: 360px;
 }
 /* BOTÃO "ADICIONAR" MENOR E CENTRALIZADO */
 .scheduler-form .button.btn-execute {
-    width: 100%; 
-    max-width: 200px; 
+    width: 180px;
+    margin: 0 auto;
     background-color: var(--accent-color); 
 }
 
@@ -448,31 +457,53 @@ body {
 /* NOVO: Estilos para Data/Hora Lado a Lado */
 .scheduler-datetime-group {
     display: flex;
-    gap: 10px;
-    align-items: flex-start; /* Alinha labels */
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: center;
 }
 .scheduler-datetime-group .modal-input-group {
-    flex: 1; /* Divide o espaço */
-    margin-bottom: 20px;
+    flex: 0 1 360px;
 }
 
 
+.scheduler-tab-panels {
+    margin-top: 24px;
+}
+
+.scheduler-tab-panel {
+    display: none;
+    animation: schedulerTabFade 0.25s ease;
+}
+
+.scheduler-tab-panel.active {
+    display: block;
+}
+
+.scheduler-tab-panel[hidden] {
+    display: none !important;
+}
+
 .scheduler-queue {
-    padding: 25px;
-    background-color: var(--bg-color); /* Fundo sutil */
+    padding: 22px;
+    background-color: var(--card-bg-color);
     display: flex;
     flex-direction: column;
     border-radius: 14px;
     border: 1px solid var(--border-color);
-    margin-left: 22px; /* Afasta o bloco cinza das tarefas da coluna do formulário */
+    box-shadow: 0 12px 30px var(--shadow-color-light);
+    gap: 16px;
 }
 
 .scheduler-nav-tabs {
     justify-content: center;
-    gap: 14px;
-    padding: 0;
-    margin-bottom: 26px;
-    border-bottom: none;
+    gap: 12px;
+    padding: 18px 32px 20px;
+    margin: -20px -28px 18px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: #e5e7eb;
+    box-shadow: 0 10px 30px var(--shadow-color-light);
+    border-radius: 16px 16px 0 0;
 }
 .scheduler-nav-tabs .profile-nav-link {
     background: none;
@@ -481,6 +512,7 @@ body {
     min-width: auto;
     justify-content: center;
     box-shadow: none;
+    flex: 1;
 }
 .scheduler-nav-tabs .profile-nav-link.active {
     background-color: var(--card-bg-color);
@@ -488,16 +520,18 @@ body {
 }
 
 @media (max-width: 1024px) {
-    .scheduler-body {
-        grid-template-columns: 1fr;
+    .scheduler-nav-tabs {
+        flex-direction: column;
+        margin: -20px -20px 16px;
+        padding: 16px 20px 18px;
+        background-color: #e5e7eb;
     }
-    .scheduler-form {
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
+    .scheduler-nav-tabs .profile-nav-link {
+        width: 100%;
     }
+    .scheduler-form,
     .scheduler-queue {
-        margin-left: 0;
-        margin-top: 24px;
+        padding: 20px;
     }
 }
 
@@ -515,6 +549,11 @@ body {
     background: none;
     cursor: pointer;
     padding: 0;
+}
+
+@keyframes schedulerTabFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 
@@ -660,6 +699,8 @@ body {
     flex-direction: column;
     gap: 10px; /* Espaço entre os botões */
     margin-top: 10px;
+    width: 100%;
+    max-width: 360px;
 }
 .scheduler-task-selection-label {
     padding-top: 10px;

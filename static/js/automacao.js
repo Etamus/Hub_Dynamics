@@ -154,52 +154,65 @@ document.addEventListener('DOMContentLoaded', () => {
         schedulerModal.innerHTML = `
             <div class="settings-modal scheduler-modal-panel">
                 <div class="settings-body scheduler-modal-body">
-                    <div class="scheduler-body">
-                        <section class="scheduler-form">
-                            <h3>Agendador de Tarefas</h3>
-                            <p class="scheduler-helper-text">Programe execuções automáticas de SAP e BW com antecedência.</p>
-                            <div class="scheduler-datetime-group">
-                                <div class="modal-input-group">
-                                    <label for="scheduler-date">Data:</label>
-                                    <div class="input-with-icon-wrapper">
-                                        <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10">
-                                        <i class="fas fa-calendar-alt input-icon" id="scheduler-calendar-icon"></i>
-                                        <input type="date" id="scheduler-date-native" class="scheduler-native-input">
+                    <nav class="profile-nav-tabs scheduler-nav-tabs" role="tablist" aria-label="Seções do agendador">
+                        <button type="button" id="scheduler-tab-btn-tasks" class="profile-nav-link scheduler-tab active" data-tab="tasks">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Tarefas</span>
+                        </button>
+                        <button type="button" id="scheduler-tab-btn-queue" class="profile-nav-link scheduler-tab" data-tab="queue">
+                            <i class="fas fa-list-check"></i>
+                            <span>Fila</span>
+                        </button>
+                        <button type="button" id="scheduler-tab-btn-history" class="profile-nav-link scheduler-tab" data-tab="history">
+                            <i class="fas fa-clock-rotate-left"></i>
+                            <span>Histórico</span>
+                        </button>
+                    </nav>
+
+                    <div class="scheduler-tab-panels">
+                        <section id="scheduler-panel-tasks" class="scheduler-tab-panel active" data-tab="tasks" role="tabpanel" aria-labelledby="scheduler-tab-btn-tasks">
+                            <div class="scheduler-form">
+                                <div class="scheduler-datetime-group">
+                                    <div class="modal-input-group">
+                                        <label for="scheduler-date">Data:</label>
+                                        <div class="input-with-icon-wrapper">
+                                            <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10">
+                                            <i class="fas fa-calendar-alt input-icon" id="scheduler-calendar-icon"></i>
+                                            <input type="date" id="scheduler-date-native" class="scheduler-native-input">
+                                        </div>
+                                    </div>
+                                    <div class="modal-input-group">
+                                        <label for="scheduler-time">Hora:</label>
+                                        <div class="input-with-icon-wrapper">
+                                            <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5">
+                                            <i class="fas fa-clock input-icon" id="scheduler-clock-icon"></i>
+                                            <input type="time" id="scheduler-time-native" class="scheduler-native-input">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-input-group">
-                                    <label for="scheduler-time">Hora:</label>
-                                    <div class="input-with-icon-wrapper">
-                                        <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5">
-                                        <i class="fas fa-clock input-icon" id="scheduler-clock-icon"></i>
-                                        <input type="time" id="scheduler-time-native" class="scheduler-native-input">
-                                    </div>
+                                    <label class="scheduler-task-selection-label">Selecione a automação:</label>
+                                    <div id="scheduler-tasks-container" class="scheduler-tasks-container"></div>
                                 </div>
-                            </div>
-                            <div class="modal-input-group">
-                                <label class="scheduler-task-selection-label">Selecione a automação:</label>
-                                <div id="scheduler-tasks-container" class="scheduler-tasks-container"></div>
-                            </div>
-                            <div class="scheduler-button-container">
-                                <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                                <div class="scheduler-button-container">
+                                    <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                                </div>
                             </div>
                         </section>
-                        <section class="scheduler-queue">
-                            <nav class="profile-nav-tabs scheduler-nav-tabs" role="tablist" aria-label="Seções do agendador">
-                                <button type="button" id="tab-queue" class="profile-nav-link scheduler-tab active" data-tab="queue">
-                                    <i class="fas fa-list-check"></i>
-                                    <span>Fila</span>
-                                </button>
-                                <button type="button" id="tab-history" class="profile-nav-link scheduler-tab" data-tab="history">
-                                    <i class="fas fa-clock-rotate-left"></i>
-                                    <span>Histórico</span>
-                                </button>
-                            </nav>
-                            <div id="queue-container" class="queue-list-container">
-                                <ul id="scheduler-queue-list" aria-live="polite"></ul>
+
+                        <section id="scheduler-panel-queue" class="scheduler-tab-panel" data-tab="queue" role="tabpanel" aria-labelledby="scheduler-tab-btn-queue" hidden>
+                            <div class="scheduler-queue">
+                                <div id="queue-container" class="queue-list-container">
+                                    <ul id="scheduler-queue-list" aria-live="polite"></ul>
+                                </div>
                             </div>
-                            <div id="history-container" class="queue-list-container hidden">
-                                <ul id="scheduler-history-list" aria-live="polite"></ul>
+                        </section>
+
+                        <section id="scheduler-panel-history" class="scheduler-tab-panel" data-tab="history" role="tabpanel" aria-labelledby="scheduler-tab-btn-history" hidden>
+                            <div class="scheduler-queue">
+                                <div id="history-container" class="queue-list-container">
+                                    <ul id="scheduler-history-list" aria-live="polite"></ul>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -219,6 +232,70 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previewPanel) {
             previewPanel.classList.remove('visible');
         }
+    }
+
+    /**
+     * Atualiza o painel de preview com os dados do botão focado
+     */
+    function showPreview(button) {
+        if (!previewPanel || !button) return;
+
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) return;
+
+        const gifPath = button.dataset.previewGif;
+        const text = button.dataset.previewText;
+        const tagsString = button.dataset.previewTags;
+
+        if (!gifPath && !text) {
+            hidePreview();
+            return;
+        }
+
+        if (gifPath && previewImage) {
+            previewImage.src = gifPath;
+            previewImage.alt = text ? `Preview de ${text}` : 'Preview da Automação';
+        }
+
+        if (previewDescription) {
+            previewDescription.textContent = text || 'Automação disponível';
+        }
+
+        if (previewTagsContainer) {
+            previewTagsContainer.innerHTML = '';
+
+            if (tagsString) {
+                const tagsArray = tagsString.split(',');
+                const knownNonKpiTags = [
+                    'sap', 'bw', 'login', 'daily', 'weekly', 'monthly',
+                    'planilha', 'relatorio', 'download', 'consulta', 'reversa'
+                ];
+
+                tagsArray.forEach(rawTag => {
+                    const cleanTag = rawTag.trim();
+                    if (!cleanTag) return;
+
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'preview-tag';
+                    tagElement.textContent = cleanTag;
+
+                    const lower = cleanTag.toLowerCase();
+                    if (['sap', 'bw', 'login'].includes(lower)) {
+                        tagElement.classList.add('tag-blue');
+                    } else if (['daily', 'weekly', 'monthly'].includes(lower)) {
+                        tagElement.classList.add('tag-green');
+                    } else if (knownNonKpiTags.includes(lower)) {
+                        tagElement.classList.add('tag-gray');
+                    } else {
+                        tagElement.classList.add('tag-purple');
+                    }
+
+                    previewTagsContainer.appendChild(tagElement);
+                });
+            }
+        }
+
+        previewPanel.classList.add('visible');
     }
 
     // --- Funções do Modal de Login ---
@@ -891,28 +968,7 @@ function openSchedulerModal() {
         
         // --- NOVO: Configura as máscaras na primeira abertura ---
         setupInputMasks(); 
-        
-        // Listeners das Abas
-        const tabQueue = document.getElementById('tab-queue');
-        const tabHistory = document.getElementById('tab-history');
-        const queueContainer = document.getElementById('queue-container');
-        const historyContainer = document.getElementById('history-container');
-
-        tabQueue.addEventListener('click', () => {
-            tabQueue.classList.add('active');
-            tabHistory.classList.remove('active');
-            queueContainer.classList.remove('hidden');
-            historyContainer.classList.add('hidden');
-        });
-        
-        tabHistory.addEventListener('click', () => {
-            tabHistory.classList.add('active');
-            tabQueue.classList.remove('active');
-            historyContainer.classList.remove('hidden');
-            queueContainer.classList.add('hidden');
-        });
-        
-        tabQueue.click(); 
+        setupSchedulerTabs();
     }
 
     if (modal && !modal.dataset.overlayClickBound) {
@@ -929,7 +985,10 @@ function openSchedulerModal() {
     renderJobQueue();
     renderJobHistory();
     document.getElementById('scheduler-modal-overlay').classList.add('visible');
-    document.querySelector('input[name="scheduler_task"]').focus(); // Foca no primeiro rádio
+    const firstTaskRadio = document.querySelector('input[name="scheduler_task"]');
+    if (firstTaskRadio) {
+        firstTaskRadio.focus();
+    }
 }
 
     // 10. Fecha o modal do agendador
@@ -1023,6 +1082,36 @@ function setupInputMasks() {
             if (!e.target.value) return; // Se o usuário cancelar
             timeInput.value = e.target.value; // (Formato HH:MM já é o correto)
         });
+    }
+}
+
+function setupSchedulerTabs() {
+    const modal = document.getElementById('scheduler-modal-overlay');
+    if (!modal) return;
+
+    const tabButtons = modal.querySelectorAll('.scheduler-tab');
+    const tabPanels = modal.querySelectorAll('.scheduler-tab-panel');
+
+    const activateTab = (target) => {
+        tabButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.tab === target);
+        });
+
+        tabPanels.forEach(panel => {
+            const isTarget = panel.dataset.tab === target;
+            panel.classList.toggle('active', isTarget);
+            panel.toggleAttribute('hidden', !isTarget);
+        });
+    };
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => activateTab(button.dataset.tab));
+    });
+
+    // Ativa aba padrão
+    const defaultTab = modal.querySelector('.scheduler-tab[data-tab="tasks"]');
+    if (defaultTab) {
+        defaultTab.click();
     }
 }
 
