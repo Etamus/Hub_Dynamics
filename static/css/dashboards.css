@@ -6,6 +6,13 @@ body {
     background-color: var(--bg-color);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+body.dashboard-view-active {
+    padding-top: 25px;
+    overflow-y: hidden;
+}
+body.dashboard-view-active .internal-search-stack {
+    margin-bottom: 10px;
+}
 .main-title { 
     font-size: 3rem; font-weight: 700; margin: 0 0 10px 0; 
     /* ALTERADO: Usando variáveis */
@@ -20,6 +27,11 @@ body {
     justify-content: center; gap: 10px; 
 }
 .dashboard-container { width: 95vw; height: 85vh; display: none; flex-direction: column;align-items: center; margin-top: -15px; }
+body.dashboard-view-active .dashboard-container {
+    margin-top: -30px;
+    height: calc(100vh - 160px);
+    max-height: 88vh;
+}
 .dashboard-iframe { 
     width: 100%; height: 100%; border: none; border-radius: 16px; 
     /* ALTERADO: Usando variáveis */
@@ -306,6 +318,10 @@ body {
         /* Alinha com o padding-top do hub.html (mobile) */
         padding-top: 120px; 
     }
+    body.dashboard-view-active {
+        padding-top: 90px;
+        overflow-y: hidden;
+    }
     .main-title {
         font-size: 2.2rem;
     }
@@ -356,6 +372,10 @@ body {
     .dashboard-container {
         width: 100%;
         height: 80vh; /* Altura do iframe */
+    }
+    body.dashboard-view-active .dashboard-container {
+        height: calc(100vh - 220px);
+        max-height: 82vh;
     }
 }
 .logo-light { display: none; }

@@ -175,15 +175,16 @@ body {
 /* Status Box - Posição Atualizada */
 .status-box {
     position: fixed; 
-    top: 90px; 
+    top: 20px; 
     right: 20px; 
-    z-index: 1000;
-    padding: 15px 20px; border-radius: 8px; font-weight: 500;
-    min-width: 250px; max-width: 400px; box-shadow: 0 4px 12px var(--shadow-color);
-    visibility: hidden; opacity: 0; transform: translateX(20px);
+    z-index: 1100;
+    padding: 14px 18px; border-radius: 10px; font-weight: 500;
+    width: clamp(200px, 22vw, 260px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    visibility: hidden; opacity: 0; transform: translateY(-10px);
     transition: all 0.4s ease-in-out;
 }
-.status-box.visible { visibility: visible; opacity: 1; transform: translateX(0); }
+.status-box.visible { visibility: visible; opacity: 1; transform: translateY(0); }
 .status-box.processing { background-color: var(--bg-color); color: var(--text-tertiary-color); }
 .status-box.success { background-color: #d4edda; color: #155724; }
 .status-box.error { background-color: #f8d7da; color: #721c24; }
@@ -387,41 +388,40 @@ body {
     border-color: #8a1823;
 }
 /* --- NOVO: Estilos do Modal Agendador (Redesign) --- */
-.modal-content.scheduler-modal {
-    max-width: 750px; /* <-- AJUSTE AQUI: Aumentado de 650px para 750px */
-    padding: 0; /* Padding será interno */
-    text-align: left;
+#scheduler-modal-overlay .settings-modal {
+    max-width: 940px;
+    width: min(94%, 940px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px var(--shadow-color-hover);
+    padding: 0;
+    overflow: hidden;
 }
 
-.scheduler-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid var(--border-color);
-}
-.scheduler-header h2 {
-    margin: 0;
-    color: var(--text-primary-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center; /* TÍTULO CENTRALIZADO */
-}
-.scheduler-header h2 i {
-    color: var(--accent-color);
+.scheduler-modal-body {
+    padding: 25px 32px 15px;
 }
 
 .scheduler-body {
-    display: grid; /* Usando Grid para colunas robustas */
+    display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
 }
 
 .scheduler-form {
-    padding: 25px;
-    border-right: 1px solid var(--border-color);
+    padding: 25px 25px 30px;
 }
 .scheduler-form h3 {
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
     color: var(--text-primary-color);
+}
+.scheduler-helper-text {
+    margin: 0 0 35px;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+}
+.scheduler-modal-footer {
+    justify-content: flex-end;
 }
 
 .scheduler-form .modal-input-group {
@@ -462,6 +462,43 @@ body {
     background-color: var(--bg-color); /* Fundo sutil */
     display: flex;
     flex-direction: column;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    margin-left: 22px; /* Afasta o bloco cinza das tarefas da coluna do formulário */
+}
+
+.scheduler-nav-tabs {
+    justify-content: center;
+    gap: 14px;
+    padding: 0;
+    margin-bottom: 26px;
+    border-bottom: none;
+}
+.scheduler-nav-tabs .profile-nav-link {
+    background: none;
+    border: 1px solid transparent;
+    padding: 10px 26px;
+    min-width: auto;
+    justify-content: center;
+    box-shadow: none;
+}
+.scheduler-nav-tabs .profile-nav-link.active {
+    background-color: var(--card-bg-color);
+    border-color: var(--border-color);
+}
+
+@media (max-width: 1024px) {
+    .scheduler-body {
+        grid-template-columns: 1fr;
+    }
+    .scheduler-form {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .scheduler-queue {
+        margin-left: 0;
+        margin-top: 24px;
+    }
 }
 
 /* NOVO: Estilos das Abas (Fila / Histórico) */
@@ -474,19 +511,10 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 .scheduler-tab {
-    padding: 10px 15px;
+    border: none;
+    background: none;
     cursor: pointer;
-    font-weight: 600;
-    color: var(--text-secondary-color);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -1px; /* Alinha com a borda */
-}
-.scheduler-tab:hover {
-    color: var(--text-primary-color);
-}
-.scheduler-tab.active {
-    color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
+    padding: 0;
 }
 
 
@@ -633,6 +661,10 @@ body {
     gap: 10px; /* Espaço entre os botões */
     margin-top: 10px;
 }
+.scheduler-task-selection-label {
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
 /* Em: automacao.css (NOVO BLOCO) */
 
 /* --- ESTILO PARA O PLACEHOLDER INVISÍVEL (EVITAR PULO) --- */
@@ -714,8 +746,6 @@ body {
     justify-content: center;
     align-items: center;
     padding: 10px 0 5px 0;
-    margin-top: 15px; /* Separação maior dos botões */
-    border-top: 1px solid var(--border-color, #eee); /* Linha divisória */
 }
 
 .pagination-btn {
@@ -918,21 +948,20 @@ body {
     }
 
     /* --- Correção Agendador (Req 7) --- */
-    .modal-content.scheduler-modal {
-        width: 95vw; /* Modal ocupa 95% */
+    #scheduler-modal-overlay .settings-modal {
+        width: 96vw;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
     }
     .scheduler-body {
-        /* Stack (1 coluna) em vez de 2 colunas */
         grid-template-columns: 1fr;
         border: none;
-        overflow-y: auto; /* Permite rolar o corpo */
+        overflow-y: auto;
     }
     .scheduler-form {
         border-right: none;
-        border-bottom: 1px solid var(--border-color); /* Linha divisória */
+        border-bottom: 1px solid var(--border-color);
     }
     .queue-list-container {
         /* Altura menor para caber na tela */

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewImage = document.getElementById('preview-image');
     const previewDescription = document.getElementById('preview-description');
     const previewTagsContainer = document.getElementById('preview-tags-container');
+    const pageSearchContainer = document.querySelector('.page-search-container');
     const translate = (key, fallback, vars = {}) => {
         const base = (window.hubI18n && typeof hubI18n.t === 'function') ? hubI18n.t(key, fallback) : (fallback || key);
         return base.replace(/\{(\w+)\}/g, (match, token) => (token in vars ? vars[token] : match));
@@ -324,6 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
         selectionScreen.style.display = 'none';
         dashboardView.style.display = 'flex';
         isViewingDashboard = true;
+        document.body.classList.add('dashboard-view-active');
+        if (pageSearchContainer) {
+            pageSearchContainer.classList.add('hidden');
+        }
         updateBackButton();
     }
     // --- FIM: Funções de Login ---
@@ -570,6 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- FIM DA MODIFICAÇÃO ---
                 backButton.href = '/'; 
                 backButton.title = 'Voltar ao Hub';
+                document.body.classList.remove('dashboard-view-active');
                 
                 isTableauLoggedIn = false;
                 currentTaskInfo = null;
@@ -597,6 +603,10 @@ document.addEventListener('DOMContentLoaded', () => {
             dashboardView.style.display = 'none';
             selectionScreen.style.display = 'flex';
             isViewingDashboard = false;
+            document.body.classList.remove('dashboard-view-active');
+            if (pageSearchContainer) {
+                pageSearchContainer.classList.remove('hidden');
+            }
             updateBackButton();
             // Tenta encontrar o 'feedback-fab' e removê-lo.
             // Adicionado try-catch para não quebrar se o 'shared.js' ainda não carregou o fab

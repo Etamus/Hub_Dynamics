@@ -147,65 +147,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getTagClass(tagText) {
-        const lowerCaseTag = tagText.trim().toLowerCase();
-
-        // --- INÍCIO DA MODIFICAÇÃO (Novas Regras de Cor) ---
-
-        // Grupo 1: Laranja (Finanças/Dados)
-        if (['returns', 'data', 'financial'].includes(lowerCaseTag)) {
-            return 'tag-orange';
-        }
-
-        // Grupo 2: Azul (Processo)
-        if (['monitoring', 'report', 'scheduling', 'delivery', 'routine'].includes(lowerCaseTag)) {
-            return 'tag-blue';
-        }
-        
-        // (Mantendo cores antigas para consistência, se existirem)
-        // Verde (Frequência)
-        if (['daily', 'weekly', 'monthly'].includes(lowerCaseTag)) {
-            return 'tag-green';
-        }
-
-        // Cinza (Tecnologia ou fallback)
-        // (Inclui 'sap', 'bw', 'excel', 'rpa' e qualquer outra coisa)
-        return 'tag-gray';
-        
-        // --- FIM DA MODIFICAÇÃO ---
-    }
-
-    /**
-     * Mostra o painel de preview
-     */
-    function showPreview(button) {
-        if (!previewPanel) return; // Sai se o painel não existir
-
-        const gifPath = button.dataset.previewGif;
-        const text = button.dataset.previewText;
-        const tagsString = button.dataset.previewTags;
-
-        // Só mostra o painel se houver GIF e Texto
-        if (gifPath && text) {
-            previewImage.src = gifPath;
-            previewDescription.textContent = text;
-            previewTagsContainer.innerHTML = '';
-
-            if (tagsString) {
-                const tagsArray = tagsString.split(',');
-                tagsArray.forEach(tagText => {
-                    if (!tagText.trim()) return;
-                    
-                    const cleanTagText = tagText.trim();
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'preview-tag';
-                    tagElement.textContent = cleanTagText;
-                    tagElement.classList.add(getTagClass(cleanTagText));
-                    previewTagsContainer.appendChild(tagElement);
-                });
-            }
-            previewPanel.classList.add('visible');
-        }
+    function injectSchedulerHTML() {
+        const schedulerModal = document.createElement('div');
+        schedulerModal.id = 'scheduler-modal-overlay';
+        schedulerModal.className = 'settings-modal-overlay';
+        schedulerModal.innerHTML = `
+            <div class="settings-modal scheduler-modal-panel">
+                <div class="settings-body scheduler-modal-body">
+                    <div class="scheduler-body">
+                        <section class="scheduler-form">
+                            <h3>Agendador de Tarefas</h3>
+                            <p class="scheduler-helper-text">Programe execuções automáticas de SAP e BW com antecedência.</p>
+                            <div class="scheduler-datetime-group">
+                                <div class="modal-input-group">
+                                    <label for="scheduler-date">Data:</label>
+                                    <div class="input-with-icon-wrapper">
+                                        <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10">
+                                        <i class="fas fa-calendar-alt input-icon" id="scheduler-calendar-icon"></i>
+                                        <input type="date" id="scheduler-date-native" class="scheduler-native-input">
+                                    </div>
+                                </div>
+                                <div class="modal-input-group">
+                                    <label for="scheduler-time">Hora:</label>
+                                    <div class="input-with-icon-wrapper">
+                                        <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5">
+                                        <i class="fas fa-clock input-icon" id="scheduler-clock-icon"></i>
+                                        <input type="time" id="scheduler-time-native" class="scheduler-native-input">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-input-group">
+                                <label class="scheduler-task-selection-label">Selecione a automação:</label>
+                                <div id="scheduler-tasks-container" class="scheduler-tasks-container"></div>
+                            </div>
+                            <div class="scheduler-button-container">
+                                <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
+                            </div>
+                        </section>
+                        <section class="scheduler-queue">
+                            <nav class="profile-nav-tabs scheduler-nav-tabs" role="tablist" aria-label="Seções do agendador">
+                                <button type="button" id="tab-queue" class="profile-nav-link scheduler-tab active" data-tab="queue">
+                                    <i class="fas fa-list-check"></i>
+                                    <span>Fila</span>
+                                </button>
+                                <button type="button" id="tab-history" class="profile-nav-link scheduler-tab" data-tab="history">
+                                    <i class="fas fa-clock-rotate-left"></i>
+                                    <span>Histórico</span>
+                                </button>
+                            </nav>
+                            <div id="queue-container" class="queue-list-container">
+                                <ul id="scheduler-queue-list" aria-live="polite"></ul>
+                            </div>
+                            <div id="history-container" class="queue-list-container hidden">
+                                <ul id="scheduler-history-list" aria-live="polite"></ul>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <div class="settings-footer scheduler-modal-footer">
+                    <button class="settings-close-action" id="scheduler-close-btn">Fechar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(schedulerModal);
     }
 
     /**
@@ -526,67 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funções do Agendador (Redesign) ---
 
     // 1. Injeta o HTML do modal do agendador (MODIFICADO)
-function injectSchedulerHTML() {
-    const schedulerModal = document.createElement('div');
-    schedulerModal.id = 'scheduler-modal-overlay';
-    schedulerModal.className = 'modal-overlay'; 
-    schedulerModal.innerHTML = `
-        <div class="modal-content scheduler-modal">
-            <button id="scheduler-close-btn" class="modal-close" title="Fechar">&times;</button>
-            <div class="scheduler-header">
-                <h2><i class="fas fa-clock"></i> Agendador de Tarefas</h2>
-            </div>
-            <div class="scheduler-body">
-                <div class="scheduler-form">
-                    
-                    <div class="scheduler-datetime-group">
-                        <div class="modal-input-group">
-                            <label for="scheduler-date">Data:</label>
-                            <div class="input-with-icon-wrapper">
-                                <input type="text" id="scheduler-date" aria-label="Data para iniciar a tarefa" maxlength="10">
-                                <i class="fas fa-calendar-alt input-icon" id="scheduler-calendar-icon"></i>
-                                <input type="date" id="scheduler-date-native" class="scheduler-native-input">
-                            </div>
-                        </div>
-                        <div class="modal-input-group">
-                            <label for="scheduler-time">Hora:</label>
-                            <div class="input-with-icon-wrapper">
-                                <input type="text" id="scheduler-time" aria-label="Hora para iniciar a tarefa" maxlength="5">
-                                <i class="fas fa-clock input-icon" id="scheduler-clock-icon"></i>
-                                <input type="time" id="scheduler-time-native" class="scheduler-native-input">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-input-group">
-                        <label>Tarefa:</label>
-                        <div id="scheduler-tasks-container" class="scheduler-tasks-container">
-                            </div>
-                    </div>
-                    
-                    <div class="scheduler-button-container">
-                        <button id="scheduler-add-btn" class="button btn-execute">Adicionar à Fila</button>
-                    </div>
-                </div>
-                <div class="scheduler-queue">
-                    <div class="scheduler-queue-tabs">
-                        <span id="tab-queue" class="scheduler-tab active" data-tab="queue">Fila</span>
-                        <span id="tab-history" class="scheduler-tab" data-tab="history">Histórico</span>
-                    </div>
-                    
-                    <div id="queue-container" class="queue-list-container">
-                        <ul id="scheduler-queue-list" aria-live="polite"></ul>
-                    </div>
-                    <div id="history-container" class="queue-list-container hidden">
-                        <ul id="scheduler-history-list" aria-live="polite"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(schedulerModal);
-}
-    
     // Em: automacao.js
 
 // Em: automacao.js
@@ -937,11 +880,11 @@ function addJobToQueue() {
 
     // 9. Abre o modal do agendador (MODIFICADO)
 function openSchedulerModal() {
-    const modal = document.getElementById('scheduler-modal-overlay');
+    let modal = document.getElementById('scheduler-modal-overlay');
     
     if (!modal) {
         injectSchedulerHTML();
-        
+        modal = document.getElementById('scheduler-modal-overlay');
         // Adiciona listeners aos novos elementos DEPOIS de injetar
         document.getElementById('scheduler-close-btn').addEventListener('click', closeSchedulerModal);
         document.getElementById('scheduler-add-btn').addEventListener('click', addJobToQueue);
@@ -970,6 +913,15 @@ function openSchedulerModal() {
         });
         
         tabQueue.click(); 
+    }
+
+    if (modal && !modal.dataset.overlayClickBound) {
+        modal.addEventListener('mousedown', (event) => {
+            if (event.target === modal) {
+                closeSchedulerModal();
+            }
+        });
+        modal.dataset.overlayClickBound = 'true';
     }
     
     // Sempre popula e renderiza ao abrir

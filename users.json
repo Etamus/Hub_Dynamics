@@ -35,5 +35,19 @@
     },
     "login_attempts": 0,
     "lockout_until": null
+  },
+  "teste3": {
+    "password": "DO&bJ&qR",
+    "role": "Analista",
+    "area": "Jur\u00eddico",
+    "display_name": null,
+    "profile_image": null,
+    "connections": {
+      "sap": null,
+      "bw": null,
+      "tableau": null
+    },
+    "login_attempts": 0,
+    "lockout_until": null
   }
 }

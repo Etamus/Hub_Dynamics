@@ -101,19 +101,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerSubmitBtn = document.getElementById('register-submit-btn');
     const registerStatus = document.getElementById('register-status');
     const registerTokenDisplay = document.getElementById('register-token-display');
+    const registerFieldsWrapper = document.getElementById('register-fields');
+    const registerQrImage = document.getElementById('register-qr-image');
+    const registerCopyCodeBtn = document.getElementById('register-copy-code');
+    const registerCodeChars = document.querySelectorAll('#register-code-display .access-code-char');
     const tokenGenerated = document.getElementById('token-generated');
     
     // Form de Consulta
     const consultToken = document.getElementById('consult-token');
     const consultTokenBtn = document.getElementById('consult-token-btn');
+    const consultCodeInputs = Array.from(document.querySelectorAll('.consult-code-input'));
     const consultStatusError = document.getElementById('consult-status-error');
     const consultStatusWrapper = document.getElementById('consult-status-wrapper');
-    const consultStatusResult = document.getElementById('consult-status-result');
-    const consultJustification = document.getElementById('consult-justification');
-    const consultNewPasswordSection = document.getElementById('consult-new-password-section');
-    const consultPasswordError = document.getElementById('consult-password-error');
-    const consultNewPassword = document.getElementById('consult-new-password');
-    const consultSavePasswordBtn = document.getElementById('consult-save-password-btn');
+    const consultProgressWrapper = document.getElementById('consult-progress');
+    const consultProgressRequestedItem = document.querySelector('[data-progress-step="requested"]');
+    const consultProgressAwaitingItem = document.querySelector('[data-progress-step="awaiting"]');
+    const consultProgressSecondLabel = document.getElementById('consult-progress-second-label');
+    const consultAccessInfo = document.getElementById('consult-access-info');
+    const consultAccessUsername = document.getElementById('consult-access-username');
+    const consultAccessPassword = document.getElementById('consult-access-password');
+    const consultRejectedInfo = document.getElementById('consult-rejected-info');
+    const consultRejectedText = document.getElementById('consult-rejected-text');
 
     // Modal de Admin
     const adminOverlay = document.getElementById('admin-overlay');
@@ -163,6 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminAddAutomationBtn = document.getElementById('admin-add-automation-btn');
     const adminAddDashboardBtn = document.getElementById('admin-add-dashboard-btn');
     let pendingRequestsCount = 0;
+    let registerCopyFeedbackTimer = null;
+    const ACCESS_CODE_LENGTH = 6;
+    let consultFetchInProgress = false;
 
     if (adminSearchInputField) {
         adminSearchInputField.addEventListener('keyup', handleAdminSearch);
@@ -1967,6 +1978,7 @@ function openEditNameModal(currentName) {
         hubPassInput.value = '';
         hubLoginOverlay.classList.add('visible');
         hubUserInput.focus();
+        updateHubLoginButtonState();
     }
     function closeHubLoginModal() {
         hubLoginOverlay.classList.remove('visible');
@@ -1974,6 +1986,290 @@ function openEditNameModal(currentName) {
     function showHubLoginError(message) {
         hubLoginError.textContent = message;
         hubLoginError.classList.remove('hidden');
+    }
+
+    function updateHubLoginButtonState() {
+        if (!hubLoginSubmitBtn) return;
+        const hasText = hubUserInput.value.trim().length > 0 || hubPassInput.value.trim().length > 0;
+        if (hasText) {
+            hubLoginSubmitBtn.classList.remove('hidden');
+        } else {
+            hubLoginSubmitBtn.classList.add('hidden');
+        }
+    }
+
+    function resetRegisterSuccessView() {
+        registerCodeChars.forEach(char => char.textContent = '•');
+        if (registerQrImage) {
+            registerQrImage.removeAttribute('src');
+            registerQrImage.alt = 'QR Code ainda não gerado';
+        }
+        if (registerCopyCodeBtn) {
+            registerCopyCodeBtn.disabled = true;
+            registerCopyCodeBtn.classList.remove('copied');
+            const label = registerCopyCodeBtn.querySelector('span');
+            if (label) label.textContent = 'Copiar';
+        }
+        if (tokenGenerated) {
+            tokenGenerated.textContent = '';
+        }
+        updateRegisterSubmitButtonState();
+    }
+
+    function showRegisterSuccessCard(code) {
+        if (!registerTokenDisplay) return;
+        const formattedCode = (code || '').toUpperCase();
+        registerTokenDisplay.classList.remove('hidden');
+        if (registerFieldsWrapper) {
+            registerFieldsWrapper.classList.add('hidden');
+        }
+        registerCodeChars.forEach((char, idx) => {
+            char.textContent = formattedCode[idx] || '•';
+        });
+        if (tokenGenerated) {
+            tokenGenerated.textContent = formattedCode;
+        }
+        if (registerQrImage && formattedCode) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(formattedCode)}`;
+            registerQrImage.src = qrUrl;
+            registerQrImage.alt = `QR Code para o código ${formattedCode}`;
+        }
+        if (registerCopyCodeBtn) {
+            registerCopyCodeBtn.disabled = !formattedCode;
+            registerCopyCodeBtn.classList.remove('copied');
+            const label = registerCopyCodeBtn.querySelector('span');
+            if (label) label.textContent = 'Copiar';
+        }
+        updateRegisterSubmitButtonState();
+    }
+
+    function handleRegisterCodeCopy() {
+        if (!registerCopyCodeBtn || !tokenGenerated) return;
+        const code = tokenGenerated.textContent.trim();
+        if (!code) return;
+
+        const applyFeedback = () => {
+            registerCopyCodeBtn.classList.add('copied');
+            const label = registerCopyCodeBtn.querySelector('span');
+            if (label) label.textContent = 'Copiado!';
+            clearTimeout(registerCopyFeedbackTimer);
+            registerCopyFeedbackTimer = setTimeout(() => {
+                registerCopyCodeBtn.classList.remove('copied');
+                if (label) label.textContent = 'Copiar';
+            }, 2000);
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(applyFeedback).catch(() => {
+                fallbackCopy(code, applyFeedback);
+            });
+        } else {
+            fallbackCopy(code, applyFeedback);
+        }
+    }
+
+    function fallbackCopy(text, onSuccess) {
+        const tempInput = document.createElement('input');
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+            document.execCommand('copy');
+            if (typeof onSuccess === 'function') onSuccess();
+        } catch (err) {
+            console.error('Não foi possível copiar o código.', err);
+        }
+        document.body.removeChild(tempInput);
+    }
+
+    function hideConsultAccessInfo() {
+        if (consultAccessInfo) {
+            consultAccessInfo.classList.add('hidden');
+        }
+        if (consultAccessUsername) {
+            consultAccessUsername.textContent = '—';
+        }
+        if (consultAccessPassword) {
+            consultAccessPassword.textContent = '—';
+        }
+    }
+
+    function hideConsultRejectedInfo() {
+        if (consultRejectedInfo) {
+            consultRejectedInfo.classList.add('hidden');
+        }
+        if (consultRejectedText) {
+            consultRejectedText.textContent = '—';
+        }
+    }
+
+    function showConsultAccessInfo(usernameText, passwordText) {
+        if (!consultAccessInfo) return;
+        consultAccessInfo.classList.remove('hidden');
+        if (consultAccessUsername) {
+            consultAccessUsername.textContent = usernameText || '—';
+        }
+        if (consultAccessPassword) {
+            consultAccessPassword.textContent = passwordText || '—';
+        }
+    }
+
+    function showConsultRejectedInfo(justificationText) {
+        if (!consultRejectedInfo) return;
+        consultRejectedInfo.classList.remove('hidden');
+        if (consultRejectedText) {
+            consultRejectedText.textContent = justificationText || '—';
+        }
+    }
+
+    function getConsultCodeValue() {
+        return consultCodeInputs.map(input => input.value.trim().toUpperCase()).join('');
+    }
+
+    function updateConsultButtonState(codeValue) {
+        if (!consultTokenBtn) return;
+        const value = typeof codeValue === 'string' ? codeValue : getConsultCodeValue();
+        const hasFullCode = value.length === ACCESS_CODE_LENGTH;
+        const isConsultTabActive = tabConsult ? tabConsult.classList.contains('active') : false;
+        consultTokenBtn.disabled = !hasFullCode || consultFetchInProgress;
+        if (isConsultTabActive && hasFullCode) {
+            consultTokenBtn.classList.remove('hidden');
+        } else {
+            consultTokenBtn.classList.add('hidden');
+        }
+    }
+
+    function syncConsultCodeInputs() {
+        const value = getConsultCodeValue();
+        if (consultToken) {
+            consultToken.value = value;
+        }
+        updateConsultButtonState(value);
+    }
+
+    function resetConsultCodeInputs() {
+        consultCodeInputs.forEach(input => {
+            input.value = '';
+        });
+        if (consultToken) {
+            consultToken.value = '';
+        }
+        consultFetchInProgress = false;
+        updateConsultButtonState('');
+        resetConsultProgress();
+    }
+    
+    function setConsultProgressState(item, state) {
+        if (!item) return;
+        item.classList.remove('is-complete', 'is-pending', 'is-rejected');
+        if (state) {
+            item.classList.add(state);
+        }
+    }
+
+    function resetConsultProgress() {
+        if (!consultProgressWrapper) return;
+        consultProgressWrapper.classList.add('hidden');
+        setConsultProgressState(consultProgressRequestedItem, 'is-pending');
+        setConsultProgressState(consultProgressAwaitingItem, 'is-pending');
+        if (consultProgressSecondLabel) {
+            consultProgressSecondLabel.textContent = 'Aguardando Aprovação';
+        }
+    }
+
+    function showConsultAwaitingProgress() {
+        if (!consultProgressWrapper) return;
+        consultProgressWrapper.classList.remove('hidden');
+        setConsultProgressState(consultProgressRequestedItem, 'is-complete');
+        setConsultProgressState(consultProgressAwaitingItem, 'is-pending');
+        if (consultProgressSecondLabel) {
+            consultProgressSecondLabel.textContent = 'Aguardando Aprovação';
+        }
+    }
+
+    function hideConsultProgress() {
+        if (consultProgressWrapper) {
+            consultProgressWrapper.classList.add('hidden');
+        }
+    }
+    
+    function distributeConsultCodeChars(startIndex, chars) {
+        if (!chars || !chars.length) return 0;
+        const sanitized = chars.replace(/[^A-Z0-9]/g, '').toUpperCase();
+        let inserted = 0;
+        for (let i = 0; i < sanitized.length; i++) {
+            const targetIndex = startIndex + i;
+            if (!consultCodeInputs[targetIndex]) break;
+            consultCodeInputs[targetIndex].value = sanitized[i];
+            inserted++;
+        }
+        return inserted;
+    }
+
+    function focusConsultCodeInput(index) {
+        const target = consultCodeInputs[index];
+        if (target) {
+            target.focus();
+            target.select();
+        }
+    }
+
+    function handleConsultCodeInputEvent(event, index) {
+        let value = event.target.value || '';
+        value = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        if (!value) {
+            event.target.value = '';
+            syncConsultCodeInputs();
+            return;
+        }
+
+        const chars = value.split('');
+        const firstChar = chars.shift();
+        event.target.value = firstChar;
+        const extraFilled = distributeConsultCodeChars(index + 1, chars.join(''));
+        const advance = 1 + extraFilled;
+        const nextIndex = index + advance;
+        if (advance > 0 && nextIndex < consultCodeInputs.length) {
+            focusConsultCodeInput(nextIndex);
+        }
+        syncConsultCodeInputs();
+    }
+
+    function handleConsultCodeKeydown(event, index) {
+        const key = event.key;
+        if (key === 'Backspace') {
+            if (!consultCodeInputs[index].value && index > 0) {
+                event.preventDefault();
+                const previous = consultCodeInputs[index - 1];
+                previous.value = '';
+                focusConsultCodeInput(index - 1);
+                syncConsultCodeInputs();
+            }
+        } else if (key === 'ArrowLeft' && index > 0) {
+            event.preventDefault();
+            focusConsultCodeInput(index - 1);
+        } else if (key === 'ArrowRight' && index < consultCodeInputs.length - 1) {
+            event.preventDefault();
+            focusConsultCodeInput(index + 1);
+        } else if (key === 'Enter' && consultTokenBtn && !consultTokenBtn.disabled) {
+            event.preventDefault();
+            consultTokenBtn.click();
+        }
+    }
+
+    function handleConsultCodePaste(event, index) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+        const pasted = clipboardData.getData('text');
+        if (!pasted) return;
+        event.preventDefault();
+        const inserted = distributeConsultCodeChars(index, pasted);
+        const targetIndex = index + inserted;
+        if (targetIndex < consultCodeInputs.length) {
+            focusConsultCodeInput(targetIndex);
+        }
+        syncConsultCodeInputs();
     }
     
     function handleHubLogin() {
@@ -2133,8 +2429,12 @@ function openEditNameModal(currentName) {
         }
 
     });
-
-    hubLoginCloseBtn.addEventListener('click', closeHubLoginModal);
+    if (hubLoginCloseBtn) {
+        hubLoginCloseBtn.addEventListener('click', closeHubLoginModal);
+    }
+    if (hubLoginSubmitBtn) {
+        hubLoginSubmitBtn.addEventListener('click', handleHubLogin);
+    }
     if (editNameOverlay) {
         editNameCloseBtn.addEventListener('click', closeEditNameModal);
         editNameOverlay.addEventListener('mousedown', (e) => {
@@ -2147,7 +2447,9 @@ function openEditNameModal(currentName) {
     }
     hubLoginOverlay.addEventListener('mousedown', (e) => { if (e.target === hubLoginOverlay) closeHubLoginModal(); });
     hubPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleHubLogin(); });
-    hubLoginSubmitBtn.addEventListener('click', handleHubLogin);
+    [hubUserInput, hubPassInput].forEach(input => {
+        input.addEventListener('input', updateHubLoginButtonState);
+    });
 
     if (connectionsFooterCloseBtn) {
         connectionsFooterCloseBtn.addEventListener('click', closeConnectionsModal);
@@ -2203,26 +2505,55 @@ fetch('/api/hub/check-session')
 
 // --- NOVA LÓGICA: MODAL DE REGISTRO ---
 
+    function resetRegisterModalState() {
+        if (registerFieldsWrapper) {
+            registerFieldsWrapper.classList.remove('hidden');
+        }
+        if (registerTokenDisplay) {
+            registerTokenDisplay.classList.add('hidden');
+        }
+        resetRegisterSuccessView();
+        resetRegisterFormFields();
+        consultFetchInProgress = false;
+        resetConsultCodeInputs();
+
+        if (registerStatus) {
+            registerStatus.textContent = '';
+            registerStatus.classList.add('hidden');
+        }
+        if (registerSubmitBtn) {
+            registerSubmitBtn.disabled = false;
+        }
+        if (consultStatusWrapper) {
+            consultStatusWrapper.classList.add('hidden');
+        }
+        if (consultStatusError) {
+            consultStatusError.classList.add('hidden');
+            consultStatusError.textContent = '';
+        }
+        hideConsultAccessInfo();
+        hideConsultRejectedInfo();
+        if (consultToken) {
+            consultToken.value = '';
+        }
+        updateConsultButtonState('');
+    }
+
+    function closeRegisterModal() {
+        showRegisterTab('register');
+        if (registerOverlay) {
+            registerOverlay.classList.remove('visible');
+        }
+        resetRegisterModalState();
+    }
+
     function openRegisterModal() {
         accessDropdown.classList.remove('visible');
-        registerOverlay.classList.add('visible');
-        // Reseta o modal para a aba de registro
+        if (registerOverlay) {
+            registerOverlay.classList.add('visible');
+        }
         showRegisterTab('register');
-        
-        // --- CORREÇÃO: Reseta o layout do formulário ---
-        document.getElementById('register-fields').classList.remove('hidden'); // Mostra os campos
-        registerTokenDisplay.classList.add('hidden'); // Esconde o token
-        
-        consultStatusWrapper.classList.add('hidden');
-        registerStatus.classList.add('hidden');
-        consultPasswordError.classList.add('hidden');
-        
-        // Limpa os campos
-        registerUser.value = '';
-        registerArea.value = '';
-        registerRole.value = '';
-        consultToken.value = '';
-        consultNewPassword.value = '';
+        resetRegisterModalState();
     }
 
     function showRegisterTab(tabName) {
@@ -2237,15 +2568,82 @@ fetch('/api/hub/check-session')
             registerTabContent.classList.add('hidden');
             consultTabContent.classList.remove('hidden');
         }
+        updateRegisterSubmitButtonState();
+        updateConsultButtonState();
     }
     
     // Listeners das Abas de Registro
     tabRegister.addEventListener('click', () => showRegisterTab('register'));
-    tabConsult.addEventListener('click', () => showRegisterTab('consult'));
-    registerCloseBtn.addEventListener('click', () => registerOverlay.classList.remove('visible'));
-    registerOverlay.addEventListener('mousedown', (e) => {
-        if (e.target === registerOverlay) registerOverlay.classList.remove('visible');
+    tabConsult.addEventListener('click', () => {
+        showRegisterTab('consult');
+        if (consultCodeInputs.length) {
+            focusConsultCodeInput(0);
+        }
     });
+    registerCloseBtn.addEventListener('click', closeRegisterModal);
+    registerOverlay.addEventListener('mousedown', (e) => {
+        if (e.target === registerOverlay) closeRegisterModal();
+    });
+
+    if (registerCopyCodeBtn) {
+        registerCopyCodeBtn.addEventListener('click', handleRegisterCodeCopy);
+    }
+
+    function updateRegisterSubmitButtonState() {
+        if (!registerSubmitBtn) return;
+        const isRegisterTabActive = tabRegister.classList.contains('active');
+        const formVisible = !registerFieldsWrapper || !registerFieldsWrapper.classList.contains('hidden');
+        const hasInput = registerUser.value.trim().length > 0 || registerArea.value;
+        if (isRegisterTabActive && formVisible && hasInput) {
+            registerSubmitBtn.classList.remove('hidden');
+        } else {
+            registerSubmitBtn.classList.add('hidden');
+        }
+    }
+
+    function resetSelectToPlaceholder(selectElement) {
+        if (!selectElement) return;
+        const placeholder = selectElement.querySelector('option[data-placeholder="true"]');
+        if (placeholder) {
+            placeholder.selected = true;
+            selectElement.value = placeholder.value;
+        } else if (selectElement.options.length) {
+            selectElement.selectedIndex = 0;
+        } else {
+            selectElement.value = '';
+        }
+    }
+
+    function resetRegisterFormFields() {
+        if (registerUser) {
+            registerUser.value = '';
+        }
+        resetSelectToPlaceholder(registerArea);
+        resetSelectToPlaceholder(registerRole);
+        updateRegisterSubmitButtonState();
+    }
+
+    if (registerUser) {
+        registerUser.addEventListener('input', updateRegisterSubmitButtonState);
+    }
+    if (registerArea) {
+        registerArea.addEventListener('change', updateRegisterSubmitButtonState);
+    }
+    if (registerRole) {
+        registerRole.addEventListener('change', updateRegisterSubmitButtonState);
+    }
+
+    updateRegisterSubmitButtonState();
+    updateConsultButtonState();
+
+    if (consultCodeInputs.length) {
+        consultCodeInputs.forEach((input, index) => {
+            input.addEventListener('input', (event) => handleConsultCodeInputEvent(event, index));
+            input.addEventListener('keydown', (event) => handleConsultCodeKeydown(event, index));
+            input.addEventListener('paste', (event) => handleConsultCodePaste(event, index));
+        });
+        syncConsultCodeInputs();
+    }
 
     // Enviar Solicitação de Registro
     registerSubmitBtn.addEventListener('click', () => {
@@ -2270,12 +2668,7 @@ fetch('/api/hub/check-session')
         .then(response => response.json())
         .then(data => {
             if (data.status === 'sucesso') {
-                tokenGenerated.textContent = data.token;
-                
-                // --- CORREÇÃO: Esconde apenas os campos, não o form todo ---
-                document.getElementById('register-fields').classList.add('hidden');
-                
-                registerTokenDisplay.classList.remove('hidden');
+                showRegisterSuccessCard(data.token);
             } else {
                 registerStatus.textContent = data.mensagem;
                 registerStatus.classList.remove('hidden');
@@ -2287,87 +2680,59 @@ fetch('/api/hub/check-session')
     });
 
     // Consultar Token
-    consultTokenBtn.addEventListener('click', () => {
-        const token = consultToken.value.trim();
-        if (!token) return;
+    if (consultTokenBtn) {
+        consultTokenBtn.addEventListener('click', () => {
+            const rawToken = consultToken ? consultToken.value : getConsultCodeValue();
+            const token = rawToken.trim().toUpperCase();
+            if (consultToken) {
+                consultToken.value = token;
+            }
+            if (token.length !== ACCESS_CODE_LENGTH) return;
 
-        consultTokenBtn.disabled = true;
-        consultStatusWrapper.classList.add('hidden');
-        consultNewPasswordSection.classList.add('hidden');
-        consultPasswordError.classList.add('hidden');
-        consultStatusError.classList.add('hidden'); // <-- ADICIONADO: Esconde o erro
-        
-        fetch('/api/hub/consult', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: token })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'sucesso') {
-                const status = data.request_data.status;
-                consultStatusResult.textContent = status;
-                consultStatusResult.className = 'consult-status-box'; // Reseta classes
-                consultJustification.classList.add('hidden');
+            consultFetchInProgress = true;
+            updateConsultButtonState();
+            consultStatusWrapper.classList.add('hidden');
+            consultStatusError.classList.add('hidden');
+            hideConsultAccessInfo();
+            hideConsultRejectedInfo();
+            resetConsultProgress();
+            
+            fetch('/api/hub/consult', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    const status = data.request_data.status;
+                    consultStatusWrapper.classList.remove('hidden');
+                    hideConsultAccessInfo();
+                    hideConsultRejectedInfo();
 
-                if (status === 'Aguardando Aprovação') {
-                    consultStatusResult.classList.add('pending');
-                } else if (status === 'Aprovado') {
-                    consultStatusResult.classList.add('approved');
-                    consultNewPasswordSection.classList.remove('hidden');
-                } else { // Reprovado ou Expirado
-                    consultStatusResult.classList.add('rejected');
-                    consultJustification.textContent = `Justificativa: ${data.request_data.justification || 'N/A'}`;
-                    consultJustification.classList.remove('hidden');
+                    if (status === 'Aprovado') {
+                        hideConsultProgress();
+                        const usernameValue = data.request_data.username || '—';
+                        const passwordValue = data.request_data.generated_password || '—';
+                        showConsultAccessInfo(usernameValue, passwordValue);
+                    } else if (status === 'Aguardando Aprovação') {
+                        showConsultAwaitingProgress();
+                    } else {
+                        hideConsultProgress();
+                        const justificationText = data.request_data.justification || 'N/A';
+                        showConsultRejectedInfo(justificationText);
+                    }
+                } else {
+                    consultStatusError.textContent = data.mensagem;
+                    consultStatusError.classList.remove('hidden');
                 }
-                consultStatusWrapper.classList.remove('hidden');
-            } else {
-                // --- CORREÇÃO: Remove o alert() e usa o <p> ---
-                // alert(data.mensagem); 
-                consultStatusError.textContent = data.mensagem;
-                consultStatusError.classList.remove('hidden');
-                // ---------------------------------------------
-            }
-        })
-        .finally(() => {
-            consultTokenBtn.disabled = false;
+            })
+            .finally(() => {
+                consultFetchInProgress = false;
+                syncConsultCodeInputs();
+            });
         });
-    });
-    
-    // Salvar Nova Senha
-    consultSavePasswordBtn.addEventListener('click', () => {
-        const token = consultToken.value.trim();
-        const password = consultNewPassword.value;
-        
-        if (!password || password.length < 4) {
-            consultPasswordError.textContent = "A senha deve ter pelo menos 4 caracteres.";
-            consultPasswordError.classList.remove('hidden');
-            return;
-        }
-
-        consultPasswordError.classList.add('hidden');
-        consultSavePasswordBtn.disabled = true;
-
-        fetch('/api/hub/complete-registration', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: token, password: password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'sucesso') {
-                registerOverlay.classList.remove('visible'); // Fecha modal de registro
-                openHubLoginModal(); // Abre modal de login
-            } else {
-                consultPasswordError.textContent = data.mensagem;
-                consultPasswordError.classList.remove('hidden');
-            }
-        })
-        .finally(() => {
-            consultSavePasswordBtn.disabled = false;
-        });
-    });
-
+    }
 
     // --- NOVA LÓGICA: MODAL DE ADMINISTRAÇÃO ---
 
@@ -2546,7 +2911,7 @@ function renderAdminRequests(requests) {
                 </div>
             </div>
             <div class="admin-justification-form hidden">
-                <textarea class="admin-justification-input" placeholder="Justificativa da reprovação..."></textarea>
+                <textarea class="admin-justification-input" placeholder="Justificativa da reprovação..." maxlength="42"></textarea>
                 <div class="admin-justification-actions">
                     <button class="button btn-cancel admin-reject-cancel-btn">Cancelar</button>
                     <button class="button btn-danger admin-reject-save-btn">Confirmar</button>

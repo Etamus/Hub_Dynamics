@@ -3,6 +3,7 @@ import os
 import sys
 # NOVAS IMPORTAÇÕES
 import json
+import string
 from flask import (
     Flask, render_template, request, jsonify, send_from_directory,
     session, redirect, url_for
@@ -113,6 +114,20 @@ def save_requests(requests_data):
             json.dump(requests_data, f, indent=2)
     except Exception as e:
         print(f"Erro ao salvar pedidos de acesso: {e}")
+
+def generate_access_code(existing_tokens=None, length=6):
+    """Gera um código curto alfanumérico para acompanhar solicitações."""
+    alphabet = string.ascii_uppercase + string.digits
+    existing_tokens = set(existing_tokens or [])
+    while True:
+        code = ''.join(secrets.choice(alphabet) for _ in range(length))
+        if code not in existing_tokens:
+            return code
+
+def generate_initial_password(length=8):
+    """Gera uma senha inicial com letras, números e caracteres especiais."""
+    alphabet = string.ascii_letters + string.digits + "@#$%&*?!"
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
         
 def load_dashboards():
     """Carrega todos os dashboards do arquivo JSON."""
@@ -627,14 +642,14 @@ def hub_register():
 
     users = load_users()
     if username in users:
-        return jsonify({"status": "erro", "mensagem": "Este número de funcionário já está cadastrado."}), 400
+        return jsonify({"status": "erro", "mensagem": "Este login de funcionário já está cadastrado."}), 400
 
     requests = load_requests()
     # Verifica se já existe um pedido pendente para este usuário
     if any(r['username'] == username and r['status'] == 'Aguardando Aprovação' for r in requests.values()):
         return jsonify({"status": "erro", "mensagem": "Você já possui uma solicitação pendente."}), 400
 
-    token = secrets.token_hex(16)
+    token = generate_access_code(requests.keys())
     requests[token] = {
         "username": username,
         "area": area,
@@ -642,7 +657,8 @@ def hub_register():
         "status": "Aguardando Aprovação",
         "request_date": datetime.datetime.now(BRASILIA_TZ).isoformat(), # <-- CORREÇÃO DE FUSO
         "justification": None,
-        "expiration_date": None
+        "expiration_date": None,
+        "generated_password": None
     }
     save_requests(requests)
     
@@ -663,7 +679,31 @@ def hub_consult():
         
     # Verifica se o token aprovado expirou
     if request_data['status'] == 'Aprovado':
-        if request_data.get('expiration_date'): 
+        users = load_users()
+        if not request_data.get('generated_password'):
+            generated_password = generate_initial_password()
+            request_data['generated_password'] = generated_password
+            requests[token] = request_data
+            save_requests(requests)
+        if request_data.get('username') and request_data.get('generated_password'):
+            username = request_data['username']
+            if username not in users:
+                users[username] = {
+                    "password": request_data['generated_password'],
+                    "role": request_data.get('role', 'Analista'),
+                    "area": request_data.get('area', 'N/A'),
+                    "display_name": None,
+                    "profile_image": None,
+                    "connections": {
+                        "sap": None,
+                        "bw": None,
+                        "tableau": None
+                    },
+                    "login_attempts": 0,
+                    "lockout_until": None
+                }
+                save_users(users)
+        if request_data.get('expiration_date'):
             try:
                 expiration_date = datetime.datetime.fromisoformat(request_data['expiration_date'])
                 if datetime.datetime.now(datetime.timezone.utc) > expiration_date:
@@ -715,7 +755,8 @@ def hub_complete_registration():
         "profile_image": None,
         "connections": {
             "sap": None,
-            "bw": None
+            "bw": None,
+            "tableau": None
         }
     }
     save_users(users)
@@ -752,10 +793,37 @@ def admin_approve():
     requests = load_requests()
     
     if token in requests and requests[token]['status'] == 'Aguardando Aprovação':
-        requests[token]['status'] = 'Aprovado'
-        # Define a data de expiração para 7 dias a partir de agora
-        requests[token]['expiration_date'] = (datetime.datetime.now(BRASILIA_TZ) + timedelta(days=7)).isoformat() # <-- CORREÇÃO DE FUSO
+        request_entry = requests[token]
+        users = load_users()
+        username = request_entry['username']
+
+        if username in users:
+            return jsonify({"status": "erro", "mensagem": "Este usuário já possui um acesso ativo."}), 400
+
+        generated_password = generate_initial_password()
+        request_entry['status'] = 'Aprovado'
+        request_entry['expiration_date'] = (datetime.datetime.now(BRASILIA_TZ) + timedelta(days=7)).isoformat()
+        request_entry['generated_password'] = generated_password
+        request_entry['approved_at'] = datetime.datetime.now(BRASILIA_TZ).isoformat()
+        requests[token] = request_entry
         save_requests(requests)
+
+        users[username] = {
+            "password": generated_password,
+            "role": request_entry.get('role', 'Analista'),
+            "area": request_entry.get('area', 'N/A'),
+            "display_name": None,
+            "profile_image": None,
+            "connections": {
+                "sap": None,
+                "bw": None,
+                "tableau": None
+            },
+            "login_attempts": 0,
+            "lockout_until": None
+        }
+        save_users(users)
+
         return jsonify({"status": "sucesso"})
     
     return jsonify({"status": "erro", "mensagem": "Solicitação não encontrada ou já processada."}), 404
@@ -1234,7 +1302,8 @@ def admin_add_user():
         "profile_image": None,
         "connections": {
             "sap": None,
-            "bw": None
+            "bw": None,
+            "tableau": None
         },
         "login_attempts": 0,
         "lockout_until": None

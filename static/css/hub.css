@@ -445,6 +445,474 @@ body.theme-dark .logo-dark {
     justify-content: flex-end;
 }
 
+.access-modal-panel {
+    max-width: 520px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    box-shadow: 0 12px 40px var(--shadow-color-hover);
+    padding: 0;
+    overflow: hidden;
+}
+
+.access-modal-body {
+    padding: 28px 34px 22px;
+}
+
+.access-modal-body #register-form .modal-input-group > label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.access-tabs-surface {
+    background-color: var(--bg-color);
+    padding: 18px 34px;
+    margin: -40px -34px 28px;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hub-login-modal {
+    max-width: 360px;
+}
+
+#hub-login-overlay .modal-input-group label {
+    padding-bottom: 30px;
+}
+
+.access-nav-tabs.profile-nav-tabs {
+    padding: 0;
+    border-bottom: none;
+    background: transparent;
+    margin: 0;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.access-nav-tabs .profile-nav-link {
+    border: none;
+    outline: none;
+}
+
+.access-nav-tabs .profile-nav-link {
+    min-width: 0;
+    padding: 10px 22px;
+}
+
+.access-tab-pane {
+    width: 100%;
+}
+
+.access-modal-footer {
+    padding: 18px 34px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.access-modal-button {
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.93rem;
+    padding: 10px 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.access-close-btn {
+    background-color: #111;
+}
+
+.access-close-btn:hover {
+    background-color: #000;
+}
+
+.access-submit-btn {
+    background-color: var(--accent-color);
+}
+
+.access-submit-btn:hover {
+    background-color: var(--accent-color-hover, #0056c7);
+}
+
+.access-qr-card {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+}
+
+.access-qr-card-header h4 {
+    margin: 4px 0;
+    font-size: 1.1rem;
+    margin-top: 20px;
+}
+
+.access-qr-title {
+    white-space: nowrap;
+}
+
+.access-qr-card-header p {
+    margin: 0;
+    color: var(--text-secondary-color);
+}
+
+.access-qr-kicker {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary-color);
+    margin: 0 0 16px;
+}
+
+.access-qr-card-body {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.access-qr-visual {
+    flex: 0 0 auto;
+    width: 190px;
+    height: 190px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+    margin: 0 auto;
+}
+
+#register-qr-image {
+    max-width: 160px;
+    max-height: 160px;
+}
+
+.access-qr-details {
+    flex: 1;
+    min-width: 220px;
+    text-align: center;
+}
+
+.access-qr-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0 18px;
+    color: var(--text-secondary-color);
+    font-weight: 600;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.access-qr-divider::before,
+.access-qr-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.access-qr-divider span {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+}
+
+.access-code-display {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.access-code-char {
+    width: 42px;
+    height: 54px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: var(--bg-color);
+}
+
+.access-copy-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--accent-color);
+    color: #fff;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    margin: 0 auto;
+}
+
+.access-copy-button:hover {
+    background: var(--accent-color-hover, #0056c7);
+    transform: translateY(-1px);
+}
+
+.access-copy-button.copied {
+    background: #219653;
+}
+
+
+.access-code-input-group {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.access-otp-inputs {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: center;
+}
+
+.consult-code-input {
+    width: 48px;
+    height: 56px;
+    text-align: center;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-primary-color);
+}
+
+.consult-code-input:focus {
+    outline: 2px solid var(--accent-color);
+    border-color: transparent;
+}
+
+.access-consult-btn {
+    margin: 26px auto 0;
+    display: block;
+}
+
+.consult-progress {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    margin: 30px auto 18px;
+    max-width: 520px;
+}
+
+.consult-progress-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.consult-progress-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background: transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.consult-progress-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+}
+
+.consult-progress-arrow {
+    font-size: 1.2rem;
+    color: var(--text-secondary-color);
+    user-select: none;
+}
+
+.consult-progress-item.is-pending .consult-progress-dot {
+    background: var(--border-color);
+    border-color: var(--border-color);
+}
+
+.consult-progress-item.is-complete .consult-progress-dot {
+    background: #1abc9c;
+    border-color: #1abc9c;
+}
+
+.consult-progress-item.is-complete .consult-progress-label {
+    color: #1abc9c;
+}
+
+.consult-progress-item.is-rejected .consult-progress-dot {
+    background: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.consult-progress-item.is-rejected .consult-progress-label {
+    color: #e74c3c;
+}
+
+@media (max-width: 600px) {
+    .consult-progress {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .consult-progress-arrow {
+        transform: rotate(90deg);
+        margin: 0 auto;
+    }
+}
+
+.consult-justification-label {
+    font-weight: 700;
+}
+
+#consult-access-info {
+    margin-top: 22px;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 18px 22px;
+    background: rgba(46, 204, 113, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+}
+
+.consult-access-status {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1abc9c;
+}
+
+.consult-access-guidance {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--text-secondary-color);
+}
+
+.consult-access-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    gap: 16px;
+}
+
+body.theme-dark .consult-access-field {
+    background: #252525;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.consult-access-label {
+    font-weight: 300;
+    color: var(--text-primary-color);
+}
+
+body.theme-dark .consult-access-label {
+    color: #ffffff;
+}
+
+.consult-access-value {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.95rem;
+    color: var(--text-primary-color);
+}
+
+body.theme-dark .consult-access-value {
+    color: #ffffff;
+}
+
+.consult-access-guidance {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+}
+
+.consult-access-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-secondary-color);
+}
+
+.consult-access-warning i {
+    font-size: 0.95rem;
+}
+
+#consult-rejected-info {
+    margin-top: 22px;
+    border: 1px dashed rgba(231, 76, 60, 0.5);
+    border-radius: 14px;
+    padding: 18px 22px;
+    background: rgba(231, 76, 60, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+}
+
+.consult-rejected-status {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.consult-rejected-justification {
+    margin: 0;
+    font-size: 0.90rem;
+    color: var(--text-primary-color);
+    display: inline-flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .access-qr-card-body {
+        flex-direction: column;
+        align-items: center;
+    }
+    .access-otp-inputs {
+        gap: 6px;
+    }
+    .consult-code-input {
+        width: 42px;
+        height: 50px;
+    }
+}
+
 .settings-footer {
     padding: 18px 35px;
     border-top: 1px solid var(--border-color);
@@ -487,6 +955,7 @@ body.theme-dark .logo-dark {
 #about-overlay .settings-body {
     padding-left: 35px;
     padding-right: 35px;
+    padding-top: 40px;
 }
 .setting-group {
     padding-top: 20px;
@@ -624,12 +1093,15 @@ body.theme-dark .logo-dark {
 }
 .about-section p {
     margin: 5px 0;
+    margin-top: 15px;
+    text-align: center;
     color: var(--text-primary-color);
 }
 .about-section ul {
     list-style-type: none;
     padding-left: 10px;
     margin: 5px 0;
+    text-align: center;
 }
 .about-section a {
     color: var(--accent-color);
@@ -1469,6 +1941,10 @@ body.theme-dark .logo-dark {
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.admin-sidebar-nav .scheduler-tab:hover {
+    color: var(--text-primary-color);
+}
+
 .admin-sidebar-nav .scheduler-tab i {
     font-size: 1rem;
 }
@@ -1662,6 +2138,12 @@ body.theme-dark .logo-dark {
     gap: 12px;
 }
 
+#admin-requests-tab {
+    max-height: 52vh;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
 .admin-request-card {
     display: flex;
     flex-direction: column; /* Empilha a info e o form de rejeição */
@@ -1828,7 +2310,7 @@ body.theme-dark .logo-dark {
 
 /* Ajusta o padding da lista de usuários */
 #admin-users-tab #admin-user-list-container {
-    max-height: 70vh;
+    max-height: 43vh;
     overflow-y: auto;
     padding: 0;
     background-color: transparent;
@@ -2022,7 +2504,7 @@ body.theme-dark .logo-dark {
 
 /* Contêiner da lista */
 .admin-cms-list {
-    max-height: 52vh;
+    max-height: 42vh;
     overflow-y: auto;
     padding: 0;
     background-color: transparent;
@@ -3148,10 +3630,12 @@ body.theme-dark .logo-dark {
   font-weight: 600;
   font-size: 0.9rem;
   padding: 8px 12px;
-  border-radius: 8px;
-  transition: all .2s ease;
+    border-radius: 10px;
   display: flex;
   align-items: center;
+        background: none;
+    cursor: pointer;
+        box-shadow: none;
 }
 
 .profile-nav-link i {
@@ -3159,14 +3643,16 @@ body.theme-dark .logo-dark {
 }
 
 .profile-nav-link:hover {
-  background-color: var(--card-bg-color);
-  color: var(--text-primary-color);
+    color: var(--text-primary-color);
+    border-color: var(--accent-color-transparent, var(--accent-color));
 }
 
 .profile-nav-link.active {
   background-color: var(--card-bg-color);
   color: var(--text-primary-color);
-  box-shadow: 0 2px 5px var(--shadow-color-light);
+    box-shadow: none;
+    border-color: #ffffff;
+    border: 1px solid var(--border-color);
 }
 
 .profile-nav-link.disabled-feature {
