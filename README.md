@@ -1,10 +1,10 @@
-# Hub Spare Parts
+# Hub Dynamics
 
 Hub corporativo em **Flask** que centraliza automações, dashboards, arquivos e fluxos de acesso em uma única experiência responsiva. O Hub abstrai integrações com SAP, BW HANA, macros em Excel e relatórios Looker/Tableau, oferecendo RBAC completo, perfis personalizados e um scheduler persistente.
 
 ---
 
-<img width="1919" height="921" alt="{0AE0844E-2FCB-435A-AE3D-5910A1D50077}" src="https://github.com/user-attachments/assets/5314a64e-d9b0-45d0-9383-c8ac72afd08c" />
+<img width="1917" height="918" alt="{FDE172BF-CEC4-4F9F-93F9-B2500C2681D5}" src="https://github.com/user-attachments/assets/4555a720-f31c-4d56-a17e-5acb0cba975f" />
 
 ---
 
@@ -21,7 +21,7 @@ Hub corporativo em **Flask** que centraliza automações, dashboards, arquivos e
 
 ---
 
-<img width="960" height="540" alt="Staff Supply LTL   Spare Parts - Novembro 2025 (1)" src="https://github.com/user-attachments/assets/785352de-638f-4543-936e-113c7381352e" />
+<img width="960" height="540" alt="Staff Supply LTL   Spare Parts - Novembro 2025" src="https://github.com/user-attachments/assets/50a0793c-df2c-4618-8a42-24061477c819" />
 
 ---
 
