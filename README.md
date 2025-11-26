@@ -72,8 +72,8 @@ Hub corporativo em **Flask** que centraliza automações, dashboards, arquivos e
 ## Como executar localmente
 
 ```bash
-git clone https://github.com/Etamus/Hub_Spare_Parts.git
-cd Hub_Spare_Parts
+git clone https://github.com/Etamus/Hub_Dynamics.git
+cd Hub_Dynamics
 
 python -m venv .venv
 .venv\Scripts\activate
