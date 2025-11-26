@@ -1,0 +1,60 @@
+Copyright (c) 2025
+Autor: Mateus Lopes
+Todos os direitos reservados.
+
+1. DO OBJETO
+Este documento regula o uso, acesso, distribuição e qualquer forma de
+interação com o software desenvolvido e identificado como obra intelectual
+de exclusiva titularidade do Autor.
+
+2. DA TITULARIDADE E PROPRIEDADE INTELECTUAL
+2.1. Todo o código-fonte, componentes, funcionalidades, arquitetura,
+documentação, design, estruturas, algoritmos e demais elementos do software
+são protegidos pela legislação de direitos autorais e pertencem unicamente
+ao Autor.
+2.2. A presente licença NÃO transfere qualquer direito de propriedade,
+uso, exploração, comercialização ou modificação, salvo quando autorizado
+formalmente por escrito pelo Autor.
+
+3. DAS RESTRIÇÕES DE USO
+3.1. É expressamente proibido, sem autorização prévia e escrita do Autor:
+     a) copiar, duplicar ou redistribuir o software;
+     b) publicar ou disponibilizar o software para terceiros;
+     c) modificar, alterar, editar ou criar obras derivadas;
+     d) utilizar o software para fins comerciais, acadêmicos ou corporativos;
+     e) vender, alugar, sublicenciar ou transferir acesso, parcial ou total;
+     f) remover, ocultar ou alterar avisos de copyright e identificação;
+     g) praticar engenharia reversa, descompilação, desmontagem ou quaisquer
+        métodos destinados a descobrir o funcionamento interno do software.
+
+4. DA CONFIDENCIALIDADE
+4.1. Caso o software seja fornecido de forma privada, o usuário compromete-se
+a manter sigilo absoluto sobre todo o conteúdo recebido.
+4.2. A divulgação não autorizada configura violação de direitos autorais e
+quebra contratual.
+
+5. DA RESPONSABILIDADE E PENALIDADES
+5.1. Qualquer violação desta licença poderá resultar em:
+     a) remoção imediata do conteúdo por notificações formais (DMCA ou equivalentes);
+     b) responsabilização civil para reparação de danos materiais e morais;
+     c) responsabilização penal conforme legislação aplicável;
+     d) cobrança de indenizações por uso indevido, apropriação, distribuição ou cópia.
+
+6. DA AUSÊNCIA DE PERMISSÃO TÁCITA
+6.1. A ausência de resposta do Autor NÃO constitui autorização, concessão de
+licença, ou permissão implícita.
+6.2. Toda autorização deve ser formalizada exclusivamente por escrito.
+
+7. DAS ATUALIZAÇÕES E ALTERAÇÕES
+7.1. O Autor poderá, a qualquer tempo, atualizar os termos desta licença.
+7.2. A versão mais recente publicada pelo Autor prevalecerá sobre quaisquer
+anteriores.
+
+8. DA ACEITAÇÃO
+8.1. O uso, acesso, leitura, armazenamento ou posse do software implica
+aceitação integral e incondicional dos termos aqui estabelecidos.
+8.2. Caso o usuário não concorde com qualquer cláusula, deverá cessar
+imediatamente todo e qualquer uso do software.
+
+Este documento tem validade jurídica e rege o uso do software em todos os
+territórios sujeitos à proteção de direitos autorais.
